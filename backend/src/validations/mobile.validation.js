@@ -24,7 +24,7 @@ const createListing = {
     imei: Joi.string().pattern(/^\d{15}$/).optional(),
     warranty: Joi.object({
       hasWarranty: Joi.boolean().default(false),
-      expiryDate: Joi.date().optional(),
+      expiryDate: Joi.date().empty('').allow(null).optional(),
     }).optional(),
     repairHistory: Joi.array()
       .items(Joi.object({ issue: Joi.string().required(), date: Joi.date().optional(), description: Joi.string().optional() }))

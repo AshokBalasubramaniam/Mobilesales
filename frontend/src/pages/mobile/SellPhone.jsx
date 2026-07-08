@@ -88,7 +88,10 @@ const SellPhone = () => {
         mrp: form.mrp ? Number(form.mrp) : undefined,
         negotiable: form.negotiable,
         imei: form.imei || undefined,
-        warranty: form.warranty,
+        warranty: {
+          hasWarranty: form.warranty.hasWarranty,
+          expiryDate: form.warranty.hasWarranty && form.warranty.expiryDate ? form.warranty.expiryDate : undefined,
+        },
         repairHistory: form.hasRepairHistory && form.repairNote ? [{ issue: form.repairNote }] : [],
         originalBoxAvailable: form.originalBoxAvailable,
         chargerIncluded: form.accessoriesIncluded.includes('Charger'),
