@@ -11,10 +11,14 @@ const googleAuthService = require('../services/googleAuth.service');
 const { generateNumericOTP, generateToken, hashToken } = require('../utils/otp');
 const { AUTH_PROVIDER } = require('../config/constants');
 
+// Frontend and backend are served from different domains in production
+// (e.g. Netlify + Render), so the refresh cookie needs SameSite=None to be
+// sent on cross-site XHR/fetch — which in turn requires Secure=true.
+// Locally the Vite dev server proxies /api same-origin, so Lax is fine there.
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.nodeEnv === 'production',
-  sameSite: 'lax',
+  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
   path: '/api/auth',
 };
 
