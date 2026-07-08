@@ -1,0 +1,54 @@
+import { useEffect, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import toast from 'react-hot-toast';
+import { env } from '../../config/env';
+import { googleLogin } from '../../features/auth/authSlice';
+
+/** Renders Google's official Sign-In button when VITE_GOOGLE_CLIENT_ID is configured. */
+const GoogleLoginButton = ({ onSuccess }) => {
+  const ref = useRef(null);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!env.googleClientId || !ref.current) return undefined;
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => {
+      if (!window.google || !ref.current) return;
+      window.google.accounts.id.initialize({
+        client_id: env.googleClientId,
+        callback: async (response) => {
+          try {
+            await dispatch(googleLogin({ idToken: response.credential })).unwrap();
+            onSuccess?.();
+          } catch (err) {
+            toast.error(err || 'Google login failed');
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(ref.current, { theme: 'outline', size: 'large', width: 320 });
+    };
+    document.body.appendChild(script);
+
+    return () => script.remove();
+  }, [dispatch, onSuccess]);
+
+  if (!env.googleClientId) {
+    return (
+      <button
+        type="button"
+        disabled
+        title="Google login is not configured on this server"
+        className="w-full cursor-not-allowed rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-400 dark:border-gray-700"
+      >
+        Continue with Google (not configured)
+      </button>
+    );
+  }
+
+  return <div ref={ref} className="flex justify-center" />;
+};
+
+export default GoogleLoginButton;

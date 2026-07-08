@@ -1,0 +1,13 @@
+node_modules/
+.env
+uploads/**
+!uploads/.gitkeep
+!uploads/images/
+!uploads/images/.gitkeep
+!uploads/videos/
+!uploads/videos/.gitkeep
+!uploads/documents/
+!uploads/documents/.gitkeep
+!uploads/voice/
+!uploads/voice/.gitkeep
+npm-debug.log*
