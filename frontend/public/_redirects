@@ -1,1 +1,7 @@
+# Proxy API calls through Netlify's own domain so the refresh-token cookie
+# is same-origin from the browser's point of view (avoids third-party
+# cookie blocking between netlify.app and onrender.com). Must come before
+# the SPA catch-all below — first matching rule wins.
+/api/*  https://mobilesales.onrender.com/api/:splat  200
+
 /*  /index.html  200
