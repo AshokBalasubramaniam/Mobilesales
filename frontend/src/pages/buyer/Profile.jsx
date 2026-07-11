@@ -13,6 +13,28 @@ import Modal from '../../components/common/Modal';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 
+const ResendVerification = () => {
+  const [sending, setSending] = useState(false);
+
+  const handleResend = async () => {
+    setSending(true);
+    try {
+      await authApi.resendVerification();
+      toast.success('Verification email sent — check your inbox.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not send verification email');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <button onClick={handleResend} disabled={sending} className="mt-1 text-xs font-medium text-brand-600 hover:underline disabled:opacity-50">
+      {sending ? 'Sending…' : 'Resend verification email'}
+    </button>
+  );
+};
+
 const Profile = () => {
   const { user, isBuyer } = useAuth();
   const dispatch = useDispatch();
@@ -97,7 +119,12 @@ const Profile = () => {
         <div>
           <p className="font-semibold">{user.name}</p>
           <p className="text-sm text-gray-500">{user.email}</p>
-          {!user.isEmailVerified && <p className="mt-1 text-xs text-amber-600">Email not verified</p>}
+          {!user.isEmailVerified && (
+            <div>
+              <p className="mt-1 text-xs text-amber-600">Email not verified</p>
+              <ResendVerification />
+            </div>
+          )}
         </div>
       </div>
 
