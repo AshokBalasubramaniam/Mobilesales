@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const env = require('../config/env');
 const logger = require('../utils/logger');
+const cloudinary = require('../config/cloudinary');
 
 const UPLOAD_ROOT = path.join(__dirname, '..', '..', 'uploads');
 
@@ -28,11 +29,27 @@ const buildKey = (folder, originalName) => {
   return `${folder}/${unique}`;
 };
 
+const uploadToCloudinary = (buffer, folder) =>
+  new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'auto' },
+      (error, result) => (error ? reject(error) : resolve(result))
+    );
+    uploadStream.end(buffer);
+  });
+
 /**
- * Uploads a buffer to S3 when configured, otherwise falls back to local disk
- * under backend/uploads so the app runs without any cloud credentials.
+ * Uploads a buffer to Cloudinary when configured (preferred — persistent,
+ * CDN-backed), else S3 when configured, else falls back to local disk under
+ * backend/uploads so the app still runs without any cloud credentials (note:
+ * local disk is ephemeral on most hosts and not recommended for production).
  */
 const uploadFile = async (buffer, { folder, originalName, mimetype }) => {
+  if (env.isCloudinaryConfigured) {
+    const result = await uploadToCloudinary(buffer, folder);
+    return { url: result.secure_url, key: result.public_id, provider: 'cloudinary' };
+  }
+
   const key = buildKey(folder, originalName);
   const client = getS3();
 
@@ -60,6 +77,12 @@ const uploadFile = async (buffer, { folder, originalName, mimetype }) => {
 
 const deleteFile = async (key) => {
   if (!key) return;
+
+  if (env.isCloudinaryConfigured) {
+    await cloudinary.uploader.destroy(key).catch((err) => logger.warn(`Cloudinary delete failed for ${key}: ${err.message}`));
+    return;
+  }
+
   const client = getS3();
   if (client) {
     const { DeleteObjectCommand } = s3Commands;
