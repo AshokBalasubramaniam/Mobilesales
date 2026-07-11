@@ -21,8 +21,8 @@ const GoogleLoginButton = ({ onSuccess }) => {
         client_id: env.googleClientId,
         callback: async (response) => {
           try {
-            await dispatch(googleLogin({ idToken: response.credential })).unwrap();
-            onSuccess?.();
+            const user = await dispatch(googleLogin({ idToken: response.credential })).unwrap();
+            onSuccess?.(user);
           } catch (err) {
             toast.error(err || 'Google login failed');
           }

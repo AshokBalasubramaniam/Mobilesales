@@ -4,6 +4,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const env = require('../config/env');
+const logger = require('../utils/logger');
 const tokenService = require('../services/token.service');
 const emailService = require('../services/email.service');
 const smsService = require('../services/sms.service');
@@ -56,7 +57,11 @@ const register = asyncHandler(async (req, res) => {
   user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
   await user.save();
 
-  await emailService.sendVerificationEmail(user.email, verificationToken);
+  try {
+    await emailService.sendVerificationEmail(user.email, verificationToken);
+  } catch (err) {
+    logger.warn(`Failed to send verification email to ${user.email}: ${err.message}`);
+  }
 
   const { accessToken } = await issueSession(res, user, req);
 
@@ -212,7 +217,11 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
   req.user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
   await req.user.save();
 
-  await emailService.sendVerificationEmail(req.user.email, verificationToken);
+  try {
+    await emailService.sendVerificationEmail(req.user.email, verificationToken);
+  } catch (err) {
+    logger.warn(`Failed to send verification email to ${req.user.email}: ${err.message}`);
+  }
 
   new ApiResponse(200, null, 'Verification email sent').send(res);
 });
@@ -223,30 +232,37 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   // Always return success to avoid leaking whether an email is registered.
   if (user) {
-    const resetToken = generateToken();
-    user.passwordResetToken = hashToken(resetToken);
-    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
+    const code = generateNumericOTP(6);
+    user.passwordResetOtp = { codeHash: hashToken(code), expiresAt: new Date(Date.now() + 10 * 60 * 1000), attempts: 0 };
     await user.save();
-    await emailService.sendPasswordResetEmail(user.email, resetToken);
+    try {
+      await emailService.sendPasswordResetOtpEmail(user.email, code);
+    } catch (err) {
+      logger.warn(`Failed to send password reset email to ${user.email}: ${err.message}`);
+    }
   }
 
-  new ApiResponse(200, null, 'If that email is registered, a reset link has been sent').send(res);
+  new ApiResponse(200, null, 'If that email is registered, a reset code has been sent').send(res);
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-  const { token, password } = req.body;
-  const tokenHash = hashToken(token);
+  const { email, code, password } = req.body;
 
-  const user = await User.findOne({
-    passwordResetToken: tokenHash,
-    passwordResetExpires: { $gt: new Date() },
-  }).select('+passwordResetToken +passwordResetExpires +refreshTokens');
+  const user = await User.findOne({ email }).select(
+    '+passwordResetOtp.codeHash +passwordResetOtp.expiresAt +passwordResetOtp.attempts +refreshTokens'
+  );
+  if (!user || !user.passwordResetOtp?.codeHash) throw ApiError.badRequest('No reset code was requested for this email');
+  if (user.passwordResetOtp.expiresAt < new Date()) throw ApiError.badRequest('Reset code has expired');
+  if (user.passwordResetOtp.attempts >= 5) throw ApiError.badRequest('Too many incorrect attempts, request a new code');
 
-  if (!user) throw ApiError.badRequest('Invalid or expired reset token');
+  if (user.passwordResetOtp.codeHash !== hashToken(code)) {
+    user.passwordResetOtp.attempts += 1;
+    await user.save();
+    throw ApiError.badRequest('Incorrect reset code');
+  }
 
   user.password = password;
-  user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
+  user.passwordResetOtp = undefined;
   user.refreshTokens = []; // invalidate all existing sessions
   await user.save();
 

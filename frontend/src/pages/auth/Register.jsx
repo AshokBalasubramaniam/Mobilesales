@@ -7,7 +7,7 @@ import Select from '../../components/common/Select';
 import Button from '../../components/common/Button';
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton';
 import { register } from '../../features/auth/authSlice';
-import { PATHS } from '../../routes/paths';
+import { PATHS, getDashboardPath } from '../../routes/paths';
 
 const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', role: 'buyer' });
@@ -19,9 +19,9 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await dispatch(register(form)).unwrap();
+      const user = await dispatch(register(form)).unwrap();
       toast.success('Account created! Please check your email to verify your address.');
-      navigate(PATHS.home);
+      navigate(getDashboardPath(user.role));
     } catch (err) {
       toast.error(err || 'Registration failed');
     } finally {
@@ -66,7 +66,7 @@ const Register = () => {
         <div className="h-px flex-1 bg-gray-200 dark:bg-gray-800" /> OR <div className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
       </div>
 
-      <GoogleLoginButton onSuccess={() => navigate(PATHS.home)} />
+      <GoogleLoginButton onSuccess={(user) => navigate(getDashboardPath(user.role))} />
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{' '}

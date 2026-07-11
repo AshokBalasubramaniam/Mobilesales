@@ -67,7 +67,7 @@ const Navbar = () => {
               <NotificationsMenu />
               {isSeller && (
                 <Button size="sm" onClick={() => navigate(PATHS.sell)} className="hidden sm:inline-flex">
-                  Sell Phone
+                  Sell Your Phone
                 </Button>
               )}
               <UserMenu />
@@ -100,9 +100,11 @@ const Navbar = () => {
               className="w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-sm outline-none dark:border-gray-700 dark:bg-gray-900"
             />
           </form>
-          <Button className="w-full" onClick={() => { navigate(PATHS.sell); setMobileOpen(false); }}>
-            {isSeller ? 'Sell a Phone' : 'Start Selling'}
-          </Button>
+          {isSeller && (
+            <Button className="w-full" onClick={() => { navigate(PATHS.sell); setMobileOpen(false); }}>
+              Sell Your Phone
+            </Button>
+          )}
         </div>
       )}
     </header>

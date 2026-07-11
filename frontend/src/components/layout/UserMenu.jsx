@@ -5,10 +5,10 @@ import { LayoutDashboard, LogOut, Settings, ShoppingBag } from 'lucide-react';
 import Avatar from '../common/Avatar';
 import { useAuth } from '../../hooks/useAuth';
 import { logout } from '../../features/auth/authSlice';
-import { PATHS } from '../../routes/paths';
+import { PATHS, getDashboardPath } from '../../routes/paths';
 
 const UserMenu = () => {
-  const { user, isSeller, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const dispatch = useDispatch();
@@ -20,7 +20,7 @@ const UserMenu = () => {
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
-  const dashboardPath = isAdmin ? PATHS.admin.root : isSeller ? PATHS.seller.root : PATHS.buyer.root;
+  const dashboardPath = getDashboardPath(user.role);
 
   const handleLogout = async () => {
     await dispatch(logout());

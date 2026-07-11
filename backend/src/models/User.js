@@ -79,8 +79,11 @@ const userSchema = new mongoose.Schema(
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpires: { type: Date, select: false },
 
-    passwordResetToken: { type: String, select: false },
-    passwordResetExpires: { type: Date, select: false },
+    passwordResetOtp: {
+      codeHash: { type: String, select: false },
+      expiresAt: { type: Date, select: false },
+      attempts: { type: Number, default: 0, select: false },
+    },
 
     otp: {
       codeHash: { type: String, select: false },
@@ -138,7 +141,7 @@ userSchema.methods.toSafeJSON = function toSafeJSON() {
   delete obj.refreshTokens;
   delete obj.otp;
   delete obj.emailVerificationToken;
-  delete obj.passwordResetToken;
+  delete obj.passwordResetOtp;
   delete obj.googleId;
   return obj;
 };

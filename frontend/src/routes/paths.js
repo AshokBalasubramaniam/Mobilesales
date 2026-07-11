@@ -14,7 +14,6 @@ export const PATHS = {
   otpLogin: '/login/otp',
   verifyEmail: '/verify-email',
   forgotPassword: '/forgot-password',
-  resetPassword: '/reset-password',
 
   sell: '/sell',
   editListing: (id = ':id') => `/sell/${id}/edit`,
@@ -55,4 +54,10 @@ export const PATHS = {
     revenue: '/admin/revenue',
     analytics: '/admin/analytics',
   },
+};
+
+export const getDashboardPath = (role) => {
+  if (role === 'admin') return PATHS.admin.root;
+  if (role === 'seller') return PATHS.seller.root;
+  return PATHS.buyer.root;
 };

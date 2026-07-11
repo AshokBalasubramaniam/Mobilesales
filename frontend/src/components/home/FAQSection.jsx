@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: 'How do I sell my phone?',
-    a: 'Click "Sell Phone", fill in your device details, condition, and photos, set your price (or use our AI price suggestion), and publish — your listing goes live after a quick approval check.',
+    a: 'Click "Sell Your Phone", fill in your device details, condition, and photos, set your price (or use our AI price suggestion), and publish — your listing goes live after a quick approval check.',
   },
 ];
 

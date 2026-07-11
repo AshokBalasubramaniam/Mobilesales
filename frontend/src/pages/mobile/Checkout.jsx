@@ -10,6 +10,7 @@ import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import Button from '../../components/common/Button';
 import Spinner from '../../components/common/Spinner';
+import EmailVerificationNotice from '../../components/auth/EmailVerificationNotice';
 import { useAuth } from '../../hooks/useAuth';
 import { formatCurrency } from '../../utils/format';
 import { DELIVERY_TYPES } from '../../utils/constants';
@@ -71,6 +72,8 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
+    if (!user.isEmailVerified) return toast.error('Please verify your email before placing an order');
+
     if (deliveryType !== 'store_pickup' && (!address.line1 || !address.city || !address.state || address.pincode.length !== 6)) {
       return toast.error('Please fill in a complete delivery address');
     }
@@ -134,6 +137,7 @@ const Checkout = () => {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="mb-6 text-2xl font-bold">Checkout</h1>
+      {!user.isEmailVerified && <EmailVerificationNotice />}
 
       <div className="mb-6 flex items-center gap-4 rounded-xl border border-gray-200 p-4 dark:border-gray-800">
         <img src={mobile.images?.[0]?.url} alt="" className="size-16 rounded-lg bg-gray-100 object-cover dark:bg-gray-800" />
@@ -203,7 +207,7 @@ const Checkout = () => {
           </div>
         </div>
 
-        <Button className="w-full" size="lg" loading={placing} onClick={handlePlaceOrder}>
+        <Button className="w-full" size="lg" loading={placing} disabled={!user.isEmailVerified} onClick={handlePlaceOrder}>
           Pay {formatCurrency(total)}
         </Button>
       </div>

@@ -3,6 +3,8 @@ import { Image, Mic, Send, Square, Tag, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { chatApi } from '../../api/chat.api';
 import { getSocket } from '../../lib/socket';
+import { useAuth } from '../../hooks/useAuth';
+import EmailVerificationNotice from '../auth/EmailVerificationNotice';
 
 const ChatComposer = ({ conversationId, onOfferClick }) => {
   const [text, setText] = useState('');
@@ -11,6 +13,7 @@ const ChatComposer = ({ conversationId, onOfferClick }) => {
   const imageInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const { user } = useAuth();
 
   const emitTyping = (isTyping) => {
     getSocket()?.emit(isTyping ? 'typing:start' : 'typing:stop', { conversationId });
@@ -26,6 +29,7 @@ const ChatComposer = ({ conversationId, onOfferClick }) => {
   const handleSendText = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
+    if (!user.isEmailVerified) return toast.error('Please verify your email before sending messages');
     setSending(true);
     try {
       await chatApi.sendText(conversationId, text.trim());
@@ -41,6 +45,7 @@ const ChatComposer = ({ conversationId, onOfferClick }) => {
   const handleImageSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (!user.isEmailVerified) return toast.error('Please verify your email before sending messages');
     try {
       await chatApi.sendMedia(conversationId, file);
     } catch {
@@ -49,6 +54,7 @@ const ChatComposer = ({ conversationId, onOfferClick }) => {
   };
 
   const handleLocationShare = () => {
+    if (!user.isEmailVerified) return toast.error('Please verify your email before sending messages');
     if (!navigator.geolocation) return toast.error('Geolocation not supported');
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -68,6 +74,7 @@ const ChatComposer = ({ conversationId, onOfferClick }) => {
       setRecording(false);
       return;
     }
+    if (!user.isEmailVerified) return toast.error('Please verify your email before sending messages');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
@@ -90,6 +97,14 @@ const ChatComposer = ({ conversationId, onOfferClick }) => {
       toast.error('Microphone access denied');
     }
   };
+
+  if (!user.isEmailVerified) {
+    return (
+      <div className="border-t border-gray-200 p-3 dark:border-gray-800">
+        <EmailVerificationNotice />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSendText} className="flex items-center gap-1.5 border-t border-gray-200 p-3 dark:border-gray-800">

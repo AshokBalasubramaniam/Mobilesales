@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { requestOtp, verifyOtp } from '../../features/auth/authSlice';
+import { getDashboardPath } from '../../routes/paths';
 
 const OtpLogin = () => {
   const [phone, setPhone] = useState('');
@@ -13,6 +14,7 @@ const OtpLogin = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
@@ -32,8 +34,8 @@ const OtpLogin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await dispatch(verifyOtp({ phone, code })).unwrap();
-      navigate('/');
+      const user = await dispatch(verifyOtp({ phone, code })).unwrap();
+      navigate(location.state?.from?.pathname || getDashboardPath(user.role));
     } catch (err) {
       toast.error(err || 'Invalid OTP');
     } finally {

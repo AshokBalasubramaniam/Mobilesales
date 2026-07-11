@@ -9,6 +9,8 @@ import StepLocation from '../../components/sell/StepLocation';
 import StepMedia from '../../components/sell/StepMedia';
 import StepPricing from '../../components/sell/StepPricing';
 import Button from '../../components/common/Button';
+import EmailVerificationNotice from '../../components/auth/EmailVerificationNotice';
+import { useAuth } from '../../hooks/useAuth';
 import { mobilesApi } from '../../api/mobiles.api';
 import { PATHS } from '../../routes/paths';
 
@@ -62,6 +64,7 @@ const SellPhone = () => {
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const next = () => {
     const error = validateStep(step, form);
@@ -71,6 +74,8 @@ const SellPhone = () => {
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const handlePublish = async () => {
+    if (!user.isEmailVerified) return toast.error('Please verify your email before publishing a listing');
+
     const error = validateStep(step, form);
     if (error) return toast.error(error);
 
@@ -128,6 +133,7 @@ const SellPhone = () => {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="mb-6 text-center text-2xl font-bold">Sell Your Phone</h1>
+      {!user.isEmailVerified && <EmailVerificationNotice />}
       <WizardProgress steps={STEPS} currentStep={step} />
 
       <div className="rounded-2xl border border-gray-200 p-6 dark:border-gray-800">
@@ -143,7 +149,7 @@ const SellPhone = () => {
             Next <ChevronRight className="size-4" />
           </Button>
         ) : (
-          <Button onClick={handlePublish} loading={submitting}>
+          <Button onClick={handlePublish} loading={submitting} disabled={!user.isEmailVerified}>
             Publish Listing
           </Button>
         )}

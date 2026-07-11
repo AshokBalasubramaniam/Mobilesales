@@ -6,7 +6,7 @@ import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton';
 import { login } from '../../features/auth/authSlice';
-import { PATHS } from '../../routes/paths';
+import { PATHS, getDashboardPath } from '../../routes/paths';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -15,14 +15,14 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectAfterLogin = () => navigate(location.state?.from?.pathname || PATHS.home, { replace: true });
+  const redirectAfterLogin = (user) => navigate(location.state?.from?.pathname || getDashboardPath(user.role), { replace: true });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await dispatch(login(form)).unwrap();
-      redirectAfterLogin();
+      const user = await dispatch(login(form)).unwrap();
+      redirectAfterLogin(user);
     } catch (err) {
       toast.error(err || 'Login failed');
     } finally {

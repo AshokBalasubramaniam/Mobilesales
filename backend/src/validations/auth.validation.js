@@ -63,7 +63,8 @@ const forgotPassword = {
 
 const resetPassword = {
   body: Joi.object({
-    token: Joi.string().required(),
+    email: email().required(),
+    code: Joi.string().pattern(/^\d{6}$/).message('OTP must be a 6-digit code').required(),
     password,
   }),
 };
