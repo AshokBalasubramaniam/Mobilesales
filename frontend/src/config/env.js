@@ -6,7 +6,7 @@
 // fails to pick up the env var (which is exactly what caused the
 // cross-domain-cookie logout bug).
 export const env = {
-  apiUrl: import.meta.env.VITE_API_URL || '/api',
-  socketUrl: import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000',
-  googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+  apiUrl: import.meta.env.VITE_API_URL,
+  socketUrl: import.meta.env.VITE_SOCKET_URL ,
+  googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID 
 };
