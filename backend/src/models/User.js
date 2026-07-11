@@ -101,6 +101,7 @@ const userSchema = new mongoose.Schema(
     refreshTokens: { type: [refreshTokenSchema], select: false, default: [] },
 
     lastLoginAt: { type: Date },
+    lastSeen: { type: Date },
   },
   { timestamps: true }
 );

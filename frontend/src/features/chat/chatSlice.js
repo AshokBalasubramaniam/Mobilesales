@@ -37,6 +37,7 @@ const chatSlice = createSlice({
     messagesByConversation: {},
     typingByConversation: {},
     onlineUserIds: [],
+    lastSeenByUserId: {},
   },
   reducers: {
     setActiveConversation: (state, action) => {
@@ -60,10 +61,14 @@ const chatSlice = createSlice({
       }
     },
     presenceUpdated: (state, action) => {
-      const { userId, online } = action.payload;
+      const { userId, online, lastSeen } = action.payload;
       state.onlineUserIds = online
         ? [...new Set([...state.onlineUserIds, userId])]
         : state.onlineUserIds.filter((id) => id !== userId);
+      if (!online && lastSeen) state.lastSeenByUserId[userId] = lastSeen;
+    },
+    presenceSnapshot: (state, action) => {
+      state.onlineUserIds = action.payload;
     },
     typingUpdated: (state, action) => {
       const { conversationId, userId, isTyping } = action.payload;
@@ -99,5 +104,6 @@ const chatSlice = createSlice({
   },
 });
 
-export const { setActiveConversation, messageAppended, presenceUpdated, typingUpdated, offerStatusUpdated } = chatSlice.actions;
+export const { setActiveConversation, messageAppended, presenceUpdated, presenceSnapshot, typingUpdated, offerStatusUpdated } =
+  chatSlice.actions;
 export default chatSlice.reducer;

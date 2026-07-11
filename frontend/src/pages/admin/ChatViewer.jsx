@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Send } from 'lucide-react';
 import { chatApi } from '../../api/chat.api';
+import { getSocket } from '../../lib/socket';
 import MessageBubble from '../../components/chat/MessageBubble';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
@@ -34,6 +35,23 @@ const ChatViewer = () => {
   }, [conversationId]);
 
   useEffect(() => {
+    if (!conversationId) return undefined;
+    const socket = getSocket();
+    socket?.emit('conversation:join', conversationId);
+
+    const onMessage = (message) => {
+      if (message.conversation !== conversationId) return;
+      setMessages((prev) => (prev.some((m) => m._id === message._id) ? prev : [...prev, message]));
+    };
+    socket?.on('message:new', onMessage);
+
+    return () => {
+      socket?.off('message:new', onMessage);
+      socket?.emit('conversation:leave', conversationId);
+    };
+  }, [conversationId]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
@@ -44,7 +62,6 @@ const ChatViewer = () => {
     try {
       await chatApi.sendText(conversationId, text.trim());
       setText('');
-      await load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not send message');
     } finally {

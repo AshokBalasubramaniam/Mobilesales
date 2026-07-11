@@ -6,7 +6,7 @@ const ApiResponse = require('../utils/ApiResponse');
 const { getPagination, buildMeta } = require('../utils/pagination');
 const storageService = require('../services/storage.service');
 const notificationService = require('../services/notification.service');
-const { emitToUser, isUserOnline } = require('../sockets');
+const { emitToUser, emitToConversation, isUserOnline } = require('../sockets');
 const { MESSAGE_TYPE, OFFER_STATUS, NOTIFICATION_TYPE, ROLES } = require('../config/constants');
 
 const otherParticipant = (conversation, userId) =>
@@ -39,8 +39,14 @@ const pushMessageToConversation = async (conversation, message, senderId) => {
   });
   await conversation.save();
 
+  // Broadcast to anyone with this conversation open (including the sender's own window
+  // and admins viewing it for support) so it appears live without a refresh.
+  emitToConversation(conversation._id, 'message:new', message);
+
   await Promise.all(
     recipients.map(async (recipient) => {
+      // Recipients also get it on their personal room so unread badges/conversation
+      // list update even when they don't have this conversation open.
       emitToUser(recipient, 'message:new', message);
 
       if (!isUserOnline(recipient.toString())) {
@@ -90,7 +96,7 @@ const listMyConversations = asyncHandler(async (req, res) => {
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('participants', 'name avatar')
+      .populate('participants', 'name avatar lastSeen')
       .populate('mobile', 'brand model images price status'),
     Conversation.countDocuments(filter),
   ]);
@@ -111,7 +117,7 @@ const getConversationById = asyncHandler(async (req, res) => {
   assertAccess(conversation, req.user);
 
   await conversation.populate([
-    { path: 'participants', select: 'name avatar email role sellerProfile.isVerified' },
+    { path: 'participants', select: 'name avatar email role sellerProfile.isVerified lastSeen' },
     { path: 'mobile', select: 'brand model images price status' },
   ]);
 

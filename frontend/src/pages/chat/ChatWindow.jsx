@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { ArrowLeft, BadgeCheck } from 'lucide-react';
 import { fetchMessages, setActiveConversation } from '../../features/chat/chatSlice';
+import { formatRelativeTime } from '../../utils/format';
 import { chatApi } from '../../api/chat.api';
 import { getSocket } from '../../lib/socket';
 import { useAuth } from '../../hooks/useAuth';
@@ -29,11 +30,14 @@ const ChatWindow = () => {
   const messages = useSelector((state) => state.chat.messagesByConversation[conversationId] || []);
   const typingUserIds = useSelector((state) => state.chat.typingByConversation[conversationId] || []);
   const onlineUserIds = useSelector((state) => state.chat.onlineUserIds);
+  const lastSeenByUserId = useSelector((state) => state.chat.lastSeenByUserId);
   const [loading, setLoading] = useState(true);
   const [offerModalOpen, setOfferModalOpen] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
 
   const otherUser = conversation?.participants?.find((p) => p._id !== user._id) || conversation?.otherParticipant;
+  const isOtherOnline = onlineUserIds.includes(otherUser?._id);
+  const otherLastSeen = lastSeenByUserId[otherUser?._id] || otherUser?.lastSeen;
   const call = useVideoCall({ conversationId, otherUserId: otherUser?._id });
 
   useEffect(() => {
@@ -81,13 +85,19 @@ const ChatWindow = () => {
         <button onClick={() => navigate(PATHS.chat)} className="rounded-full p-1.5 hover:bg-gray-100 lg:hidden dark:hover:bg-gray-800">
           <ArrowLeft className="size-5" />
         </button>
-        <Avatar src={otherUser?.avatar} name={otherUser?.name} online={onlineUserIds.includes(otherUser?._id)} />
+        <Avatar src={otherUser?.avatar} name={otherUser?.name} online={isOtherOnline} />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1 truncate text-sm font-semibold">
             {otherUser?.name} {otherUser?.sellerProfile?.isVerified && <BadgeCheck className="size-3.5 text-brand-600" />}
           </p>
           <p className="text-xs text-gray-400">
-            {typingUserIds.length ? 'Typing...' : onlineUserIds.includes(otherUser?._id) ? 'Online' : 'Offline'}
+            {typingUserIds.length
+              ? 'Typing...'
+              : isOtherOnline
+                ? 'Online'
+                : otherLastSeen
+                  ? `Last seen ${formatRelativeTime(otherLastSeen)}`
+                  : 'Offline'}
           </p>
         </div>
         <CallButton onClick={call.startCall} />

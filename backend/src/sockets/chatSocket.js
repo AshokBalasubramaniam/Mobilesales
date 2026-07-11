@@ -1,6 +1,7 @@
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 const logger = require('../utils/logger');
+const { ROLES } = require('../config/constants');
 
 const conversationRoom = (conversationId) => `conversation:${conversationId}`;
 
@@ -19,7 +20,9 @@ const registerChatHandlers = (io, socket) => {
   const { userId } = socket;
 
   socket.on('conversation:join', async (conversationId, ack) => {
-    const conversation = await assertParticipant(conversationId, userId);
+    // Admins aren't listed participants but can join any conversation for support/moderation.
+    const conversation =
+      socket.role === ROLES.ADMIN ? await Conversation.findById(conversationId) : await assertParticipant(conversationId, userId);
     if (!conversation) return ack?.({ ok: false, error: 'Not a participant of this conversation' });
     socket.join(conversationRoom(conversationId));
     ack?.({ ok: true });

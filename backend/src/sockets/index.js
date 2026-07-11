@@ -10,6 +10,7 @@ let io = null;
 const onlineUsers = new Map();
 
 const userRoom = (userId) => `user:${userId}`;
+const conversationRoom = (conversationId) => `conversation:${conversationId}`;
 
 const authenticateSocket = async (socket, next) => {
   try {
@@ -21,6 +22,7 @@ const authenticateSocket = async (socket, next) => {
     if (!user || user.isBlocked) return next(new Error('Unauthorized'));
 
     socket.userId = user._id.toString();
+    socket.role = user.role;
     next();
   } catch (err) {
     next(new Error('Invalid or expired token'));
@@ -45,15 +47,25 @@ const initSocketIO = (httpServer) => {
       socket.broadcast.emit('presence:online', { userId });
     }
 
+    // Newly-connected clients only learn about presence changes that happen from now on,
+    // so hand them a snapshot of who's already online.
+    socket.emit('presence:snapshot', Array.from(onlineUsers.keys()));
+
     registerChatHandlers(io, socket);
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       const sockets = onlineUsers.get(userId);
       if (sockets) {
         sockets.delete(socket.id);
         if (sockets.size === 0) {
           onlineUsers.delete(userId);
-          io.emit('presence:offline', { userId, lastSeen: new Date() });
+          const lastSeen = new Date();
+          io.emit('presence:offline', { userId, lastSeen });
+          try {
+            await User.findByIdAndUpdate(userId, { lastSeen });
+          } catch (err) {
+            logger.warn(`Failed to persist lastSeen for user ${userId}: ${err.message}`);
+          }
         }
       }
     });
@@ -73,4 +85,9 @@ const emitToUser = (userId, event, payload) => {
   io.to(userRoom(userId.toString())).emit(event, payload);
 };
 
-module.exports = { initSocketIO, getIO, isUserOnline, emitToUser, userRoom };
+const emitToConversation = (conversationId, event, payload) => {
+  if (!io) return;
+  io.to(conversationRoom(conversationId.toString())).emit(event, payload);
+};
+
+module.exports = { initSocketIO, getIO, isUserOnline, emitToUser, emitToConversation, userRoom, conversationRoom };

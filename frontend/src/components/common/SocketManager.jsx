@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { connectSocket, disconnectSocket } from '../../lib/socket';
 import { getAccessToken } from '../../api/tokenManager';
-import { messageAppended, presenceUpdated, typingUpdated, offerStatusUpdated } from '../../features/chat/chatSlice';
+import { messageAppended, presenceUpdated, presenceSnapshot, typingUpdated, offerStatusUpdated } from '../../features/chat/chatSlice';
 import { notificationReceived } from '../../features/notifications/notificationsSlice';
 
 /** Mounted once at the app root; owns the socket lifecycle and fans server events out to Redux. */
@@ -19,7 +19,8 @@ const SocketManager = () => {
 
     socket.on('message:new', (message) => dispatch(messageAppended(message)));
     socket.on('presence:online', ({ userId }) => dispatch(presenceUpdated({ userId, online: true })));
-    socket.on('presence:offline', ({ userId }) => dispatch(presenceUpdated({ userId, online: false })));
+    socket.on('presence:offline', ({ userId, lastSeen }) => dispatch(presenceUpdated({ userId, online: false, lastSeen })));
+    socket.on('presence:snapshot', (onlineUserIds) => dispatch(presenceSnapshot(onlineUserIds)));
     socket.on('typing:start', ({ conversationId, userId }) => dispatch(typingUpdated({ conversationId, userId, isTyping: true })));
     socket.on('typing:stop', ({ conversationId, userId }) => dispatch(typingUpdated({ conversationId, userId, isTyping: false })));
     socket.on('offer:response', ({ messageId, status }) => dispatch(offerStatusUpdated({ messageId, status })));
