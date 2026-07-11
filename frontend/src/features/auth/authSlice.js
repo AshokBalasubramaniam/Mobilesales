@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authApi } from '../../api/auth.api';
 import { usersApi } from '../../api/users.api';
-import axiosClient from '../../api/axiosClient';
+import { refreshAccessToken } from '../../api/axiosClient';
 import { setAccessToken, clearAccessToken } from '../../api/tokenManager';
 
 const extractError = (err) => err.response?.data?.message || 'Something went wrong';
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const applySession = (data) => {
   if (data.accessToken) setAccessToken(data.accessToken);
@@ -56,15 +58,31 @@ export const verifyOtp = createAsyncThunk('auth/verifyOtp', async (payload, { re
   }
 });
 
+// Restores the session on page load. Uses the same deduped refreshAccessToken
+// used by the response interceptor, so a concurrent 401-triggered refresh
+// elsewhere in the app can never race this one (refresh tokens rotate on
+// use, so two concurrent calls would make one another fail). Also tolerates
+// a single transient failure (cold-start backend, brief network blip)
+// before concluding the user is actually logged out — without this, a
+// one-off hiccup on page load flashes the login screen for a session that
+// is otherwise perfectly valid.
 export const bootstrapAuth = createAsyncThunk('auth/bootstrap', async (_, { rejectWithValue }) => {
-  try {
-    const refreshRes = await axiosClient.post('/auth/refresh-token');
-    setAccessToken(refreshRes.data.data.accessToken);
+  const attempt = async () => {
+    await refreshAccessToken();
     const meRes = await authApi.me();
     return meRes.data.data;
-  } catch (err) {
-    clearAccessToken();
-    return rejectWithValue(null);
+  };
+
+  try {
+    return await attempt();
+  } catch (firstErr) {
+    await wait(800);
+    try {
+      return await attempt();
+    } catch (secondErr) {
+      clearAccessToken();
+      return rejectWithValue(null);
+    }
   }
 });
 

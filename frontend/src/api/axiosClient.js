@@ -15,7 +15,12 @@ axiosClient.interceptors.request.use((config) => {
 
 let refreshPromise = null;
 
-const refreshAccessToken = () => {
+// Exported so callers other than the response interceptor (e.g. the
+// bootstrap-on-page-load flow) share this exact in-flight promise instead of
+// firing their own independent request. Refresh tokens rotate on every use
+// (old one deleted server-side), so two concurrent refresh calls racing
+// would make the loser's token invalid — this dedup makes that impossible.
+export const refreshAccessToken = () => {
   if (!refreshPromise) {
     refreshPromise = axios
       .post(`${env.apiUrl}/auth/refresh-token`, {}, { withCredentials: true })
