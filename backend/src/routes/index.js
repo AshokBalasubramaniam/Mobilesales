@@ -15,6 +15,7 @@ router.use('/chat', require('./chat.routes'));
 router.use('/notifications', require('./notification.routes'));
 router.use('/dashboard', require('./dashboard.routes'));
 router.use('/admin', require('./admin.routes'));
+router.use('/upload', require('./upload.routes'));
 
 router.get('/health', (req, res) => res.json({ success: true, message: 'API is healthy', timestamp: new Date().toISOString() }));
 
