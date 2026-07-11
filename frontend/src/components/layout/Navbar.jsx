@@ -65,9 +65,11 @@ const Navbar = () => {
                 )}
               </Link>
               <NotificationsMenu />
-              <Button size="sm" onClick={() => navigate(PATHS.sell)} className="hidden sm:inline-flex">
-                Sell Phone
-              </Button>
+              {isSeller && (
+                <Button size="sm" onClick={() => navigate(PATHS.sell)} className="hidden sm:inline-flex">
+                  Sell Phone
+                </Button>
+              )}
               <UserMenu />
             </>
           ) : (
