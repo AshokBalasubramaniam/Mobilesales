@@ -16,7 +16,14 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-app.use(helmet());
+// Frontend and backend are intentionally served from different domains
+// (Netlify + Render). Helmet's default Cross-Origin-Resource-Policy is
+// "same-origin", which makes browsers silently refuse to render images
+// (and any other static asset) fetched from this API on a different-origin
+// page — the request succeeds (200), the image just never paints. These are
+// public marketplace listing photos, not sensitive resources, so opening
+// this up to cross-origin embedding is the correct and safe setting here.
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(
   cors({
     origin: env.clientUrl,
