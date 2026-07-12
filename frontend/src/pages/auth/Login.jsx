@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
+import { Mail, Lock, Smartphone } from 'lucide-react';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton';
@@ -32,14 +33,30 @@ const Login = () => {
 
   return (
     <div>
-      <h1 className="mb-1 text-xl font-bold">Welcome back</h1>
-      <p className="mb-6 text-sm text-gray-500">Login to continue buying and selling phones.</p>
+      <div className="relative mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/30">
+        <span className="absolute -top-1 -left-5 size-2 rounded-full bg-accent-500" />
+        <span className="absolute top-1 -right-6 size-1.5 rounded-full bg-blue-400" />
+        <span className="absolute -bottom-1 -left-6 size-1.5 rounded-full bg-fuchsia-400" />
+        <Smartphone className="size-7 text-brand-600" />
+      </div>
+      <h1 className="mb-1 text-center text-xl font-bold">Welcome back!</h1>
+      <p className="mb-6 text-center text-sm text-gray-500">Login to continue buying and selling phones.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <Input
+          label="Email"
+          type="email"
+          icon={Mail}
+          placeholder="Enter your email"
+          required
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+        />
         <Input
           label="Password"
           type="password"
+          icon={Lock}
+          placeholder="Enter your password"
           required
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -61,7 +78,7 @@ const Login = () => {
       <div className="space-y-2.5">
         <GoogleLoginButton onSuccess={redirectAfterLogin} />
         <Link to={PATHS.otpLogin}>
-          <Button variant="secondary" className="w-full">
+          <Button variant="secondary" icon={Smartphone} className="w-full">
             Login with OTP
           </Button>
         </Link>
