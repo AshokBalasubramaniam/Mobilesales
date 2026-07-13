@@ -34,7 +34,7 @@ export const usersApi = {
   addAddress: (payload: AddressPayload) => axiosClient.post<ApiResponse<Address[]>>('/users/me/addresses', payload),
   removeAddress: (addressId: string) => axiosClient.delete<ApiResponse<Address[]>>(`/users/me/addresses/${addressId}`),
   setDefaultAddress: (addressId: string) => axiosClient.patch<ApiResponse<Address[]>>(`/users/me/addresses/${addressId}/default`),
-  submitSellerVerification: (files: Record<string, File | undefined>) => {
+  submitSellerVerification: <T extends Record<string, File | null | undefined>>(files: T) => {
     const form = new FormData();
     Object.entries(files).forEach(([key, file]) => file && form.append(key, file));
     return axiosClient.post<ApiResponse<User>>('/users/seller/verification', form, {
