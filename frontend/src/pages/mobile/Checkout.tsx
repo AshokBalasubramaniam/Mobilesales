@@ -3,10 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { Tag } from 'lucide-react';
-import { mobilesApi } from '../../api/mobiles.api';
-import { ordersApi } from '../../api/orders.api';
-import { paymentsApi } from '../../api/payments.api';
-import { couponsApi, type AppliedCoupon } from '../../api/coupons.api';
+import api from '../../api/api';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import Button from '../../components/common/Button';
@@ -16,7 +13,21 @@ import { useAuth } from '../../hooks/useAuth';
 import { formatCurrency } from '../../utils/format';
 import { DELIVERY_TYPES } from '../../utils/constants';
 import { PATHS } from '../../routes/paths';
-import type { DeliveryType, Mobile } from '../../types/models';
+import type { ApiResponse } from '../../types/api';
+import type { DeliveryType, Mobile, Order } from '../../types/models';
+
+interface AppliedCoupon {
+  code: string;
+  discount: number;
+}
+
+interface RazorpayOrder {
+  razorpayOrderId: string;
+  amount: number;
+  currency: string;
+  keyId?: string;
+  isMock: boolean;
+}
 
 const DELIVERY_CHARGES: Record<DeliveryType, number> = { home_delivery: 199, local_delivery: 49, store_pickup: 0 };
 
@@ -86,7 +97,7 @@ const Checkout = () => {
 
   useEffect(() => {
     if (!mobileId) return;
-    mobilesApi.getById(mobileId).then(({ data }) => setMobile(data.data));
+    api.get<ApiResponse<Mobile>>(`/mobiles/${mobileId}`).then(({ data }) => setMobile(data.data));
     if (user?.addresses?.length) {
       const def = user.addresses.find((a) => a.isDefault) || user.addresses[0];
       setAddress({ line1: def.line1, line2: def.line2 || '', city: def.city, state: def.state, pincode: def.pincode });
@@ -105,7 +116,7 @@ const Checkout = () => {
     if (!couponCode) return;
     setApplyingCoupon(true);
     try {
-      const { data } = await couponsApi.apply(couponCode, subtotal);
+      const { data } = await api.post<ApiResponse<AppliedCoupon>>('/coupons/apply', { code: couponCode, orderAmount: subtotal });
       setCouponResult(data.data);
       toast.success(`Coupon applied! You saved ${formatCurrency(data.data.discount)}`);
     } catch (err) {
@@ -126,7 +137,7 @@ const Checkout = () => {
 
     setPlacing(true);
     try {
-      const { data: orderRes } = await ordersApi.create({
+      const { data: orderRes } = await api.post<ApiResponse<Order>>('/orders', {
         mobileId,
         deliveryType,
         deliveryAddress: deliveryType !== 'store_pickup' ? address : undefined,
@@ -134,11 +145,11 @@ const Checkout = () => {
       });
       const order = orderRes.data;
 
-      const { data: payRes } = await paymentsApi.createOrder(order._id);
+      const { data: payRes } = await api.post<ApiResponse<RazorpayOrder>>('/payments/orders', { orderId: order._id });
       const { razorpayOrderId, amount, currency, keyId, isMock } = payRes.data;
 
       if (isMock || !keyId) {
-        await paymentsApi.verify({
+        await api.post('/payments/verify', {
           orderId: order._id,
           razorpay_order_id: razorpayOrderId,
           razorpay_payment_id: `mock_pay_${Date.now()}`,
@@ -163,7 +174,7 @@ const Checkout = () => {
         description: `${mobile.brand} ${mobile.model}`,
         prefill: { name: user.name, email: user.email, contact: user.phone },
         handler: async (response) => {
-          await paymentsApi.verify({
+          await api.post('/payments/verify', {
             orderId: order._id,
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,

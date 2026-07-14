@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { Plus, Ticket, Trash2 } from 'lucide-react';
-import { couponsApi } from '../../api/coupons.api';
+import api from '../../api/api';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
@@ -11,6 +11,7 @@ import Modal from '../../components/common/Modal';
 import Spinner from '../../components/common/Spinner';
 import EmptyState from '../../components/common/EmptyState';
 import { formatCurrency, formatDate } from '../../utils/format';
+import type { ApiResponse } from '../../types/api';
 import type { Coupon, CouponDiscountType } from '../../types/models';
 
 interface CouponForm {
@@ -40,8 +41,8 @@ const Coupons = () => {
 
   const load = () => {
     setLoading(true);
-    couponsApi
-      .list()
+    api
+      .get<ApiResponse<Coupon[]>>('/coupons')
       .then(({ data }) => setCoupons(data.data))
       .finally(() => setLoading(false));
   };
@@ -52,7 +53,7 @@ const Coupons = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await couponsApi.create({
+      await api.post('/coupons', {
         ...form,
         discountValue: Number(form.discountValue),
         minOrderValue: form.minOrderValue ? Number(form.minOrderValue) : 0,
@@ -69,7 +70,7 @@ const Coupons = () => {
   };
 
   const handleDeactivate = async (id: string) => {
-    await couponsApi.remove(id);
+    await api.delete(`/coupons/${id}`);
     toast.success('Coupon deactivated');
     load();
   };

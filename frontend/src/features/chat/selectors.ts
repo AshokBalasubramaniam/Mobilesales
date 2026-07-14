@@ -1,4 +1,4 @@
-import type { RootState } from '../app/store';
+import type { RootState } from '../../app/store';
 
 export const selectConversations = (state: RootState) => state.chat.conversations;
 export const selectConversationsStatus = (state: RootState) => state.chat.conversationsStatus;

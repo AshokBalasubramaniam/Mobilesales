@@ -4,7 +4,7 @@ import { LayoutDashboard, LogOut, Settings, ShoppingBag } from 'lucide-react';
 import Avatar from '../common/Avatar';
 import { useAppDispatch } from '../../app/hooks';
 import { useAuth } from '../../hooks/useAuth';
-import { logout } from '../../features/auth/authSlice';
+import { logout } from '../../features/auth/thunks';
 import { PATHS, getDashboardPath } from '../../routes/paths';
 
 const UserMenu = () => {

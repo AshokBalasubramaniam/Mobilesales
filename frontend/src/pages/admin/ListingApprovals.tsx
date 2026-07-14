@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { BadgeCheck, ListChecks } from 'lucide-react';
-import { mobilesApi } from '../../api/mobiles.api';
+import api from '../../api/api';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Textarea from '../../components/common/Textarea';
@@ -13,7 +13,7 @@ import Pagination from '../../components/common/Pagination';
 import { formatCurrency } from '../../utils/format';
 import { PATHS } from '../../routes/paths';
 import type { Mobile } from '../../types/models';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 
 const ListingApprovals = () => {
   const [listings, setListings] = useState<Mobile[]>([]);
@@ -25,8 +25,8 @@ const ListingApprovals = () => {
 
   const load = () => {
     setLoading(true);
-    mobilesApi
-      .pendingApprovals({ page })
+    api
+      .get<ApiResponse<Mobile[]>>('/mobiles/admin/pending', { params: { page } })
       .then(({ data }) => {
         setListings(data.data);
         setMeta(data.meta);
@@ -38,7 +38,7 @@ const ListingApprovals = () => {
 
   const handleApprove = async (id: string) => {
     try {
-      await mobilesApi.approve(id);
+      await api.patch(`/mobiles/admin/${id}/approve`);
       toast.success('Listing approved');
       load();
     } catch (err) {
@@ -49,7 +49,7 @@ const ListingApprovals = () => {
   const handleReject = async () => {
     if (!rejectTarget) return;
     try {
-      await mobilesApi.reject(rejectTarget, rejectReason);
+      await api.patch(`/mobiles/admin/${rejectTarget}/reject`, { reason: rejectReason });
       toast.success('Listing rejected');
       setRejectTarget(null);
       setRejectReason('');
@@ -60,7 +60,7 @@ const ListingApprovals = () => {
   };
 
   const handleVerifyImei = async (id: string, verified: boolean) => {
-    await mobilesApi.verifyImei(id, verified);
+    await api.patch(`/mobiles/admin/${id}/verify-imei`, { verified });
     toast.success('IMEI status updated');
     load();
   };

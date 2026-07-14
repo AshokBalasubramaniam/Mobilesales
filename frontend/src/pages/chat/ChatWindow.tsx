@@ -3,16 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ArrowLeft, BadgeCheck } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { fetchMessages, setActiveConversation } from '../../features/chat/chatSlice';
+import { fetchMessages } from '../../features/chat/thunks';
+import { setActiveConversation } from '../../features/chat/slice';
 import {
   selectConversations,
   selectLastSeenByUserId,
   selectMessagesForConversation,
   selectOnlineUserIds,
   selectTypingForConversation,
-} from '../../selectors/chat.selectors';
+} from '../../features/chat/selectors';
 import { formatRelativeTime } from '../../utils/format';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
 import { getSocket } from '../../lib/socket';
 import { useAuth } from '../../hooks/useAuth';
 import { useVideoCall } from '../../hooks/useVideoCall';
@@ -79,7 +80,7 @@ const ChatWindow = () => {
   const handleRespondOffer = async (messageId: string, status: OfferStatus) => {
     if (!conversationId) return;
     try {
-      await chatApi.respondOffer(conversationId, messageId, { status });
+      await api.patch(`/chat/conversations/${conversationId}/messages/${messageId}/offer`, { status });
     } catch {
       toast.error('Could not respond to offer');
     }
@@ -89,7 +90,7 @@ const ChatWindow = () => {
     e.preventDefault();
     if (!conversationId) return;
     try {
-      await chatApi.sendOffer(conversationId, Number(offerAmount));
+      await api.post(`/chat/conversations/${conversationId}/messages/offer`, { amount: Number(offerAmount) });
       setOfferModalOpen(false);
       setOfferAmount('');
     } catch {

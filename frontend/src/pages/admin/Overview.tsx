@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Users, ListChecks, ShoppingBag, Wallet, Clock, Flag } from 'lucide-react';
-import { dashboardApi } from '../../api/dashboard.api';
-import type { AdminDashboardStats } from '../../api/dashboard.api';
+import api from '../../api/api';
+import type { AdminDashboardStats } from '../../types/dashboard';
+import type { ApiResponse } from '../../types/api';
 import StatCard from '../../components/dashboard/StatCard';
 import Spinner from '../../components/common/Spinner';
 import { formatCurrency } from '../../utils/format';
@@ -10,7 +11,7 @@ const Overview = () => {
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
 
   useEffect(() => {
-    dashboardApi.admin().then(({ data }) => setStats(data.data));
+    api.get<ApiResponse<AdminDashboardStats>>('/dashboard/admin').then(({ data }) => setStats(data.data));
   }, []);
 
   if (!stats) return <Spinner full />;

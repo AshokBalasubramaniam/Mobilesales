@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import Avatar from '../../components/common/Avatar';
 import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
@@ -19,8 +20,8 @@ const Chats = () => {
 
   useEffect(() => {
     setLoading(true);
-    chatApi
-      .listAllConversations({ page })
+    api
+      .get<ApiResponse<Conversation[]>>('/chat/conversations/admin/all', { params: { page } })
       .then(({ data }) => {
         setConversations(data.data);
         setMeta(data.meta);

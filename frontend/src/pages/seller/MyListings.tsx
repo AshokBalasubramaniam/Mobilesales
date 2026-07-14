@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Heart, ListChecks, Pencil, Plus } from 'lucide-react';
-import { mobilesApi } from '../../api/mobiles.api';
+import api from '../../api/api';
 import Badge from '../../components/common/Badge';
 import type { BadgeProps } from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -10,7 +10,7 @@ import EmptyState from '../../components/common/EmptyState';
 import Pagination from '../../components/common/Pagination';
 import { formatCurrency } from '../../utils/format';
 import { PATHS } from '../../routes/paths';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 import type { Mobile, MobileStatus } from '../../types/models';
 
 const STATUS_VARIANT: Record<MobileStatus, NonNullable<BadgeProps['variant']>> = {
@@ -42,8 +42,8 @@ const MyListings = () => {
 
   useEffect(() => {
     setLoading(true);
-    mobilesApi
-      .mine({ page, status: tab === 'all' ? undefined : tab })
+    api
+      .get<ApiResponse<Mobile[]>>('/mobiles/mine', { params: { page, status: tab === 'all' ? undefined : tab } })
       .then(({ data }) => {
         setListings(data.data);
         setMeta(data.meta);

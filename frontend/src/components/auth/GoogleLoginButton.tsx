@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useAppDispatch } from '../../app/hooks';
+import { store } from '../../app/store';
 import { env } from '../../config/env';
-import { googleLogin } from '../../features/auth/authSlice';
+import { googleLogin } from '../../features/auth/thunks';
 import type { User } from '../../types/models';
 
 // Minimal shape of the `window.google` Sign-In global we actually touch,
@@ -54,11 +55,11 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: async (response) => {
-          try {
-            const user = await dispatch(googleLogin({ idToken: response.credential })).unwrap();
+          const user = await dispatch(googleLogin({ idToken: response.credential }));
+          if (user) {
             onSuccess?.(user);
-          } catch (err) {
-            toast.error(typeof err === 'string' && err ? err : 'Google login failed');
+          } else {
+            toast.error(store.getState().auth.error || 'Google login failed');
           }
         },
       });

@@ -1,4 +1,4 @@
-import type { SalesPoint } from '../../api/dashboard.api';
+import type { SalesPoint } from '../../types/dashboard';
 import { formatCurrency } from '../../utils/format';
 
 export interface SalesBarChartProps {

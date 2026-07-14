@@ -4,8 +4,9 @@ import toast from 'react-hot-toast';
 import Input from '../common/Input';
 import Textarea from '../common/Textarea';
 import Button from '../common/Button';
-import { mobilesApi } from '../../api/mobiles.api';
-import type { PriceSuggestion } from '../../api/mobiles.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
+import type { PriceSuggestion } from '../../types/mobile';
 import { formatCurrency } from '../../utils/format';
 import type { SellPhoneForm } from './StepIdentity';
 
@@ -25,7 +26,7 @@ const StepPricing = ({ form, setForm }: StepPricingProps) => {
     if (!form.condition) return;
     setSuggesting(true);
     try {
-      const { data } = await mobilesApi.suggestPrice({
+      const { data } = await api.post<ApiResponse<PriceSuggestion>>('/mobiles/price-suggestion', {
         brand: form.brand,
         model: form.model,
         storage: Number(form.storage),

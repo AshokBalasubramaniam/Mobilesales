@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
-import { usersApi } from '../../api/users.api';
+import api from '../../api/api';
 import Avatar from '../../components/common/Avatar';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -14,7 +14,7 @@ import Spinner from '../../components/common/Spinner';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatDate } from '../../utils/format';
 import type { Role, User, VerificationStatus } from '../../types/models';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 
 interface UserFilters {
   role: Role | '';
@@ -34,8 +34,8 @@ const Users = () => {
 
   const load = () => {
     setLoading(true);
-    usersApi
-      .list({ page, role: filters.role || undefined, isBlocked: filters.isBlocked || undefined, q: debouncedQ || undefined })
+    api
+      .get<ApiResponse<User[]>>('/users', { params: { page, role: filters.role || undefined, isBlocked: filters.isBlocked || undefined, q: debouncedQ || undefined } })
       .then(({ data }) => {
         setUsers(data.data);
         setMeta(data.meta);
@@ -48,7 +48,7 @@ const Users = () => {
   const handleBlock = async () => {
     if (!blockTarget) return;
     try {
-      await usersApi.block(blockTarget._id, blockReason);
+      await api.patch(`/users/${blockTarget._id}/block`, { reason: blockReason });
       toast.success('User blocked');
       setBlockTarget(null);
       setBlockReason('');
@@ -59,14 +59,17 @@ const Users = () => {
   };
 
   const handleUnblock = async (id: string) => {
-    await usersApi.unblock(id);
+    await api.patch(`/users/${id}/unblock`);
     toast.success('User unblocked');
     load();
   };
 
   const handleVerification = async (id: string, status: Extract<VerificationStatus, 'approved' | 'rejected'>) => {
     try {
-      await usersApi.reviewSellerVerification(id, { status, rejectionReason: status === 'rejected' ? 'Documents did not meet requirements' : undefined });
+      await api.patch(`/users/${id}/seller-verification`, {
+        status,
+        rejectionReason: status === 'rejected' ? 'Documents did not meet requirements' : undefined,
+      });
       toast.success(`Seller ${status}`);
       load();
     } catch (err) {

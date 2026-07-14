@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSocket } from '../lib/socket';
-import { chatApi } from '../api/chat.api';
+import api from '../api/api';
 
 const ICE_SERVERS: RTCConfiguration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
@@ -94,7 +94,7 @@ export const useVideoCall = ({ conversationId, otherUserId }: UseVideoCallArgs) 
   const logEvent = useCallback(
     (event: string) => {
       const durationSeconds = startedAtRef.current ? Math.round((Date.now() - startedAtRef.current) / 1000) : undefined;
-      chatApi.logCallEvent(conversationId, { event, durationSeconds }).catch(() => {});
+      api.post(`/chat/conversations/${conversationId}/call-events`, { event, durationSeconds }).catch(() => {});
     },
     [conversationId]
   );

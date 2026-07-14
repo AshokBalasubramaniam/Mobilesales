@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { mobilesApi, type MobileListParams } from '../../api/mobiles.api';
+import api from '../../api/api';
 import FilterSidebar, { type MobileFilters } from '../../components/mobile/FilterSidebar';
 import ListingGrid from '../../components/mobile/ListingGrid';
 import Pagination from '../../components/common/Pagination';
@@ -9,7 +9,8 @@ import Select from '../../components/common/Select';
 import Button from '../../components/common/Button';
 import { useDebounce } from '../../hooks/useDebounce';
 import { PATHS } from '../../routes/paths';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
+import type { MobileListParams } from '../../types/mobile';
 import type { Mobile } from '../../types/models';
 
 const parseFilters = (searchParams: URLSearchParams): MobileFilters => {
@@ -39,11 +40,11 @@ const Search = () => {
 
   useEffect(() => {
     setLoading(true);
-    mobilesApi
+    api
       // The FilterSidebar's MobileFilters (URL-query-string shaped: string /
       // string[] values) is looser than the API's MobileListParams — cast at
       // this boundary rather than widening either type.
-      .list(debouncedFilters as unknown as MobileListParams)
+      .get<ApiResponse<Mobile[]>>('/mobiles', { params: debouncedFilters as unknown as MobileListParams })
       .then(({ data }) => {
         setListings(data.data);
         setMeta(data.meta ?? null);

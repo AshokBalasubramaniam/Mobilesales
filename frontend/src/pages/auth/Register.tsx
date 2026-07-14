@@ -6,7 +6,8 @@ import Select from '../../components/common/Select';
 import Button from '../../components/common/Button';
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton';
 import { useAppDispatch } from '../../app/hooks';
-import { register } from '../../features/auth/authSlice';
+import { store } from '../../app/store';
+import { register } from '../../features/auth/thunks';
 import { PATHS, getDashboardPath } from '../../routes/paths';
 import type { Role } from '../../types/models';
 
@@ -27,15 +28,14 @@ const Register = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const user = await dispatch(register(form)).unwrap();
+    const user = await dispatch(register(form));
+    if (user) {
       toast.success('Account created! Please check your email to verify your address.');
       navigate(getDashboardPath(user.role));
-    } catch (err) {
-      toast.error(typeof err === 'string' && err ? err : 'Registration failed');
-    } finally {
-      setLoading(false);
+    } else {
+      toast.error(store.getState().auth.error || 'Registration failed');
     }
+    setLoading(false);
   };
 
   return (

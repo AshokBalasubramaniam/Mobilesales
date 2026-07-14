@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { fetchHomeSections } from '../features/mobiles/mobilesSlice';
-import { fetchHomeReviews } from '../features/reviews/reviewsSlice';
-import { selectHomeSections, selectHomeSectionsStatus } from '../selectors/mobiles.selectors';
-import { selectHomeReviews } from '../selectors/reviews.selectors';
+import { fetchHomeSections } from '../features/mobiles/thunks';
+import { fetchHomeReviews } from '../features/reviews/thunks';
+import { selectHomeSections, selectHomeSectionsStatus } from '../features/mobiles/selectors';
+import { selectHomeReviews } from '../features/reviews/selectors';
 import HeroBanner from '../components/home/HeroBanner';
 import QuickFilters from '../components/home/QuickFilters';
 import HomeSection from '../components/home/HomeSection';

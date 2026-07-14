@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Wallet, TrendingDown, TrendingUp, Clock } from 'lucide-react';
-import { adminApi } from '../../api/dashboard.api';
-import type { RevenueStats } from '../../api/dashboard.api';
+import api from '../../api/api';
+import type { RevenueStats } from '../../types/dashboard';
 import StatCard from '../../components/dashboard/StatCard';
 import Spinner from '../../components/common/Spinner';
 import { formatCurrency } from '../../utils/format';
+import type { ApiResponse } from '../../types/api';
 
 const Revenue = () => {
   const [data, setData] = useState<RevenueStats | null>(null);
 
   useEffect(() => {
-    adminApi.revenue().then(({ data }) => setData(data.data));
+    api.get<ApiResponse<RevenueStats>>('/admin/revenue').then(({ data }) => setData(data.data));
   }, []);
 
   if (!data) return <Spinner full />;

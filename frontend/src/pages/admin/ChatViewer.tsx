@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { ArrowLeft, Send } from 'lucide-react';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import { getSocket } from '../../lib/socket';
 import MessageBubble from '../../components/chat/MessageBubble';
 import Avatar from '../../components/common/Avatar';
@@ -24,7 +25,10 @@ const ChatViewer = () => {
   const [sending, setSending] = useState(false);
 
   const load = () =>
-    Promise.all([chatApi.getConversation(conversationId as string), chatApi.getMessages(conversationId as string, { limit: 100 })]).then(
+    Promise.all([
+      api.get<ApiResponse<Conversation>>(`/chat/conversations/${conversationId}`),
+      api.get<ApiResponse<Message[]>>(`/chat/conversations/${conversationId}/messages`, { params: { limit: 100 } }),
+    ]).then(
       ([convRes, msgRes]) => {
         setConversation(convRes.data.data);
         setMessages(msgRes.data.data);
@@ -62,7 +66,7 @@ const ChatViewer = () => {
     if (!text.trim() || !conversationId) return;
     setSending(true);
     try {
-      await chatApi.sendText(conversationId, text.trim());
+      await api.post(`/chat/conversations/${conversationId}/messages/text`, { content: text.trim() });
       setText('');
     } catch (err) {
       toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not send message');

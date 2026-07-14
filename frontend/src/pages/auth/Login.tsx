@@ -6,7 +6,8 @@ import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import GoogleLoginButton from '../../components/auth/GoogleLoginButton';
 import { useAppDispatch } from '../../app/hooks';
-import { login } from '../../features/auth/authSlice';
+import { store } from '../../app/store';
+import { login } from '../../features/auth/thunks';
 import { PATHS, getDashboardPath } from '../../routes/paths';
 import type { User } from '../../types/models';
 
@@ -27,14 +28,13 @@ const Login = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const user = await dispatch(login(form)).unwrap();
+    const user = await dispatch(login(form));
+    if (user) {
       redirectAfterLogin(user);
-    } catch (err) {
-      toast.error(typeof err === 'string' && err ? err : 'Login failed');
-    } finally {
-      setLoading(false);
+    } else {
+      toast.error(store.getState().auth.error || 'Login failed');
     }
+    setLoading(false);
   };
 
   return (

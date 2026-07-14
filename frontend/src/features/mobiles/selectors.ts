@@ -1,4 +1,4 @@
-import type { RootState } from '../app/store';
+import type { RootState } from '../../app/store';
 
 export const selectHomeSections = (state: RootState) => state.mobiles.homeSections;
 export const selectHomeSectionsStatus = (state: RootState) => state.mobiles.homeSectionsStatus;

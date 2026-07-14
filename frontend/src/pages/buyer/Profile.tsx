@@ -5,9 +5,10 @@ import { isAxiosError } from 'axios';
 import { Camera, MapPin, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useAppDispatch } from '../../app/hooks';
-import { updateProfileThunk } from '../../features/auth/authSlice';
-import { usersApi } from '../../api/users.api';
-import { authApi } from '../../api/auth.api';
+import { store } from '../../app/store';
+import { updateProfileThunk } from '../../features/auth/thunks';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Avatar from '../../components/common/Avatar';
@@ -21,7 +22,7 @@ const ResendVerification = () => {
   const handleResend = async () => {
     setSending(true);
     try {
-      await authApi.resendVerification();
+      await api.post('/auth/resend-verification');
       toast.success('Verification email sent — check your inbox.');
     } catch (err) {
       toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not send verification email');
@@ -62,14 +63,13 @@ const Profile = () => {
   const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    try {
-      await dispatch(updateProfileThunk(form)).unwrap();
+    const user = await dispatch(updateProfileThunk(form));
+    if (user) {
       toast.success('Profile updated');
-    } catch (err) {
-      toast.error((typeof err === 'string' && err) || 'Could not update profile');
-    } finally {
-      setSaving(false);
+    } else {
+      toast.error(store.getState().auth.error || 'Could not update profile');
     }
+    setSaving(false);
   };
 
   const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +77,9 @@ const Profile = () => {
     if (!file) return;
     setAvatarUploading(true);
     try {
-      await usersApi.uploadAvatar(file);
+      const avatarForm = new FormData();
+      avatarForm.append('avatar', file);
+      await api.post('/users/me/avatar', avatarForm, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.success('Avatar updated — refresh to see changes');
     } catch {
       toast.error('Could not upload avatar');
@@ -89,7 +91,7 @@ const Profile = () => {
   const handleAddAddress = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await usersApi.addAddress(newAddress);
+      const { data } = await api.post<ApiResponse<Address[]>>('/users/me/addresses', newAddress);
       setAddresses(data.data);
       setAddressModalOpen(false);
       setNewAddress({ label: 'Home', line1: '', city: '', state: '', pincode: '' });
@@ -100,7 +102,7 @@ const Profile = () => {
   };
 
   const handleRemoveAddress = async (id: string) => {
-    const { data } = await usersApi.removeAddress(id);
+    const { data } = await api.delete<ApiResponse<Address[]>>(`/users/me/addresses/${id}`);
     setAddresses(data.data);
   };
 
@@ -108,7 +110,7 @@ const Profile = () => {
     e.preventDefault();
     setChangingPassword(true);
     try {
-      await authApi.changePassword(passwordForm);
+      await api.post('/auth/change-password', passwordForm);
       toast.success('Password changed');
       setPasswordForm({ currentPassword: '', newPassword: '' });
     } catch (err) {

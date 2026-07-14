@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Wallet, ShoppingBag } from 'lucide-react';
-import { dashboardApi, type SellerDashboardStats } from '../../api/dashboard.api';
-import { paymentsApi } from '../../api/payments.api';
+import api from '../../api/api';
+import type { SellerDashboardStats } from '../../types/dashboard';
 import StatCard from '../../components/dashboard/StatCard';
 import Spinner from '../../components/common/Spinner';
 import EmptyState from '../../components/common/EmptyState';
 import Badge from '../../components/common/Badge';
 import { formatCurrency, formatDate } from '../../utils/format';
+import type { ApiResponse } from '../../types/api';
 import type { Payment } from '../../types/models';
 
 // The /payments/my endpoint populates `order` with { orderNumber, pricing, orderStatus }
@@ -22,7 +23,7 @@ const Earnings = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([dashboardApi.seller(), paymentsApi.myPayments()])
+    Promise.all([api.get<ApiResponse<SellerDashboardStats>>('/dashboard/seller'), api.get<ApiResponse<Payment[]>>('/payments/my')])
       .then(([statsRes, paymentsRes]) => {
         setStats(statsRes.data.data);
         setPayments(paymentsRes.data.data);

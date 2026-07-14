@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { Gavel } from 'lucide-react';
-import { reportsApi } from '../../api/reports.api';
+import api from '../../api/api';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
@@ -14,7 +14,7 @@ import Pagination from '../../components/common/Pagination';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { PATHS } from '../../routes/paths';
 import type { Dispute, DisputeStatus, Order, OrderPricing } from '../../types/models';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 import type { BadgeProps } from '../../components/common/Badge';
 
 const STATUS_VARIANT: Record<DisputeStatus, NonNullable<BadgeProps['variant']>> = {
@@ -34,8 +34,8 @@ const Disputes = () => {
 
   const load = () => {
     setLoading(true);
-    reportsApi
-      .listDisputes({ page })
+    api
+      .get<ApiResponse<Dispute[]>>('/reports/disputes', { params: { page } })
       .then(({ data }) => {
         setDisputes(data.data);
         setMeta(data.meta);
@@ -48,7 +48,7 @@ const Disputes = () => {
   const handleResolve = async (status: 'resolved' | 'rejected') => {
     if (!resolveTarget) return;
     try {
-      await reportsApi.resolveDispute(resolveTarget._id, { status, resolution });
+      await api.patch(`/reports/disputes/${resolveTarget._id}/resolve`, { status, resolution });
       toast.success('Dispute updated');
       setResolveTarget(null);
       setResolution('');

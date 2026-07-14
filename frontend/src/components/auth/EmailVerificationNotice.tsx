@@ -2,7 +2,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { MailWarning } from 'lucide-react';
-import { authApi } from '../../api/auth.api';
+import api from '../../api/api';
 import Button from '../common/Button';
 
 export interface EmailVerificationNoticeProps {
@@ -17,7 +17,7 @@ const EmailVerificationNotice = ({ fullPage = false }: EmailVerificationNoticePr
   const handleResend = async () => {
     setSending(true);
     try {
-      await authApi.resendVerification();
+      await api.post('/auth/resend-verification');
       toast.success('Verification email sent — check your inbox.');
     } catch (err) {
       toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not send verification email');

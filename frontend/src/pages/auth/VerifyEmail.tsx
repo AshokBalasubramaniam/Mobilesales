@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import { authApi } from '../../api/auth.api';
+import api from '../../api/api';
 import Spinner from '../../components/common/Spinner';
 import { PATHS } from '../../routes/paths';
 
@@ -14,8 +14,8 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     if (!token) return setStatus('error');
-    authApi
-      .verifyEmail(token)
+    api
+      .post('/auth/verify-email', { token })
       .then(() => setStatus('success'))
       .catch(() => setStatus('error'));
   }, [token]);

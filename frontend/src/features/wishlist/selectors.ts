@@ -1,4 +1,4 @@
-import type { RootState } from '../app/store';
+import type { RootState } from '../../app/store';
 
 export const selectWishlistItems = (state: RootState) => state.wishlist.items;
 export const selectWishlistIds = (state: RootState) => state.wishlist.ids;

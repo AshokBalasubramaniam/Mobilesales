@@ -12,9 +12,9 @@ import {
   type OfferStatusUpdatedPayload,
   type PresenceUpdatedPayload,
   type TypingUpdatedPayload,
-} from '../../features/chat/chatSlice';
-import { notificationReceived } from '../../features/notifications/notificationsSlice';
-import { selectBootstrapped, selectUser } from '../../selectors/auth.selectors';
+} from '../../features/chat/slice';
+import { notificationReceived } from '../../features/notifications/slice';
+import { selectBootstrapped, selectUser } from '../../features/auth/selectors';
 import type { Message, Notification } from '../../types/models';
 
 /** Mounted once at the app root; owns the socket lifecycle and fans server events out to Redux. */

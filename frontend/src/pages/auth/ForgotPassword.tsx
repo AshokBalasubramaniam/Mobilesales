@@ -5,7 +5,7 @@ import { isAxiosError } from 'axios';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { authApi } from '../../api/auth.api';
+import api from '../../api/api';
 import { PATHS } from '../../routes/paths';
 
 const ForgotPassword = () => {
@@ -21,7 +21,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setSendingCode(true);
     try {
-      await authApi.forgotPassword(email);
+      await api.post('/auth/forgot-password', { email });
       toast.success("If that email is registered, we've sent a reset code to it.");
       setOtpModalOpen(true);
     } catch (err) {
@@ -35,7 +35,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setResetting(true);
     try {
-      await authApi.resetPassword({ email, code, password });
+      await api.post('/auth/reset-password', { email, code, password });
       toast.success('Password reset! Please login.');
       navigate(PATHS.login);
     } catch (err) {

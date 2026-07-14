@@ -7,8 +7,8 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
   deleteNotification,
-} from '../../features/notifications/notificationsSlice';
-import { selectNotificationItems, selectNotificationsStatus, selectUnreadNotificationsCount } from '../../selectors/notifications.selectors';
+} from '../../features/notifications/thunks';
+import { selectNotificationItems, selectNotificationsStatus, selectUnreadNotificationsCount } from '../../features/notifications/selectors';
 import EmptyState from '../../components/common/EmptyState';
 import Spinner from '../../components/common/Spinner';
 import Button from '../../components/common/Button';

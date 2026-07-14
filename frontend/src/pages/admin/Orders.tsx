@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
-import { ordersApi } from '../../api/orders.api';
+import api from '../../api/api';
 import Badge from '../../components/common/Badge';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
@@ -11,7 +11,7 @@ import { formatCurrency, formatDate } from '../../utils/format';
 import { ORDER_STATUS_LABELS } from '../../utils/constants';
 import { PATHS } from '../../routes/paths';
 import type { Order, OrderStatus } from '../../types/models';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 import type { BadgeProps } from '../../components/common/Badge';
 
 const STATUS_VARIANT: Partial<Record<OrderStatus, NonNullable<BadgeProps['variant']>>> = {
@@ -31,8 +31,8 @@ const Orders = () => {
 
   useEffect(() => {
     setLoading(true);
-    ordersApi
-      .listAll({ page, orderStatus: status || undefined })
+    api
+      .get<ApiResponse<Order[]>>('/orders/admin/all', { params: { page, orderStatus: status || undefined } })
       .then(({ data }) => {
         setOrders(data.data);
         setMeta(data.meta);

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Bell, CheckCheck } from 'lucide-react';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from '../../features/notifications/notificationsSlice';
-import { selectNotificationItems, selectUnreadNotificationsCount, selectNotificationsStatus } from '../../selectors/notifications.selectors';
+import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from '../../features/notifications/thunks';
+import { selectNotificationItems, selectUnreadNotificationsCount, selectNotificationsStatus } from '../../features/notifications/selectors';
 import { formatRelativeTime } from '../../utils/format';
 
 const NotificationsMenu = () => {

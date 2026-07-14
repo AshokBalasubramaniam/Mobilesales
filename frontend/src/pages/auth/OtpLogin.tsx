@@ -4,7 +4,8 @@ import toast from 'react-hot-toast';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { useAppDispatch } from '../../app/hooks';
-import { requestOtp, verifyOtp } from '../../features/auth/authSlice';
+import { store } from '../../app/store';
+import { requestOtp, verifyOtp } from '../../features/auth/thunks';
 import { getDashboardPath } from '../../routes/paths';
 
 type OtpStep = 'phone' | 'otp';
@@ -21,28 +22,26 @@ const OtpLogin = () => {
   const handleRequestOtp = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      await dispatch(requestOtp(phone)).unwrap();
+    const sentPhone = await dispatch(requestOtp(phone));
+    if (sentPhone) {
       toast.success('OTP sent to your phone');
       setStep('otp');
-    } catch (err) {
-      toast.error(typeof err === 'string' && err ? err : 'Could not send OTP');
-    } finally {
-      setLoading(false);
+    } else {
+      toast.error(store.getState().auth.error || 'Could not send OTP');
     }
+    setLoading(false);
   };
 
   const handleVerifyOtp = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const user = await dispatch(verifyOtp({ phone, code })).unwrap();
+    const user = await dispatch(verifyOtp({ phone, code }));
+    if (user) {
       navigate(location.state?.from?.pathname || getDashboardPath(user.role));
-    } catch (err) {
-      toast.error(typeof err === 'string' && err ? err : 'Invalid OTP');
-    } finally {
-      setLoading(false);
+    } else {
+      toast.error(store.getState().auth.error || 'Invalid OTP');
     }
+    setLoading(false);
   };
 
   return (

@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Wallet, ShoppingBag, Eye, Heart, ListChecks, Clock, MessageCircle, Plus } from 'lucide-react';
-import { dashboardApi, type SellerDashboardStats } from '../../api/dashboard.api';
+import api from '../../api/api';
+import type { SellerDashboardStats } from '../../types/dashboard';
 import StatCard from '../../components/dashboard/StatCard';
 import Spinner from '../../components/common/Spinner';
 import Button from '../../components/common/Button';
 import { formatCurrency } from '../../utils/format';
 import { PATHS } from '../../routes/paths';
+import type { ApiResponse } from '../../types/api';
 
 const Overview = () => {
   const [stats, setStats] = useState<SellerDashboardStats | null>(null);
 
   useEffect(() => {
-    dashboardApi.seller().then(({ data }) => setStats(data.data));
+    api.get<ApiResponse<SellerDashboardStats>>('/dashboard/seller').then(({ data }) => setStats(data.data));
   }, []);
 
   if (!stats) return <Spinner full />;

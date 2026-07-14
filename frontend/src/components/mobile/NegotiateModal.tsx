@@ -5,7 +5,8 @@ import { isAxiosError } from 'axios';
 import Modal from '../common/Modal';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import { formatCurrency } from '../../utils/format';
 import { PATHS } from '../../routes/paths';
 import type { Mobile } from '../../types/models';
@@ -26,9 +27,9 @@ const NegotiateModal = ({ open, onClose, mobile }: NegotiateModalProps) => {
     setLoading(true);
     try {
       const sellerId = typeof mobile.seller === 'string' ? mobile.seller : mobile.seller._id;
-      const { data } = await chatApi.startConversation({ recipientId: sellerId, mobileId: mobile._id });
+      const { data } = await api.post<ApiResponse<{ _id: string }>>('/chat/conversations', { recipientId: sellerId, mobileId: mobile._id });
       const conversationId = data.data._id;
-      await chatApi.sendOffer(conversationId, Number(amount));
+      await api.post(`/chat/conversations/${conversationId}/messages/offer`, { amount: Number(amount) });
       toast.success('Offer sent to the seller');
       onClose();
       navigate(PATHS.chatConversation(conversationId));

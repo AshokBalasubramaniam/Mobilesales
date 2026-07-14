@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
-import { ordersApi } from '../../api/orders.api';
+import api from '../../api/api';
 import OrderListItem from '../../components/order/OrderListItem';
 import Pagination from '../../components/common/Pagination';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
 import EmptyState from '../../components/common/EmptyState';
 import { ORDER_STATUS_LABELS } from '../../utils/constants';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 import type { Order, OrderStatus } from '../../types/models';
 
 const Orders = () => {
@@ -19,8 +19,8 @@ const Orders = () => {
 
   useEffect(() => {
     setLoading(true);
-    ordersApi
-      .myOrdersAsSeller({ page, orderStatus: status || undefined })
+    api
+      .get<ApiResponse<Order[]>>('/orders/selling', { params: { page, orderStatus: status || undefined } })
       .then(({ data }) => {
         setOrders(data.data);
         setMeta(data.meta);

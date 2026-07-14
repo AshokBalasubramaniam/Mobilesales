@@ -6,7 +6,7 @@ import Modal from './Modal';
 import Input from './Input';
 import Textarea from './Textarea';
 import Button from './Button';
-import { reportsApi } from '../../api/reports.api';
+import api from '../../api/api';
 import { useAuth } from '../../hooks/useAuth';
 import type { ReportType } from '../../types/models';
 
@@ -27,7 +27,7 @@ const ReportButton = ({ reportType, targetId, label = 'Report' }: ReportButtonPr
     e.preventDefault();
     setSubmitting(true);
     try {
-      await reportsApi.create({ reportType, targetId, reason, description });
+      await api.post('/reports', { reportType, targetId, reason, description });
       toast.success('Report submitted — our team will review it');
       setOpen(false);
       setReason('');

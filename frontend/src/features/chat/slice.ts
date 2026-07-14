@@ -1,52 +1,5 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import { isAxiosError } from 'axios';
-import { chatApi, type StartConversationPayload } from '../../api/chat.api';
-import type { PaginationParams } from '../../types/api';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Conversation, Message, OfferStatus } from '../../types/models';
-
-const extractError = (err: unknown, fallback: string): string =>
-  isAxiosError<{ message?: string }>(err) ? err.response?.data?.message ?? fallback : fallback;
-
-export const fetchConversations = createAsyncThunk<Conversation[], PaginationParams | undefined, { rejectValue: string }>(
-  'chat/fetchConversations',
-  async (params, { rejectWithValue }) => {
-    try {
-      const { data } = await chatApi.listConversations(params);
-      return data.data;
-    } catch (err) {
-      return rejectWithValue(extractError(err, 'Could not load conversations'));
-    }
-  }
-);
-
-export const startConversation = createAsyncThunk<Conversation, StartConversationPayload, { rejectValue: string }>(
-  'chat/startConversation',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const { data } = await chatApi.startConversation(payload);
-      return data.data;
-    } catch (err) {
-      return rejectWithValue(extractError(err, 'Could not start conversation'));
-    }
-  }
-);
-
-export interface FetchMessagesArg {
-  conversationId: string;
-  params?: PaginationParams;
-}
-
-export const fetchMessages = createAsyncThunk<{ conversationId: string; messages: Message[] }, FetchMessagesArg, { rejectValue: string }>(
-  'chat/fetchMessages',
-  async ({ conversationId, params }, { rejectWithValue }) => {
-    try {
-      const { data } = await chatApi.getMessages(conversationId, params);
-      return { conversationId, messages: data.data };
-    } catch (err) {
-      return rejectWithValue(extractError(err, 'Could not load messages'));
-    }
-  }
-);
 
 export interface PresenceUpdatedPayload {
   userId: string;
@@ -63,6 +16,11 @@ export interface TypingUpdatedPayload {
 export interface OfferStatusUpdatedPayload {
   messageId: string;
   status: OfferStatus;
+}
+
+export interface MessagesFetchedPayload {
+  conversationId: string;
+  messages: Message[];
 }
 
 export interface ChatState {
@@ -129,26 +87,29 @@ const chatSlice = createSlice({
         if (msg?.offer) msg.offer.status = status;
       });
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchConversations.pending, (state) => {
-        state.conversationsStatus = 'loading';
-      })
-      .addCase(fetchConversations.fulfilled, (state, action) => {
-        state.conversations = action.payload;
-        state.conversationsStatus = 'succeeded';
-      })
-      .addCase(fetchMessages.fulfilled, (state, action) => {
-        state.messagesByConversation[action.payload.conversationId] = action.payload.messages;
-      })
-      .addCase(startConversation.fulfilled, (state, action) => {
-        const exists = state.conversations.some((c) => c._id === action.payload._id);
-        if (!exists) state.conversations.unshift(action.payload);
-      });
+
+    conversationsRequest: (state) => {
+      state.conversationsStatus = 'loading';
+    },
+    conversationsSuccess: (state, action: PayloadAction<Conversation[]>) => {
+      state.conversations = action.payload;
+      state.conversationsStatus = 'succeeded';
+    },
+    messagesFetched: (state, action: PayloadAction<MessagesFetchedPayload>) => {
+      state.messagesByConversation[action.payload.conversationId] = action.payload.messages;
+    },
   },
 });
 
-export const { setActiveConversation, messageAppended, presenceUpdated, presenceSnapshot, typingUpdated, offerStatusUpdated } =
-  chatSlice.actions;
+export const {
+  setActiveConversation,
+  messageAppended,
+  presenceUpdated,
+  presenceSnapshot,
+  typingUpdated,
+  offerStatusUpdated,
+  conversationsRequest,
+  conversationsSuccess,
+  messagesFetched,
+} = chatSlice.actions;
 export default chatSlice.reducer;

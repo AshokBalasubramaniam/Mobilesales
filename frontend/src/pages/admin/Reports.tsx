@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { Flag } from 'lucide-react';
-import { reportsApi } from '../../api/reports.api';
+import api from '../../api/api';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Select from '../../components/common/Select';
@@ -11,7 +11,7 @@ import EmptyState from '../../components/common/EmptyState';
 import Pagination from '../../components/common/Pagination';
 import { formatDate } from '../../utils/format';
 import type { Report, ReportStatus } from '../../types/models';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 import type { BadgeProps } from '../../components/common/Badge';
 
 const STATUS_VARIANT: Record<ReportStatus, NonNullable<BadgeProps['variant']>> = {
@@ -30,8 +30,8 @@ const Reports = () => {
 
   const load = () => {
     setLoading(true);
-    reportsApi
-      .list({ page, status: status || undefined })
+    api
+      .get<ApiResponse<Report[]>>('/reports', { params: { page, status: status || undefined } })
       .then(({ data }) => {
         setReports(data.data);
         setMeta(data.meta);
@@ -43,7 +43,7 @@ const Reports = () => {
 
   const handleResolve = async (id: string, newStatus: 'resolved' | 'dismissed') => {
     try {
-      await reportsApi.resolve(id, { status: newStatus });
+      await api.patch(`/reports/${id}/resolve`, { status: newStatus });
       toast.success('Report updated');
       load();
     } catch (err) {

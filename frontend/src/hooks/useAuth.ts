@@ -1,5 +1,5 @@
 import { useAppSelector } from '../app/hooks';
-import { selectAuthError, selectAuthStatus, selectBootstrapped, selectUser } from '../selectors/auth.selectors';
+import { selectAuthError, selectAuthStatus, selectBootstrapped, selectUser } from '../features/auth/selectors';
 
 export const useAuth = () => {
   const user = useAppSelector(selectUser);

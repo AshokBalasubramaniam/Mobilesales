@@ -9,7 +9,8 @@ import Textarea from '../../components/common/Textarea';
 import Button from '../../components/common/Button';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Spinner from '../../components/common/Spinner';
-import { mobilesApi } from '../../api/mobiles.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import { MOBILE_CONDITIONS } from '../../utils/constants';
 import { PATHS } from '../../routes/paths';
 import type { Mobile } from '../../types/models';
@@ -34,7 +35,7 @@ const EditListing = () => {
 
   useEffect(() => {
     if (!id) return;
-    mobilesApi.getById(id).then(({ data }) => {
+    api.get<ApiResponse<Mobile>>(`/mobiles/${id}`).then(({ data }) => {
       const m = data.data;
       setMobile(m);
       setForm({
@@ -53,7 +54,7 @@ const EditListing = () => {
     if (!id || !form || !form.condition) return;
     setSaving(true);
     try {
-      await mobilesApi.update(id, {
+      await api.patch(`/mobiles/${id}`, {
         price: Number(form.price),
         mrp: form.mrp ? Number(form.mrp) : undefined,
         negotiable: form.negotiable,
@@ -61,7 +62,11 @@ const EditListing = () => {
         batteryHealth: Number(form.batteryHealth),
         description: form.description,
       });
-      if (newPhotos.length) await mobilesApi.uploadImages(id, newPhotos);
+      if (newPhotos.length) {
+        const imagesForm = new FormData();
+        newPhotos.forEach((f) => imagesForm.append('images', f));
+        await api.post(`/mobiles/${id}/images`, imagesForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
       toast.success('Listing updated — resubmitted for approval');
       navigate(PATHS.seller.listings);
     } catch (err) {
@@ -75,7 +80,7 @@ const EditListing = () => {
     if (!id) return;
     setDeleting(true);
     try {
-      await mobilesApi.remove(id);
+      await api.delete(`/mobiles/${id}`);
       toast.success('Listing removed');
       navigate(PATHS.seller.listings);
     } catch (err) {

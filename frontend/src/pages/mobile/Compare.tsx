@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { mobilesApi } from '../../api/mobiles.api';
+import api from '../../api/api';
 import Spinner from '../../components/common/Spinner';
 import EmptyState from '../../components/common/EmptyState';
 import { formatCurrency } from '../../utils/format';
 import { PATHS } from '../../routes/paths';
+import type { ApiResponse } from '../../types/api';
 import type { Mobile, User } from '../../types/models';
 
 // The list/detail endpoints populate `seller` with ratingAvg (see
@@ -52,7 +53,7 @@ const Compare = () => {
       return;
     }
     setLoading(true);
-    Promise.all(ids.map((id) => mobilesApi.getById(id).then((r) => r.data.data).catch(() => null)))
+    Promise.all(ids.map((id) => api.get<ApiResponse<Mobile>>(`/mobiles/${id}`).then((r) => r.data.data).catch(() => null)))
       .then((results) => setMobiles(results.filter((m): m is Mobile => m !== null)))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps

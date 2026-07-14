@@ -8,12 +8,13 @@ declare module 'axios' {
   }
 }
 
-const axiosClient = axios.create({
+const api = axios.create({
   baseURL: env.apiUrl,
   withCredentials: true,
 });
 
-axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+// Request interceptor
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
@@ -37,7 +38,8 @@ export const refreshAccessToken = (): Promise<string> => {
   return refreshPromise;
 };
 
-axiosClient.interceptors.response.use(
+// Response interceptor
+api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const { config, response } = error;
@@ -48,7 +50,7 @@ axiosClient.interceptors.response.use(
       try {
         const token = await refreshAccessToken();
         config.headers.Authorization = `Bearer ${token}`;
-        return axiosClient(config);
+        return api(config);
       } catch (refreshError) {
         clearAccessToken();
         notifyUnauthorized();
@@ -60,4 +62,4 @@ axiosClient.interceptors.response.use(
   }
 );
 
-export default axiosClient;
+export default api;

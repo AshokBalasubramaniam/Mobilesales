@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { adminApi } from '../../api/dashboard.api';
-import type { SalesAnalytics } from '../../api/dashboard.api';
+import api from '../../api/api';
+import type { SalesAnalytics } from '../../types/dashboard';
+import type { ApiResponse } from '../../types/api';
 import SalesBarChart from '../../components/dashboard/SalesBarChart';
 import Spinner from '../../components/common/Spinner';
 
@@ -8,7 +9,7 @@ const Analytics = () => {
   const [data, setData] = useState<SalesAnalytics | null>(null);
 
   useEffect(() => {
-    adminApi.salesAnalytics().then(({ data }) => setData(data.data));
+    api.get<ApiResponse<SalesAnalytics>>('/admin/analytics/sales').then(({ data }) => setData(data.data));
   }, []);
 
   if (!data) return <Spinner full />;

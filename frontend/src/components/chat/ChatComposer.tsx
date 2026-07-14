@@ -1,7 +1,7 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Image, Mic, Send, Square, Tag, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
 import { getSocket } from '../../lib/socket';
 import { useAuth } from '../../hooks/useAuth';
 import EmailVerificationNotice from '../auth/EmailVerificationNotice';
@@ -37,7 +37,7 @@ const ChatComposer = ({ conversationId, onOfferClick }: ChatComposerProps) => {
     if (!user?.isEmailVerified) return toast.error('Please verify your email before sending messages');
     setSending(true);
     try {
-      await chatApi.sendText(conversationId, text.trim());
+      await api.post(`/chat/conversations/${conversationId}/messages/text`, { content: text.trim() });
       setText('');
       emitTyping(false);
     } catch {
@@ -52,7 +52,9 @@ const ChatComposer = ({ conversationId, onOfferClick }: ChatComposerProps) => {
     if (!file) return;
     if (!user?.isEmailVerified) return toast.error('Please verify your email before sending messages');
     try {
-      await chatApi.sendMedia(conversationId, file);
+      const mediaForm = new FormData();
+      mediaForm.append('file', file);
+      await api.post(`/chat/conversations/${conversationId}/messages/media`, mediaForm, { headers: { 'Content-Type': 'multipart/form-data' } });
     } catch {
       toast.error('Could not send image');
     }
@@ -64,7 +66,7 @@ const ChatComposer = ({ conversationId, onOfferClick }: ChatComposerProps) => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
-          await chatApi.sendLocation(conversationId, { lat: pos.coords.latitude, lng: pos.coords.longitude });
+          await api.post(`/chat/conversations/${conversationId}/messages/location`, { lat: pos.coords.latitude, lng: pos.coords.longitude });
         } catch {
           toast.error('Could not share location');
         }
@@ -90,7 +92,9 @@ const ChatComposer = ({ conversationId, onOfferClick }: ChatComposerProps) => {
         const blob = new Blob(chunks, { type: 'audio/webm' });
         const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
         try {
-          await chatApi.sendMedia(conversationId, file);
+          const mediaForm = new FormData();
+      mediaForm.append('file', file);
+      await api.post(`/chat/conversations/${conversationId}/messages/media`, mediaForm, { headers: { 'Content-Type': 'multipart/form-data' } });
         } catch {
           toast.error('Could not send voice message');
         }

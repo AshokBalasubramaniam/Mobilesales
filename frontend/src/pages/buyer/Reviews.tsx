@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
-import { reviewsApi } from '../../api/reviews.api';
+import api from '../../api/api';
 import ReviewList from '../../components/mobile/ReviewList';
 import Pagination from '../../components/common/Pagination';
 import EmptyState from '../../components/common/EmptyState';
-import type { PaginationMeta } from '../../types/api';
+import type { ApiResponse, PaginationMeta } from '../../types/api';
 import type { Review } from '../../types/models';
 
 const Reviews = () => {
@@ -15,8 +15,8 @@ const Reviews = () => {
 
   useEffect(() => {
     setLoading(true);
-    reviewsApi
-      .my({ page })
+    api
+      .get<ApiResponse<Review[]>>('/reviews/my', { params: { page } })
       .then(({ data }) => {
         setReviews(data.data);
         setMeta(data.meta ?? null);

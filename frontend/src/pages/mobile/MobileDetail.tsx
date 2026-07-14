@@ -15,9 +15,8 @@ import {
   GitCompareArrows,
   type LucideIcon,
 } from 'lucide-react';
-import { mobilesApi } from '../../api/mobiles.api';
-import { reviewsApi } from '../../api/reviews.api';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import ImageGallery from '../../components/mobile/ImageGallery';
 import PriceHistoryChart from '../../components/mobile/PriceHistoryChart';
 import NegotiateModal from '../../components/mobile/NegotiateModal';
@@ -31,8 +30,8 @@ import ReportButton from '../../components/common/ReportButton';
 import { formatCurrency } from '../../utils/format';
 import { useAuth } from '../../hooks/useAuth';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { addToWishlist, removeFromWishlist } from '../../features/wishlist/wishlistSlice';
-import { selectIsWishlisted } from '../../selectors/wishlist.selectors';
+import { addToWishlist, removeFromWishlist } from '../../features/wishlist/thunks';
+import { selectIsWishlisted } from '../../features/wishlist/selectors';
 import { PATHS } from '../../routes/paths';
 import type { Mobile, PriceHistoryItem, Review, User } from '../../types/models';
 
@@ -73,7 +72,11 @@ const MobileDetail = () => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([mobilesApi.getById(id), mobilesApi.getPriceHistory(id), reviewsApi.byMobile(id)])
+    Promise.all([
+      api.get<ApiResponse<Mobile>>(`/mobiles/${id}`),
+      api.get<ApiResponse<PriceHistoryItem[]>>(`/mobiles/${id}/price-history`),
+      api.get<ApiResponse<Review[]>>(`/reviews/mobile/${id}`),
+    ])
       .then(([mobileRes, historyRes, reviewsRes]) => {
         setMobile(mobileRes.data.data);
         setPriceHistory(historyRes.data.data);
@@ -99,7 +102,7 @@ const MobileDetail = () => {
     if (!seller) return;
     setChatLoading(true);
     try {
-      const { data } = await chatApi.startConversation({ recipientId: seller._id, mobileId: mobile._id });
+      const { data } = await api.post<ApiResponse<{ _id: string }>>('/chat/conversations', { recipientId: seller._id, mobileId: mobile._id });
       navigate(PATHS.chatConversation(data.data._id));
     } catch (err) {
       toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not start chat');

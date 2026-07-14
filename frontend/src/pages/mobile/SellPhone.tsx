@@ -12,9 +12,11 @@ import StepPricing from '../../components/sell/StepPricing';
 import Button from '../../components/common/Button';
 import EmailVerificationNotice from '../../components/auth/EmailVerificationNotice';
 import { useAuth } from '../../hooks/useAuth';
-import { mobilesApi, type CreateMobilePayload } from '../../api/mobiles.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
+import type { CreateMobilePayload } from '../../types/mobile';
 import { PATHS } from '../../routes/paths';
-import type { MobileCondition } from '../../types/models';
+import type { Mobile, MobileCondition } from '../../types/models';
 
 const STEPS = ['Phone', 'Condition', 'Location', 'Photos', 'Price'];
 
@@ -122,12 +124,23 @@ const SellPhone = () => {
         },
       };
 
-      const { data } = await mobilesApi.create(payload);
+      const { data } = await api.post<ApiResponse<Mobile>>('/mobiles', payload);
       const mobileId = data.data._id;
 
-      await mobilesApi.uploadImages(mobileId, form.photos);
-      if (form.video) await mobilesApi.uploadVideo(mobileId, form.video);
-      if (form.purchaseBill) await mobilesApi.uploadPurchaseBill(mobileId, form.purchaseBill);
+      const imagesForm = new FormData();
+      form.photos.forEach((f) => imagesForm.append('images', f));
+      await api.post(`/mobiles/${mobileId}/images`, imagesForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+
+      if (form.video) {
+        const videoForm = new FormData();
+        videoForm.append('video', form.video);
+        await api.post(`/mobiles/${mobileId}/video`, videoForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      if (form.purchaseBill) {
+        const billForm = new FormData();
+        billForm.append('bill', form.purchaseBill);
+        await api.post(`/mobiles/${mobileId}/purchase-bill`, billForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
 
       toast.success('Listing submitted for approval!');
       navigate(PATHS.seller.listings);

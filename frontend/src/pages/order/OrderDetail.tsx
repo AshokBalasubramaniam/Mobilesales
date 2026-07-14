@@ -3,10 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { MessageCircle, Star, Flag } from 'lucide-react';
-import { ordersApi } from '../../api/orders.api';
-import { reviewsApi } from '../../api/reviews.api';
-import { reportsApi } from '../../api/reports.api';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import OrderTrackingTimeline from '../../components/order/OrderTrackingTimeline';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -42,7 +40,7 @@ const OrderDetail = () => {
 
   const load = () => {
     if (!id) return Promise.resolve();
-    return ordersApi.getById(id).then(({ data }) => setOrder(data.data));
+    return api.get<ApiResponse<Order>>(`/orders/${id}`).then(({ data }) => setOrder(data.data));
   };
 
   useEffect(() => {
@@ -65,7 +63,7 @@ const OrderDetail = () => {
     if (!id) return;
     setCancelling(true);
     try {
-      await ordersApi.cancel(id, 'Cancelled by user');
+      await api.patch(`/orders/${id}/cancel`, { reason: 'Cancelled by user' });
       toast.success('Order cancelled');
       load();
     } catch (err) {
@@ -79,7 +77,7 @@ const OrderDetail = () => {
   const handleUpdateTracking = async () => {
     if (!trackingStatus || !id) return;
     try {
-      await ordersApi.updateTracking(id, { status: trackingStatus });
+      await api.patch(`/orders/${id}/tracking`, { status: trackingStatus });
       toast.success('Tracking updated');
       setTrackingStatus('');
       load();
@@ -90,7 +88,7 @@ const OrderDetail = () => {
 
   const handleChat = async () => {
     const recipientId = isBuyer ? idOf(order.seller) : idOf(order.buyer);
-    const { data } = await chatApi.startConversation({ recipientId, mobileId: idOf(order.mobile) });
+    const { data } = await api.post<ApiResponse<{ _id: string }>>('/chat/conversations', { recipientId, mobileId: idOf(order.mobile) });
     navigate(PATHS.chatConversation(data.data._id));
   };
 
@@ -214,13 +212,13 @@ const ReviewModal = ({ open, onClose, order, onDone }: ReviewModalProps) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await reviewsApi.create({
-        order: order._id,
-        mobile: idOf(order.mobile),
-        seller: idOf(order.seller),
-        rating,
-        comment,
-      });
+      const reviewForm = new FormData();
+      reviewForm.append('order', order._id);
+      reviewForm.append('mobile', idOf(order.mobile));
+      reviewForm.append('seller', idOf(order.seller));
+      reviewForm.append('rating', String(rating));
+      reviewForm.append('comment', comment);
+      await api.post('/reviews', reviewForm, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.success('Review submitted');
       onDone();
       onClose();
@@ -259,7 +257,7 @@ const DisputeModal = ({ open, onClose, orderId }: DisputeModalProps) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await reportsApi.createDispute({ order: orderId, reason, description });
+      await api.post('/reports/disputes', { order: orderId, reason, description });
       toast.success('Dispute raised — our team will review it shortly');
       onClose();
     } catch (err) {

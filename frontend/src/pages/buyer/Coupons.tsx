@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Ticket } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { couponsApi } from '../../api/coupons.api';
+import api from '../../api/api';
 import EmptyState from '../../components/common/EmptyState';
 import Spinner from '../../components/common/Spinner';
 import Badge from '../../components/common/Badge';
 import { formatCurrency, formatDate } from '../../utils/format';
+import type { ApiResponse } from '../../types/api';
 import type { Coupon } from '../../types/models';
 
 const Coupons = () => {
@@ -13,8 +14,8 @@ const Coupons = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    couponsApi
-      .active()
+    api
+      .get<ApiResponse<Coupon[]>>('/coupons/active')
       .then(({ data }) => setCoupons(data.data))
       .finally(() => setLoading(false));
   }, []);

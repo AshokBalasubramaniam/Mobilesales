@@ -3,10 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { BadgeCheck, Calendar, MessageCircle } from 'lucide-react';
-import { usersApi } from '../../api/users.api';
-import { mobilesApi } from '../../api/mobiles.api';
-import { reviewsApi } from '../../api/reviews.api';
-import { chatApi } from '../../api/chat.api';
+import api from '../../api/api';
+import type { ApiResponse } from '../../types/api';
 import Avatar from '../../components/common/Avatar';
 import StarRating from '../../components/common/StarRating';
 import Spinner from '../../components/common/Spinner';
@@ -31,7 +29,11 @@ const SellerProfile = () => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([usersApi.getPublicProfile(id), mobilesApi.list({ seller: id }), reviewsApi.bySeller(id)])
+    Promise.all([
+      api.get<ApiResponse<User>>(`/users/${id}/public`),
+      api.get<ApiResponse<Mobile[]>>('/mobiles', { params: { seller: id } }),
+      api.get<ApiResponse<Review[]>>(`/reviews/seller/${id}`),
+    ])
       .then(([sellerRes, listingsRes, reviewsRes]) => {
         setSeller(sellerRes.data.data);
         setListings(listingsRes.data.data);
@@ -50,7 +52,7 @@ const SellerProfile = () => {
     if (!id) return;
     setChatLoading(true);
     try {
-      const { data } = await chatApi.startConversation({ recipientId: id });
+      const { data } = await api.post<ApiResponse<{ _id: string }>>('/chat/conversations', { recipientId: id });
       navigate(PATHS.chatConversation(data.data._id));
     } catch (err) {
       toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not start chat');

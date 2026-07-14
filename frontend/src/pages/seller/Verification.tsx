@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import toast from 'react-hot-toast';
 import { isAxiosError } from 'axios';
 import { CheckCircle2, Clock, FileUp, ShieldAlert, ShieldCheck } from 'lucide-react';
-import { usersApi } from '../../api/users.api';
+import api from '../../api/api';
 import Button from '../../components/common/Button';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -54,7 +54,9 @@ const Verification = () => {
     }
     setSubmitting(true);
     try {
-      await usersApi.submitSellerVerification(files);
+      const verificationForm = new FormData();
+      Object.entries(files).forEach(([key, file]) => file && verificationForm.append(key, file));
+      await api.post('/users/seller/verification', verificationForm, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.success('Documents submitted! Our team will review them shortly.');
     } catch (err) {
       toast.error(extractError(err));
