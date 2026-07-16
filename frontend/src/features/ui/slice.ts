@@ -16,10 +16,10 @@ const applyTheme = (theme: Theme): void => {
 const initialTheme = getInitialTheme();
 applyTheme(initialTheme);
 
-export interface UiState {
+type UiState = {
   theme: Theme;
   mobileNavOpen: boolean;
-}
+};
 
 const initialState: UiState = {
   theme: initialTheme,

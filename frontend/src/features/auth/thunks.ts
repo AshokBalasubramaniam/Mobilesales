@@ -1,20 +1,29 @@
+import type { Dispatch } from '@reduxjs/toolkit';
 import { isAxiosError } from 'axios';
 import api, { refreshAccessToken } from '../../api/api';
 import { setAccessToken, clearAccessToken } from '../../api/tokenManager';
-import type { AppDispatch } from '../../app/store';
 import type { ApiResponse } from '../../types/api';
 import type { Role, User } from '../../types/models';
 import {
-  authRequest,
-  authSuccess,
-  authFailure,
-  bootstrapSuccess,
-  bootstrapFailure,
-  logoutSuccess,
+  registerStart,
+  registerSuccess,
+  registerFail,
+  loginStart,
+  loginSuccess,
+  loginFail,
+  googleLoginStart,
+  googleLoginSuccess,
+  googleLoginFail,
   otpRequestSuccess,
-  otpRequestFailure,
+  otpRequestFail,
+  verifyOtpStart,
+  verifyOtpSuccess,
+  verifyOtpFail,
+  bootstrapSuccess,
+  bootstrapFail,
+  logoutSuccess,
   updateProfileSuccess,
-  updateProfileFailure,
+  updateProfileFail,
 } from './slice';
 
 export interface AuthSession {
@@ -60,61 +69,71 @@ const applySession = (data: AuthSession): User => {
   return data.user;
 };
 
-export const register = (payload: RegisterPayload) => async (dispatch: AppDispatch) => {
-  dispatch(authRequest());
+export const register = (payload: RegisterPayload) => async (dispatch: Dispatch) => {
   try {
-    const { data } = await api.post<ApiResponse<AuthSession>>('/auth/register', payload);
-    const user = applySession(data.data);
-    dispatch(authSuccess(user));
-    return user;
+    dispatch(registerStart());
+    const response = await api.post<ApiResponse<AuthSession>>('/auth/register', payload);
+    if (response.status === 201) {
+      const user = applySession(response.data.data);
+      dispatch(registerSuccess(user));
+      return user;
+    }
   } catch (error) {
-    dispatch(authFailure(extractError(error)));
+    dispatch(registerFail(extractError(error)));
   }
 };
 
-export const login = (payload: LoginPayload) => async (dispatch: AppDispatch) => {
-  dispatch(authRequest());
+export const login = (payload: LoginPayload) => async (dispatch: Dispatch) => {
   try {
-    const { data } = await api.post<ApiResponse<AuthSession>>('/auth/login', payload);
-    const user = applySession(data.data);
-    dispatch(authSuccess(user));
-    return user;
+    dispatch(loginStart());
+    const response = await api.post<ApiResponse<AuthSession>>('/auth/login', payload);
+    if (response.status === 200) {
+      const user = applySession(response.data.data);
+      dispatch(loginSuccess(user));
+      return user;
+    }
   } catch (error) {
-    dispatch(authFailure(extractError(error)));
+    dispatch(loginFail(extractError(error)));
   }
 };
 
-export const googleLogin = (payload: GoogleLoginPayload) => async (dispatch: AppDispatch) => {
-  dispatch(authRequest());
+export const googleLogin = (payload: GoogleLoginPayload) => async (dispatch: Dispatch) => {
   try {
-    const { data } = await api.post<ApiResponse<AuthSession>>('/auth/google', payload);
-    const user = applySession(data.data);
-    dispatch(authSuccess(user));
-    return user;
+    dispatch(googleLoginStart());
+    const response = await api.post<ApiResponse<AuthSession>>('/auth/google', payload);
+    if (response.status === 200) {
+      const user = applySession(response.data.data);
+      dispatch(googleLoginSuccess(user));
+      return user;
+    }
   } catch (error) {
-    dispatch(authFailure(extractError(error)));
+    dispatch(googleLoginFail(extractError(error)));
   }
 };
 
-export const requestOtp = (phone: string) => async (dispatch: AppDispatch) => {
+export const requestOtp = (phone: string) => async (dispatch: Dispatch) => {
   try {
-    await api.post<ApiResponse<null>>('/auth/otp/request', { phone });
-    dispatch(otpRequestSuccess(phone));
-    return phone;
+    const response = await api.post<ApiResponse<null>>('/auth/otp/request', { phone });
+    if (response.status === 200) {
+      dispatch(otpRequestSuccess(phone));
+      return phone;
+    }
   } catch (error) {
-    dispatch(otpRequestFailure(extractError(error)));
+    dispatch(otpRequestFail(extractError(error)));
   }
 };
 
-export const verifyOtp = (payload: VerifyOtpPayload) => async (dispatch: AppDispatch) => {
-  dispatch(authRequest());
+export const verifyOtp = (payload: VerifyOtpPayload) => async (dispatch: Dispatch) => {
   try {
-    const { data } = await api.post<ApiResponse<AuthSession>>('/auth/otp/verify', payload);
-    const user = applySession(data.data);
-    dispatch(authSuccess(user));
-    return user;
+    dispatch(verifyOtpStart());
+    const response = await api.post<ApiResponse<AuthSession>>('/auth/otp/verify', payload);
+    if (response.status === 200) {
+      const user = applySession(response.data.data);
+      dispatch(verifyOtpSuccess(user));
+      return user;
+    }
   } catch (error) {
-    dispatch(authFailure(extractError(error)));
+    dispatch(verifyOtpFail(extractError(error)));
   }
 };
 
@@ -126,31 +145,31 @@ export const verifyOtp = (payload: VerifyOtpPayload) => async (dispatch: AppDisp
 // before concluding the user is actually logged out — without this, a
 // one-off hiccup on page load flashes the login screen for a session that
 // is otherwise perfectly valid.
-export const bootstrapAuth = () => async (dispatch: AppDispatch) => {
-  const attempt = async () => {
+export const bootstrapAuth = () => async (dispatch: Dispatch) => {
+  const attempt = async (): Promise<User | undefined> => {
     await refreshAccessToken();
-    const { data } = await api.get<ApiResponse<User>>('/auth/me');
-    return data.data;
+    const response = await api.get<ApiResponse<User>>('/auth/me');
+    if (response.status === 200) return response.data.data;
   };
 
   try {
     const user = await attempt();
-    dispatch(bootstrapSuccess(user));
+    dispatch(bootstrapSuccess(user ?? null));
     return user;
   } catch {
     await wait(800);
     try {
       const user = await attempt();
-      dispatch(bootstrapSuccess(user));
+      dispatch(bootstrapSuccess(user ?? null));
       return user;
     } catch {
       clearAccessToken();
-      dispatch(bootstrapFailure());
+      dispatch(bootstrapFail());
     }
   }
 };
 
-export const logout = () => async (dispatch: AppDispatch) => {
+export const logout = () => async (dispatch: Dispatch) => {
   try {
     await api.post('/auth/logout');
   } finally {
@@ -159,12 +178,14 @@ export const logout = () => async (dispatch: AppDispatch) => {
   }
 };
 
-export const updateProfileThunk = (payload: UpdateProfilePayload) => async (dispatch: AppDispatch) => {
+export const updateProfileThunk = (payload: UpdateProfilePayload) => async (dispatch: Dispatch) => {
   try {
-    const { data } = await api.patch<ApiResponse<User>>('/users/me', payload);
-    dispatch(updateProfileSuccess(data.data));
-    return data.data;
+    const response = await api.patch<ApiResponse<User>>('/users/me', payload);
+    if (response.status === 200) {
+      dispatch(updateProfileSuccess(response.data.data));
+      return response.data.data;
+    }
   } catch (error) {
-    dispatch(updateProfileFailure(extractError(error)));
+    dispatch(updateProfileFail(extractError(error)));
   }
 };

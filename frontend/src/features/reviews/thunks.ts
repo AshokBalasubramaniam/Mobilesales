@@ -1,17 +1,17 @@
+import type { Dispatch } from '@reduxjs/toolkit';
 import api from '../../api/api';
-import type { AppDispatch } from '../../app/store';
 import type { ApiResponse } from '../../types/api';
 import type { Review } from '../../types/models';
-import { homeReviewsRequest, homeReviewsSuccess, homeReviewsFailure } from './slice';
+import { homeReviewsStart, homeReviewsSuccess, homeReviewsFail } from './slice';
 
-export const fetchHomeReviews = (mobileIds: string[]) => async (dispatch: AppDispatch) => {
-  dispatch(homeReviewsRequest());
+export const fetchHomeReviews = (mobileIds: string[]) => async (dispatch: Dispatch) => {
   try {
+    dispatch(homeReviewsStart());
     const lists = await Promise.all(
       mobileIds.map((id) =>
         api
           .get<ApiResponse<Review[]>>(`/reviews/mobile/${id}`, { params: { limit: 3 } })
-          .then((r) => r.data.data)
+          .then((response) => (response.status === 200 ? response.data.data : []))
           .catch(() => [] as Review[])
       )
     );
@@ -19,6 +19,6 @@ export const fetchHomeReviews = (mobileIds: string[]) => async (dispatch: AppDis
     dispatch(homeReviewsSuccess(reviews));
     return reviews;
   } catch {
-    dispatch(homeReviewsFailure());
+    dispatch(homeReviewsFail());
   }
 };

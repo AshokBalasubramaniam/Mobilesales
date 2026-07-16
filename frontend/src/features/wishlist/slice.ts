@@ -10,26 +10,36 @@ export interface WishlistItem {
   updatedAt: string;
 }
 
-export interface WishlistState {
+type WishlistState = {
   items: WishlistItem[];
   ids: string[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
-}
+  error: string | null;
+};
 
 const initialState: WishlistState = {
   items: [],
   ids: [],
   status: 'idle',
+  error: null,
 };
 
 const wishlistSlice = createSlice({
   name: 'wishlist',
   initialState,
   reducers: {
+    wishlistFetchStart: (state) => {
+      state.status = 'loading';
+      state.error = null;
+    },
     wishlistFetched: (state, action: PayloadAction<WishlistItem[]>) => {
       state.items = action.payload;
       state.ids = action.payload.map((item) => item.mobile._id);
       state.status = 'succeeded';
+    },
+    wishlistFetchFail: (state, action: PayloadAction<string>) => {
+      state.status = 'failed';
+      state.error = action.payload;
     },
     wishlistItemAdded: (state, action: PayloadAction<string>) => {
       if (!state.ids.includes(action.payload)) state.ids.push(action.payload);
@@ -41,5 +51,6 @@ const wishlistSlice = createSlice({
   },
 });
 
-export const { wishlistFetched, wishlistItemAdded, wishlistItemRemoved } = wishlistSlice.actions;
+export const { wishlistFetchStart, wishlistFetched, wishlistFetchFail, wishlistItemAdded, wishlistItemRemoved } =
+  wishlistSlice.actions;
 export default wishlistSlice.reducer;

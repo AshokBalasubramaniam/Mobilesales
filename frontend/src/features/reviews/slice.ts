@@ -1,10 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Review } from '../../types/models';
 
-export interface ReviewsState {
+type ReviewsState = {
   homeReviews: Review[];
   homeReviewsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
-}
+};
 
 const initialState: ReviewsState = {
   homeReviews: [],
@@ -15,18 +15,18 @@ const reviewsSlice = createSlice({
   name: 'reviews',
   initialState,
   reducers: {
-    homeReviewsRequest: (state) => {
+    homeReviewsStart: (state) => {
       state.homeReviewsStatus = 'loading';
     },
     homeReviewsSuccess: (state, action: PayloadAction<Review[]>) => {
       state.homeReviewsStatus = 'succeeded';
       state.homeReviews = action.payload;
     },
-    homeReviewsFailure: (state) => {
+    homeReviewsFail: (state) => {
       state.homeReviewsStatus = 'failed';
     },
   },
 });
 
-export const { homeReviewsRequest, homeReviewsSuccess, homeReviewsFailure } = reviewsSlice.actions;
+export const { homeReviewsStart, homeReviewsSuccess, homeReviewsFail } = reviewsSlice.actions;
 export default reviewsSlice.reducer;

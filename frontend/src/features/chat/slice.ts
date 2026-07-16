@@ -23,7 +23,7 @@ export interface MessagesFetchedPayload {
   messages: Message[];
 }
 
-export interface ChatState {
+type ChatState = {
   conversations: Conversation[];
   conversationsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   activeConversationId: string | null;
@@ -31,7 +31,7 @@ export interface ChatState {
   typingByConversation: Record<string, string[]>;
   onlineUserIds: string[];
   lastSeenByUserId: Record<string, string>;
-}
+};
 
 const initialState: ChatState = {
   conversations: [],
@@ -88,7 +88,7 @@ const chatSlice = createSlice({
       });
     },
 
-    conversationsRequest: (state) => {
+    conversationsStart: (state) => {
       state.conversationsStatus = 'loading';
     },
     conversationsSuccess: (state, action: PayloadAction<Conversation[]>) => {
@@ -108,7 +108,7 @@ export const {
   presenceSnapshot,
   typingUpdated,
   offerStatusUpdated,
-  conversationsRequest,
+  conversationsStart,
   conversationsSuccess,
   messagesFetched,
 } = chatSlice.actions;

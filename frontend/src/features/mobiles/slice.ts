@@ -9,11 +9,11 @@ export interface HomeSections {
   popularBrands: { brand: string; count: number }[];
 }
 
-export interface MobilesState {
+type MobilesState = {
   homeSections: HomeSections | null;
   homeSectionsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   homeSectionsError: string | null;
-}
+};
 
 const initialState: MobilesState = {
   homeSections: null,
@@ -25,7 +25,7 @@ const mobilesSlice = createSlice({
   name: 'mobiles',
   initialState,
   reducers: {
-    homeSectionsRequest: (state) => {
+    homeSectionsStart: (state) => {
       state.homeSectionsStatus = 'loading';
       state.homeSectionsError = null;
     },
@@ -33,12 +33,12 @@ const mobilesSlice = createSlice({
       state.homeSectionsStatus = 'succeeded';
       state.homeSections = action.payload;
     },
-    homeSectionsFailure: (state, action: PayloadAction<string>) => {
+    homeSectionsFail: (state, action: PayloadAction<string>) => {
       state.homeSectionsStatus = 'failed';
       state.homeSectionsError = action.payload;
     },
   },
 });
 
-export const { homeSectionsRequest, homeSectionsSuccess, homeSectionsFailure } = mobilesSlice.actions;
+export const { homeSectionsStart, homeSectionsSuccess, homeSectionsFail } = mobilesSlice.actions;
 export default mobilesSlice.reducer;

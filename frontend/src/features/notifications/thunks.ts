@@ -1,11 +1,11 @@
+import type { Dispatch } from '@reduxjs/toolkit';
 import api from '../../api/api';
-import type { AppDispatch } from '../../app/store';
 import type { ApiResponse, PaginationMeta, PaginationParams } from '../../types/api';
 import type { Notification } from '../../types/models';
 import {
-  notificationsRequest,
+  notificationsStart,
   notificationsSuccess,
-  notificationsFailure,
+  notificationsFail,
   notificationMarkedRead,
   allNotificationsMarkedRead,
   notificationDeleted,
@@ -15,42 +15,50 @@ export interface NotificationsResponse extends ApiResponse<Notification[]> {
   meta: PaginationMeta & { unreadCount: number };
 }
 
-export const fetchNotifications = (params?: PaginationParams) => async (dispatch: AppDispatch) => {
-  dispatch(notificationsRequest());
+export const fetchNotifications = (params?: PaginationParams) => async (dispatch: Dispatch) => {
   try {
-    const { data } = await api.get<NotificationsResponse>('/notifications', { params });
-    dispatch(notificationsSuccess({ items: data.data, unreadCount: data.meta.unreadCount }));
-    return { items: data.data, unreadCount: data.meta.unreadCount };
+    dispatch(notificationsStart());
+    const response = await api.get<NotificationsResponse>('/notifications', { params });
+    if (response.status === 200) {
+      dispatch(notificationsSuccess({ items: response.data.data, unreadCount: response.data.meta.unreadCount }));
+      return { items: response.data.data, unreadCount: response.data.meta.unreadCount };
+    }
   } catch {
-    dispatch(notificationsFailure());
+    dispatch(notificationsFail());
   }
 };
 
-export const markNotificationRead = (id: string) => async (dispatch: AppDispatch) => {
+export const markNotificationRead = (id: string) => async (dispatch: Dispatch) => {
   try {
-    await api.patch(`/notifications/${id}/read`);
-    dispatch(notificationMarkedRead(id));
-    return id;
-  } catch {
-    // no-op on failure, matching prior behavior.
+    const response = await api.patch(`/notifications/${id}/read`);
+    if (response.status === 200) {
+      dispatch(notificationMarkedRead(id));
+      return id;
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
-export const markAllNotificationsRead = () => async (dispatch: AppDispatch) => {
+export const markAllNotificationsRead = () => async (dispatch: Dispatch) => {
   try {
-    await api.patch('/notifications/read-all');
-    dispatch(allNotificationsMarkedRead());
-  } catch {
-    // no-op on failure, matching prior behavior.
+    const response = await api.patch('/notifications/read-all');
+    if (response.status === 200) {
+      dispatch(allNotificationsMarkedRead());
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
-export const deleteNotification = (id: string) => async (dispatch: AppDispatch) => {
+export const deleteNotification = (id: string) => async (dispatch: Dispatch) => {
   try {
-    await api.delete(`/notifications/${id}`);
-    dispatch(notificationDeleted(id));
-    return id;
-  } catch {
-    // no-op on failure, matching prior behavior.
+    const response = await api.delete(`/notifications/${id}`);
+    if (response.status === 200) {
+      dispatch(notificationDeleted(id));
+      return id;
+    }
+  } catch (error) {
+    throw error;
   }
 };

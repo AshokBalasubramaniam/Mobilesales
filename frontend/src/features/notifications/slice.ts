@@ -6,11 +6,11 @@ export interface NotificationsFetchedPayload {
   unreadCount: number;
 }
 
-export interface NotificationsState {
+type NotificationsState = {
   items: Notification[];
   unreadCount: number;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
-}
+};
 
 const initialState: NotificationsState = {
   items: [],
@@ -27,7 +27,7 @@ const notificationsSlice = createSlice({
       state.unreadCount += 1;
     },
 
-    notificationsRequest: (state) => {
+    notificationsStart: (state) => {
       state.status = 'loading';
     },
     notificationsSuccess: (state, action: PayloadAction<NotificationsFetchedPayload>) => {
@@ -35,7 +35,7 @@ const notificationsSlice = createSlice({
       state.unreadCount = action.payload.unreadCount;
       state.status = 'succeeded';
     },
-    notificationsFailure: (state) => {
+    notificationsFail: (state) => {
       state.status = 'failed';
     },
     notificationMarkedRead: (state, action: PayloadAction<string>) => {
@@ -59,9 +59,9 @@ const notificationsSlice = createSlice({
 
 export const {
   notificationReceived,
-  notificationsRequest,
+  notificationsStart,
   notificationsSuccess,
-  notificationsFailure,
+  notificationsFail,
   notificationMarkedRead,
   allNotificationsMarkedRead,
   notificationDeleted,

@@ -1,15 +1,15 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { User } from '../../types/models';
 
-export type AuthStatus = 'idle' | 'loading' | 'succeeded' | 'failed';
+type AuthStatus = 'idle' | 'loading' | 'succeeded' | 'failed';
 
-export interface AuthState {
+type AuthState = {
   user: User | null;
   status: AuthStatus;
   bootstrapped: boolean;
   error: string | null;
   otpPhone: string | null;
-}
+};
 
 const initialState: AuthState = {
   user: null,
@@ -30,24 +30,70 @@ const authSlice = createSlice({
       state.user = action.payload;
     },
 
-    authRequest: (state) => {
+    registerStart: (state) => {
       state.status = 'loading';
       state.error = null;
     },
-    authSuccess: (state, action: PayloadAction<User>) => {
+    registerSuccess: (state, action: PayloadAction<User>) => {
       state.status = 'succeeded';
       state.user = action.payload;
     },
-    authFailure: (state, action: PayloadAction<string>) => {
+    registerFail: (state, action: PayloadAction<string>) => {
       state.status = 'failed';
       state.error = action.payload;
     },
 
-    bootstrapSuccess: (state, action: PayloadAction<User>) => {
+    loginStart: (state) => {
+      state.status = 'loading';
+      state.error = null;
+    },
+    loginSuccess: (state, action: PayloadAction<User>) => {
+      state.status = 'succeeded';
+      state.user = action.payload;
+    },
+    loginFail: (state, action: PayloadAction<string>) => {
+      state.status = 'failed';
+      state.error = action.payload;
+    },
+
+    googleLoginStart: (state) => {
+      state.status = 'loading';
+      state.error = null;
+    },
+    googleLoginSuccess: (state, action: PayloadAction<User>) => {
+      state.status = 'succeeded';
+      state.user = action.payload;
+    },
+    googleLoginFail: (state, action: PayloadAction<string>) => {
+      state.status = 'failed';
+      state.error = action.payload;
+    },
+
+    otpRequestSuccess: (state, action: PayloadAction<string>) => {
+      state.otpPhone = action.payload;
+    },
+    otpRequestFail: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
+    },
+
+    verifyOtpStart: (state) => {
+      state.status = 'loading';
+      state.error = null;
+    },
+    verifyOtpSuccess: (state, action: PayloadAction<User>) => {
+      state.status = 'succeeded';
+      state.user = action.payload;
+    },
+    verifyOtpFail: (state, action: PayloadAction<string>) => {
+      state.status = 'failed';
+      state.error = action.payload;
+    },
+
+    bootstrapSuccess: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload;
       state.bootstrapped = true;
     },
-    bootstrapFailure: (state) => {
+    bootstrapFail: (state) => {
       state.user = null;
       state.bootstrapped = true;
     },
@@ -56,17 +102,10 @@ const authSlice = createSlice({
       state.user = null;
     },
 
-    otpRequestSuccess: (state, action: PayloadAction<string>) => {
-      state.otpPhone = action.payload;
-    },
-    otpRequestFailure: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-    },
-
     updateProfileSuccess: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
     },
-    updateProfileFailure: (state, action: PayloadAction<string>) => {
+    updateProfileFail: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
   },
@@ -75,15 +114,24 @@ const authSlice = createSlice({
 export const {
   clearAuthError,
   setUser,
-  authRequest,
-  authSuccess,
-  authFailure,
-  bootstrapSuccess,
-  bootstrapFailure,
-  logoutSuccess,
+  registerStart,
+  registerSuccess,
+  registerFail,
+  loginStart,
+  loginSuccess,
+  loginFail,
+  googleLoginStart,
+  googleLoginSuccess,
+  googleLoginFail,
   otpRequestSuccess,
-  otpRequestFailure,
+  otpRequestFail,
+  verifyOtpStart,
+  verifyOtpSuccess,
+  verifyOtpFail,
+  bootstrapSuccess,
+  bootstrapFail,
+  logoutSuccess,
   updateProfileSuccess,
-  updateProfileFailure,
+  updateProfileFail,
 } = authSlice.actions;
 export default authSlice.reducer;

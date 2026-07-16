@@ -6,6 +6,7 @@ import chatReducer from '../features/chat/slice';
 import uiReducer from '../features/ui/slice';
 import mobilesReducer from '../features/mobiles/slice';
 import reviewsReducer from '../features/reviews/slice';
+import userGroupReducer from '../features/userGroup/slice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     ui: uiReducer,
     mobiles: mobilesReducer,
     reviews: reviewsReducer,
+    userGroup: userGroupReducer,
   },
 });
 
