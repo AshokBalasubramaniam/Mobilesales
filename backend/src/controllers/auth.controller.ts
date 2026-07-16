@@ -1,5 +1,4 @@
 import type { CookieOptions, Request, Response } from 'express';
-import type { ParamsDictionary } from 'express-serve-static-core';
 import type { JwtPayload } from 'jsonwebtoken';
 import User from '../models/User';
 import asyncHandler from '../utils/asyncHandler';
@@ -61,7 +60,7 @@ interface RegisterBody {
   role?: Role;
 }
 
-export const register = asyncHandler(async (req: Request<ParamsDictionary, unknown, RegisterBody>, res: Response) => {
+export const register = asyncHandler(async (req: Request<Record<string, never>, unknown, RegisterBody>, res: Response) => {
   const { name, email, phone, password, role } = req.body;
 
   const existing = await User.findOne({ $or: [{ email }, ...(phone ? [{ phone }] : [])] });
@@ -90,7 +89,7 @@ interface LoginBody {
   password: string;
 }
 
-export const login = asyncHandler(async (req: Request<ParamsDictionary, unknown, LoginBody>, res: Response) => {
+export const login = asyncHandler(async (req: Request<Record<string, never>, unknown, LoginBody>, res: Response) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).select('+password');
@@ -109,7 +108,7 @@ interface GoogleLoginBody {
   role?: Role;
 }
 
-export const googleLogin = asyncHandler(async (req: Request<ParamsDictionary, unknown, GoogleLoginBody>, res: Response) => {
+export const googleLogin = asyncHandler(async (req: Request<Record<string, never>, unknown, GoogleLoginBody>, res: Response) => {
   const { idToken, role } = req.body;
   const profile = await googleAuthService.verifyGoogleToken(idToken);
 
@@ -141,7 +140,7 @@ interface OtpRequestBody {
   phone: string;
 }
 
-export const requestOtp = asyncHandler(async (req: Request<ParamsDictionary, unknown, OtpRequestBody>, res: Response) => {
+export const requestOtp = asyncHandler(async (req: Request<Record<string, never>, unknown, OtpRequestBody>, res: Response) => {
   const { phone } = req.body;
 
   let user = await User.findOne({ phone });
@@ -164,7 +163,7 @@ interface OtpVerifyBody {
   code: string;
 }
 
-export const verifyOtp = asyncHandler(async (req: Request<ParamsDictionary, unknown, OtpVerifyBody>, res: Response) => {
+export const verifyOtp = asyncHandler(async (req: Request<Record<string, never>, unknown, OtpVerifyBody>, res: Response) => {
   const { phone, code } = req.body;
 
   const user = await User.findOne({ phone }).select('+otp.codeHash +otp.purpose +otp.expiresAt +otp.attempts');
@@ -191,7 +190,7 @@ interface RefreshTokenBody {
   refreshToken?: string;
 }
 
-export const refreshTokenHandler = asyncHandler(async (req: Request<ParamsDictionary, unknown, RefreshTokenBody>, res: Response) => {
+export const refreshTokenHandler = asyncHandler(async (req: Request<Record<string, never>, unknown, RefreshTokenBody>, res: Response) => {
   const incomingToken = req.cookies?.[env.refreshCookieName] || req.body.refreshToken;
   if (!incomingToken) throw ApiError.unauthorized('Refresh token missing');
 
@@ -219,7 +218,7 @@ export const refreshTokenHandler = asyncHandler(async (req: Request<ParamsDictio
   new ApiResponse(200, { accessToken }, 'Token refreshed').send(res);
 });
 
-export const logout = asyncHandler(async (req: Request<ParamsDictionary, unknown, RefreshTokenBody>, res: Response) => {
+export const logout = asyncHandler(async (req: Request<Record<string, never>, unknown, RefreshTokenBody>, res: Response) => {
   const incomingToken = req.cookies?.[env.refreshCookieName] || req.body.refreshToken;
   if (incomingToken && req.user) {
     await User.updateOne({ _id: req.user._id }, { $pull: { refreshTokens: { token: incomingToken } } });
@@ -236,7 +235,7 @@ interface VerifyEmailBody {
   token: string;
 }
 
-export const verifyEmail = asyncHandler(async (req: Request<ParamsDictionary, unknown, VerifyEmailBody>, res: Response) => {
+export const verifyEmail = asyncHandler(async (req: Request<Record<string, never>, unknown, VerifyEmailBody>, res: Response) => {
   const { token } = req.body;
   const tokenHash = hashToken(token);
 
@@ -276,7 +275,7 @@ interface ForgotPasswordBody {
   email: string;
 }
 
-export const forgotPassword = asyncHandler(async (req: Request<ParamsDictionary, unknown, ForgotPasswordBody>, res: Response) => {
+export const forgotPassword = asyncHandler(async (req: Request<Record<string, never>, unknown, ForgotPasswordBody>, res: Response) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
 
@@ -301,7 +300,7 @@ interface ResetPasswordBody {
   password: string;
 }
 
-export const resetPassword = asyncHandler(async (req: Request<ParamsDictionary, unknown, ResetPasswordBody>, res: Response) => {
+export const resetPassword = asyncHandler(async (req: Request<Record<string, never>, unknown, ResetPasswordBody>, res: Response) => {
   const { email, code, password } = req.body;
 
   const user = await User.findOne({ email }).select(
@@ -330,7 +329,7 @@ interface ChangePasswordBody {
   newPassword: string;
 }
 
-export const changePassword = asyncHandler(async (req: Request<ParamsDictionary, unknown, ChangePasswordBody>, res: Response) => {
+export const changePassword = asyncHandler(async (req: Request<Record<string, never>, unknown, ChangePasswordBody>, res: Response) => {
   const { currentPassword, newPassword } = req.body;
   const user = await User.findById(req.user!._id).select('+password +refreshTokens');
 

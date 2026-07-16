@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import type { ParamsDictionary } from 'express-serve-static-core';
 import type { Types } from 'mongoose';
 import Conversation from '../models/Conversation';
 import Message from '../models/Message';

@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import type { ParamsDictionary } from 'express-serve-static-core';
 import type { FilterQuery, Types } from 'mongoose';
 import Mobile from '../models/Mobile';
 import User from '../models/User';
@@ -52,7 +51,7 @@ type MobileCreatePayload = Omit<CreateListingBody, 'location'> & {
   location: CreateListingLocationBody | IMobileLocation;
 };
 
-export const createListing = asyncHandler(async (req: Request<unknown, unknown, CreateListingBody>, res: Response) => {
+export const createListing = asyncHandler(async (req: Request<Record<string, never>, unknown, CreateListingBody>, res: Response) => {
   const payload: MobileCreatePayload = { ...req.body, seller: req.user!._id, status: MOBILE_STATUS.PENDING_APPROVAL };
 
   if (payload.location) {
@@ -72,7 +71,7 @@ export const createListing = asyncHandler(async (req: Request<unknown, unknown, 
   new ApiResponse(201, mobile, 'Listing created and submitted for approval').send(res);
 });
 
-export const uploadImages = asyncHandler(async (req: Request<ParamsDictionary>, res: Response) => {
+export const uploadImages = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const mobile = await Mobile.findOne({ _id: req.params.id, seller: req.user!._id });
   if (!mobile) throw ApiError.notFound('Listing not found');
   const files = Array.isArray(req.files) ? req.files : undefined;
@@ -92,7 +91,7 @@ export const uploadImages = asyncHandler(async (req: Request<ParamsDictionary>, 
   new ApiResponse(200, mobile.images, 'Images uploaded').send(res);
 });
 
-export const uploadVideo = asyncHandler(async (req: Request<ParamsDictionary>, res: Response) => {
+export const uploadVideo = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const mobile = await Mobile.findOne({ _id: req.params.id, seller: req.user!._id });
   if (!mobile) throw ApiError.notFound('Listing not found');
   if (!req.file) throw ApiError.badRequest('No video uploaded');
@@ -109,7 +108,7 @@ export const uploadVideo = asyncHandler(async (req: Request<ParamsDictionary>, r
   new ApiResponse(200, mobile.videos, 'Video uploaded').send(res);
 });
 
-export const uploadPurchaseBill = asyncHandler(async (req: Request<ParamsDictionary>, res: Response) => {
+export const uploadPurchaseBill = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const mobile = await Mobile.findOne({ _id: req.params.id, seller: req.user!._id });
   if (!mobile) throw ApiError.notFound('Listing not found');
   if (!req.file) throw ApiError.badRequest('No file uploaded');
@@ -128,7 +127,7 @@ export const uploadPurchaseBill = asyncHandler(async (req: Request<ParamsDiction
 
 type UpdateListingBody = Partial<CreateListingBody>;
 
-export const updateListing = asyncHandler(async (req: Request<ParamsDictionary, unknown, UpdateListingBody>, res: Response) => {
+export const updateListing = asyncHandler(async (req: Request<{ id: string }, unknown, UpdateListingBody>, res: Response) => {
   const mobile = await Mobile.findOne({ _id: req.params.id, seller: req.user!._id });
   if (!mobile) throw ApiError.notFound('Listing not found');
   if (mobile.status === MOBILE_STATUS.SOLD) throw ApiError.badRequest('Cannot edit a sold listing');
@@ -151,7 +150,7 @@ export const updateListing = asyncHandler(async (req: Request<ParamsDictionary, 
   new ApiResponse(200, mobile, 'Listing updated and resubmitted for approval').send(res);
 });
 
-export const deleteListing = asyncHandler(async (req: Request<ParamsDictionary>, res: Response) => {
+export const deleteListing = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const mobile = await Mobile.findOne({ _id: req.params.id, seller: req.user!._id });
   if (!mobile) throw ApiError.notFound('Listing not found');
 
@@ -173,7 +172,7 @@ interface PopulatedListingSeller {
 
 type MobileWithSeller = Populated<IMobile, { seller: PopulatedListingSeller }>;
 
-export const getListing = asyncHandler(async (req: Request<ParamsDictionary>, res: Response) => {
+export const getListing = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const mobile = (await Mobile.findById(req.params.id).populate(
     'seller',
     'name avatar ratingAvg ratingCount sellerProfile.isVerified createdAt'
@@ -256,7 +255,7 @@ const SORT_MAP: Record<'newest' | 'price_asc' | 'price_desc' | 'popular', Record
   popular: { views: -1, likesCount: -1 },
 };
 
-export const listListings = asyncHandler(async (req: Request<unknown, unknown, unknown, MobileListQuery>, res: Response) => {
+export const listListings = asyncHandler(async (req: Request<Record<string, never>, unknown, unknown, MobileListQuery>, res: Response) => {
   const { page, limit, skip } = getPagination(req.query);
   const filter = buildSearchFilter(req.query);
 
@@ -297,7 +296,7 @@ interface MyListingsQuery {
   status?: MobileStatus;
 }
 
-export const getMyListings = asyncHandler(async (req: Request<unknown, unknown, unknown, MyListingsQuery>, res: Response) => {
+export const getMyListings = asyncHandler(async (req: Request<Record<string, never>, unknown, unknown, MyListingsQuery>, res: Response) => {
   const { page, limit, skip } = getPagination(req.query);
   const filter: FilterQuery<IMobile> = { seller: req.user!._id };
   if (req.query.status) filter.status = req.query.status;
@@ -320,12 +319,12 @@ interface SuggestPriceBody {
   mrp?: number;
 }
 
-export const suggestPrice = asyncHandler(async (req: Request<unknown, unknown, SuggestPriceBody>, res: Response) => {
+export const suggestPrice = asyncHandler(async (req: Request<Record<string, never>, unknown, SuggestPriceBody>, res: Response) => {
   const suggestion = await priceSuggestionService.suggestPrice(req.body);
   new ApiResponse(200, suggestion).send(res);
 });
 
-export const getPriceHistory = asyncHandler(async (req: Request<ParamsDictionary>, res: Response) => {
+export const getPriceHistory = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const mobile = await Mobile.findById(req.params.id).select('priceHistory');
   if (!mobile) throw ApiError.notFound('Listing not found');
   new ApiResponse(200, mobile.priceHistory).send(res);
@@ -377,7 +376,7 @@ interface PendingApprovalsQuery {
   limit?: string;
 }
 
-export const listPendingApprovals = asyncHandler(async (req: Request<unknown, unknown, unknown, PendingApprovalsQuery>, res: Response) => {
+export const listPendingApprovals = asyncHandler(async (req: Request<Record<string, never>, unknown, unknown, PendingApprovalsQuery>, res: Response) => {
   const { page, limit, skip } = getPagination(req.query);
   const filter: FilterQuery<IMobile> = { status: MOBILE_STATUS.PENDING_APPROVAL };
 
@@ -389,7 +388,7 @@ export const listPendingApprovals = asyncHandler(async (req: Request<unknown, un
   new ApiResponse(200, mobiles, 'Pending approvals', buildMeta({ page, limit, total })).send(res);
 });
 
-export const approveListing = asyncHandler(async (req: Request<ParamsDictionary>, res: Response) => {
+export const approveListing = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
   const mobile = await Mobile.findById(req.params.id);
   if (!mobile) throw ApiError.notFound('Listing not found');
 
@@ -414,7 +413,7 @@ interface RejectListingBody {
   reason: string;
 }
 
-export const rejectListing = asyncHandler(async (req: Request<ParamsDictionary, unknown, RejectListingBody>, res: Response) => {
+export const rejectListing = asyncHandler(async (req: Request<{ id: string }, unknown, RejectListingBody>, res: Response) => {
   const mobile = await Mobile.findById(req.params.id);
   if (!mobile) throw ApiError.notFound('Listing not found');
 
@@ -437,7 +436,7 @@ interface VerifyImeiBody {
   verified: boolean;
 }
 
-export const verifyImei = asyncHandler(async (req: Request<ParamsDictionary, unknown, VerifyImeiBody>, res: Response) => {
+export const verifyImei = asyncHandler(async (req: Request<{ id: string }, unknown, VerifyImeiBody>, res: Response) => {
   const mobile = await Mobile.findById(req.params.id).select('+imei');
   if (!mobile) throw ApiError.notFound('Listing not found');
 
