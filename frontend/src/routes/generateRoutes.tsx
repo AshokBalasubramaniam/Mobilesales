@@ -33,6 +33,7 @@ import AdminOrders from "../pages/admin/Orders";
 import AdminCoupons from "../pages/admin/Coupons";
 import AdminRevenue from "../pages/admin/Revenue";
 import AdminAnalytics from "../pages/admin/Analytics";
+import AdminSettings from "../pages/admin/Settings";
 
 export interface RouteConfig {
   path?: string;
@@ -119,6 +120,11 @@ export const generateAdminRoutes = (): RouteConfig[] => [
   {
     path: "analytics",
     element: <AdminAnalytics />,
+    requiredRoles: [ROLES.ADMIN],
+  },
+  {
+    path: "settings",
+    element: <AdminSettings />,
     requiredRoles: [ROLES.ADMIN],
   },
 ];

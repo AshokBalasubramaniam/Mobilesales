@@ -4,6 +4,10 @@ import Payment from "../models/Payment";
 import { convertToApiError } from "../middleware/error.middleware";
 import logger from "../utils/logger";
 import { PAYMENT_STATUS } from "../config/constants";
+import {
+  getEmailFromAddress,
+  setEmailFromAddress,
+} from "../services/settings.service";
 
 interface SumAggResult {
   _id: null;
@@ -101,5 +105,30 @@ export const salesAnalytics = async (_req: Request, res: Response) => {
       .json({ flag: "success", data: { dailySales, monthlySales } });
   } catch (error) {
     sendError(res, "load sales analytics", error);
+  }
+};
+
+export const getSettings = async (_req: Request, res: Response) => {
+  try {
+    const emailFrom = await getEmailFromAddress();
+    res.status(200).json({ flag: "success", data: { emailFrom } });
+  } catch (error) {
+    sendError(res, "load settings", error);
+  }
+};
+
+export const updateSettings = async (
+  req: Request<Record<string, never>, unknown, { emailFrom: string }>,
+  res: Response,
+) => {
+  try {
+    const emailFrom = await setEmailFromAddress(req.body.emailFrom);
+    res.status(200).json({
+      flag: "success",
+      data: { emailFrom },
+      message: "Settings updated",
+    });
+  } catch (error) {
+    sendError(res, "update settings", error);
   }
 };

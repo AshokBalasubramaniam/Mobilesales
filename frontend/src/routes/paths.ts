@@ -55,6 +55,7 @@ export const PATHS = {
     coupons: "/admin/coupons",
     revenue: "/admin/revenue",
     analytics: "/admin/analytics",
+    settings: "/admin/settings",
   },
 };
 

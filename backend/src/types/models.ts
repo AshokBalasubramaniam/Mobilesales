@@ -447,3 +447,12 @@ export interface IReport extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// ---------- Settings ----------
+
+export interface ISettings extends Document {
+  _id: Types.ObjectId;
+  emailFrom: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

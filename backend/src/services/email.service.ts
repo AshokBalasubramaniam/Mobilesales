@@ -1,6 +1,7 @@
 import type { Transporter } from 'nodemailer';
 import env from '../config/env';
 import logger from '../utils/logger';
+import { getEmailFromAddress } from './settings.service';
 
 const BRAND_NAME = 'Mobile Sales';
 const BRAND_COLOR = '#4f46e5';
@@ -49,7 +50,8 @@ export const sendEmail = async ({ to, subject, html, text }: SendEmailArgs): Pro
     return { delivered: false, mock: true };
   }
 
-  await client.sendMail({ from: env.smtp.from, to, subject, html, text });
+  const address = await getEmailFromAddress();
+  await client.sendMail({ from: `${BRAND_NAME} <${address}>`, to, subject, html, text });
   return { delivered: true, mock: false };
 };
 

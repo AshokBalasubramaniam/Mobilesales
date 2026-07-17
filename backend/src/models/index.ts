@@ -10,6 +10,7 @@ import Report from './Report';
 import Dispute from './Dispute';
 import Notification from './Notification';
 import Coupon from './Coupon';
+import Settings from './Settings';
 
 export default {
   User,
@@ -24,4 +25,5 @@ export default {
   Dispute,
   Notification,
   Coupon,
+  Settings,
 };

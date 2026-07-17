@@ -9,6 +9,7 @@ import {
   Wallet,
   BarChart3,
   MessageCircle,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import DashboardLayout, { type DashboardNavLink } from "./DashboardLayout";
 import { PATHS } from "../routes/paths";
@@ -29,6 +30,7 @@ const links: DashboardNavLink[] = [
   { to: PATHS.admin.coupons, label: "Coupons", icon: Ticket },
   { to: PATHS.admin.revenue, label: "Revenue", icon: Wallet },
   { to: PATHS.admin.analytics, label: "Analytics", icon: BarChart3 },
+  { to: PATHS.admin.settings, label: "Settings", icon: SettingsIcon },
 ];
 
 const AdminLayout = () => <DashboardLayout title="Admin Panel" links={links} />;
