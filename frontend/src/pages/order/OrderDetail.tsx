@@ -28,8 +28,8 @@ const extractError = (err: unknown, fallback: string): string =>
   fallback;
 
 
-const idOf = (field: string | { _id: string }): string =>
-  typeof field === "string" ? field : field._id;
+const idOf = (field: string | { _id: string } | null | undefined): string =>
+  !field ? "" : typeof field === "string" ? field : field._id;
 
 const classes = {
   container: "mx-auto max-w-3xl px-4 py-10",

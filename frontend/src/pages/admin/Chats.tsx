@@ -67,10 +67,10 @@ const Chats = () => {
             >
               <div className={classes.avatarStack}>
                 {Array.isArray(c.participants) &&
-                  c.participants.map((p) =>
-                    typeof p === "string" ? null : (
+                  c.participants.map((p, i) =>
+                    !p || typeof p === "string" ? null : (
                       <Avatar
-                        key={p._id}
+                        key={p._id ?? i}
                         src={p.avatar}
                         name={p.name}
                         size="sm"
@@ -82,7 +82,7 @@ const Chats = () => {
                 <p className={classes.participants}>
                   {c.participants
                     .map((p) =>
-                      typeof p === "string" ? p : `${p.name} (${p.role})`,
+                      !p || typeof p === "string" ? p : `${p.name} (${p.role})`,
                     )
                     .join(" ↔ ")}
                 </p>

@@ -118,16 +118,16 @@ const ChatViewer = () => {
           <ArrowLeft className={classes.backIcon} />
         </button>
         <div className={classes.avatarStack}>
-          {conversation.participants.map((p) =>
-            typeof p === "string" ? null : (
-              <Avatar key={p._id} src={p.avatar} name={p.name} size="sm" />
+          {conversation.participants.map((p, i) =>
+            !p || typeof p === "string" ? null : (
+              <Avatar key={p._id ?? i} src={p.avatar} name={p.name} size="sm" />
             ),
           )}
         </div>
         <div className={classes.headerInfo}>
           <p className={classes.participants}>
             {conversation.participants
-              .map((p) => (typeof p === "string" ? p : `${p.name} (${p.role})`))
+              .map((p) => (!p || typeof p === "string" ? p : `${p.name} (${p.role})`))
               .join(" ↔ ")}
           </p>
           {conversation.mobile && (

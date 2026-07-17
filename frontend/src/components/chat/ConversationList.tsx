@@ -76,7 +76,7 @@ const ConversationList = () => {
       {conversations.map((conv) => {
         const participants = conv.participants as ConversationParticipant[];
         const other =
-          participants.find((p) => p._id !== user?._id) ||
+          participants.find((p) => p?._id !== user?._id) ||
           conv.otherParticipant;
         const isOnline = Boolean(
           other?._id && onlineUserIds.includes(other._id),

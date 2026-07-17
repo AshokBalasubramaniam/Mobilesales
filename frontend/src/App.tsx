@@ -4,7 +4,10 @@ import { Toaster } from "react-hot-toast";
 import { useAppDispatch } from "./app/hooks";
 
 import { bootstrapAuth } from "./features/auth/thunks";
+import { logoutSuccess } from "./features/auth/slice";
+import { setUnauthorizedHandler } from "./api/tokenManager";
 import SocketManager from "./components/common/SocketManager";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import AppRoutes from "./routes/AppRoutes";
 
 const App = () => {
@@ -14,12 +17,18 @@ const App = () => {
     dispatch(bootstrapAuth());
   }, [dispatch]);
 
+  useEffect(() => {
+    setUnauthorizedHandler(() => dispatch(logoutSuccess()));
+  }, [dispatch]);
+
   return (
-    <BrowserRouter>
-      <SocketManager />
-      <Toaster position="top-center" />
-      <AppRoutes />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <SocketManager />
+        <Toaster position="top-center" />
+        <AppRoutes />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 
