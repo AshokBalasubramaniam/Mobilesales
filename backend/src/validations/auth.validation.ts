@@ -52,7 +52,8 @@ export const otpVerify: ValidationSchema = {
 
 export const verifyEmail: ValidationSchema = {
   body: Joi.object({
-    token: Joi.string().required(),
+    email: email().required(),
+    code: Joi.string().pattern(/^\d{6}$/).message('Code must be a 6-digit number').required(),
   }),
 };
 

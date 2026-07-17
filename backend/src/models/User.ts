@@ -77,8 +77,6 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 
     isEmailVerified: { type: Boolean, default: false },
     isPhoneVerified: { type: Boolean, default: false },
-    emailVerificationToken: { type: String, select: false },
-    emailVerificationExpires: { type: Date, select: false },
 
     passwordResetOtp: {
       codeHash: { type: String, select: false },
@@ -88,7 +86,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 
     otp: {
       codeHash: { type: String, select: false },
-      purpose: { type: String, enum: ['login', 'phone_verify'], select: false },
+      purpose: { type: String, enum: ['login', 'phone_verify', 'email_verify'], select: false },
       expiresAt: { type: Date, select: false },
       attempts: { type: Number, default: 0, select: false },
     },
@@ -138,7 +136,7 @@ userSchema.methods.generateRefreshToken = function generateRefreshToken(): strin
 
 userSchema.methods.toSafeJSON = function toSafeJSON(): SafeUser {
   const obj = this.toObject({ virtuals: false });
-  const { password, refreshTokens, otp, emailVerificationToken, passwordResetOtp, googleId, ...safe } = obj;
+  const { password, refreshTokens, otp, passwordResetOtp, googleId, ...safe } = obj;
   return safe;
 };
 

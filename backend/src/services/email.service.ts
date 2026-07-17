@@ -85,22 +85,20 @@ const emailLayout = (title: string, bodyHtml: string): string => `<!doctype html
   </body>
 </html>`;
 
-export const sendVerificationEmail = (to: string, token: string): Promise<SendEmailResult> => {
-  const link = `${env.clientUrl}/verify-email?token=${token}`;
-  return sendEmail({
+export const sendVerificationEmail = (to: string, code: string): Promise<SendEmailResult> =>
+  sendEmail({
     to,
     subject: `Verify your ${BRAND_NAME} account`,
-    text: `Verify your email using this link: ${link}`,
+    text: `Your email verification code is ${code}. It expires in 10 minutes. If you didn't create this account, you can ignore this email.`,
     html: emailLayout(
       'Verify your email address',
-      `<p style="margin:0 0 20px;font-size:14px;color:#374151;">Thanks for signing up! Click the button below to verify your email address.</p>
+      `<p style="margin:0 0 20px;font-size:14px;color:#374151;">Thanks for signing up! Use the code below to verify your email address. It expires in 10 minutes.</p>
        <p style="text-align:center;margin:0 0 20px;">
-         <a href="${link}" style="display:inline-block;background:${BRAND_COLOR};color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:9999px;font-weight:600;font-size:14px;">Verify Email</a>
+         <span style="display:inline-block;padding:14px 28px;border-radius:12px;background:#f3f4f6;font-size:28px;font-weight:700;letter-spacing:8px;color:${BRAND_COLOR};">${code}</span>
        </p>
-       <p style="margin:0;font-size:12px;color:#9ca3af;">This link expires in 24 hours. If you didn't create this account, you can ignore this email.</p>`
+       <p style="margin:0;font-size:12px;color:#9ca3af;">If you didn't create this account, you can safely ignore this email.</p>`
     ),
   });
-};
 
 export const sendPasswordResetOtpEmail = (to: string, code: string): Promise<SendEmailResult> =>
   sendEmail({

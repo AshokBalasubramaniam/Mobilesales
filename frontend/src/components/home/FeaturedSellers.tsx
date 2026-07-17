@@ -34,6 +34,7 @@ const FeaturedSellers = ({ mobiles }: FeaturedSellersProps) => {
   for (const mobile of mobiles || []) {
     const seller = mobile.seller;
     if (
+      seller &&
       typeof seller === "object" &&
       seller._id &&
       !seen.has(seller._id) &&

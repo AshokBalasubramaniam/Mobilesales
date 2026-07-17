@@ -64,7 +64,7 @@ export interface IPasswordResetOtp {
 
 export interface IUserOtp {
   codeHash?: string;
-  purpose?: 'login' | 'phone_verify';
+  purpose?: 'login' | 'phone_verify' | 'email_verify';
   expiresAt?: Date;
   attempts: number;
 }
@@ -81,8 +81,6 @@ export interface IUser extends Document {
   googleId?: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
-  emailVerificationToken?: string;
-  emailVerificationExpires?: Date;
   passwordResetOtp?: IPasswordResetOtp;
   otp?: IUserOtp;
   addresses: Types.DocumentArray<IAddress>;
@@ -98,7 +96,7 @@ export interface IUser extends Document {
   updatedAt: Date;
 }
 
-export type SafeUser = Omit<IUser, 'password' | 'refreshTokens' | 'otp' | 'emailVerificationToken' | 'passwordResetOtp' | 'googleId'>;
+export type SafeUser = Omit<IUser, 'password' | 'refreshTokens' | 'otp' | 'passwordResetOtp' | 'googleId'>;
 
 export interface IUserMethods {
   comparePassword(candidate: string): Promise<boolean>;

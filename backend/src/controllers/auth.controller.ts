@@ -8,7 +8,7 @@ import * as tokenService from "../services/token.service";
 import * as emailService from "../services/email.service";
 import * as smsService from "../services/sms.service";
 import * as googleAuthService from "../services/googleAuth.service";
-import { generateNumericOTP, generateToken, hashToken } from "../utils/otp";
+import { generateNumericOTP, hashToken } from "../utils/otp";
 import { AUTH_PROVIDER } from "../config/constants";
 import type { AuthenticatedUser } from "../types/express";
 import type { IRefreshToken } from "../types/models";
@@ -68,6 +68,25 @@ const sendError = (res: Response, action: string, error: unknown): void => {
     .json({ flag: "error", message: apiError.message });
 };
 
+const sendEmailVerificationOtp = async (user: AuthenticatedUser): Promise<void> => {
+  const code = generateNumericOTP(6);
+  user.otp = {
+    codeHash: hashToken(code),
+    purpose: "email_verify",
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    attempts: 0,
+  };
+  await user.save();
+
+  try {
+    await emailService.sendVerificationEmail(user.email, code);
+  } catch (err) {
+    logger.warn(
+      `Failed to send verification email to ${user.email}: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+};
+
 interface RegisterBody {
   name: string;
   email: string;
@@ -94,19 +113,7 @@ export const register = async (
     }
 
     const user = new User({ name, email, phone, password, role });
-
-    const verificationToken = generateToken();
-    user.emailVerificationToken = hashToken(verificationToken);
-    user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await user.save();
-
-    try {
-      await emailService.sendVerificationEmail(user.email, verificationToken);
-    } catch (err) {
-      logger.warn(
-        `Failed to send verification email to ${user.email}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
+    await sendEmailVerificationOtp(user);
 
     const { accessToken } = await issueSession(res, user, req);
 
@@ -403,7 +410,8 @@ export const getMe = async (req: Request, res: Response) => {
 };
 
 interface VerifyEmailBody {
-  token: string;
+  email: string;
+  code: string;
 }
 
 export const verifyEmail = async (
@@ -411,26 +419,38 @@ export const verifyEmail = async (
   res: Response,
 ) => {
   try {
-    const { token } = req.body;
-    const tokenHash = hashToken(token);
+    const { email, code } = req.body;
 
-    const user = await User.findOne({
-      emailVerificationToken: tokenHash,
-      emailVerificationExpires: { $gt: new Date() },
-    }).select("+emailVerificationToken +emailVerificationExpires");
-
-    if (!user) {
+    const user = await User.findOne({ email }).select(
+      "+otp.codeHash +otp.purpose +otp.expiresAt +otp.attempts",
+    );
+    if (!user || user.otp?.purpose !== "email_verify" || !user.otp?.codeHash) {
       return res
         .status(400)
-        .json({
-          flag: "error",
-          message: "Invalid or expired verification token",
-        });
+        .json({ flag: "error", message: "No verification code was requested for this email" });
+    }
+    if (user.otp.expiresAt! < new Date()) {
+      return res
+        .status(400)
+        .json({ flag: "error", message: "Verification code has expired" });
+    }
+    if (user.otp.attempts >= 5) {
+      return res.status(400).json({
+        flag: "error",
+        message: "Too many incorrect attempts, request a new code",
+      });
+    }
+
+    if (user.otp.codeHash !== hashToken(code)) {
+      user.otp.attempts += 1;
+      await user.save();
+      return res
+        .status(400)
+        .json({ flag: "error", message: "Incorrect verification code" });
     }
 
     user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
+    user.otp = undefined;
     await user.save();
 
     res
@@ -453,23 +473,7 @@ export const resendVerificationEmail = async (req: Request, res: Response) => {
         .json({ flag: "error", message: "Email is already verified" });
     }
 
-    const verificationToken = generateToken();
-    req.user!.emailVerificationToken = hashToken(verificationToken);
-    req.user!.emailVerificationExpires = new Date(
-      Date.now() + 24 * 60 * 60 * 1000,
-    );
-    await req.user!.save();
-
-    try {
-      await emailService.sendVerificationEmail(
-        req.user!.email,
-        verificationToken,
-      );
-    } catch (err) {
-      logger.warn(
-        `Failed to send verification email to ${req.user!.email}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
+    await sendEmailVerificationOtp(req.user!);
 
     res
       .status(200)

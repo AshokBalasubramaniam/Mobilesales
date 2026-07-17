@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { isAxiosError } from "axios";
 import { MailWarning } from "lucide-react";
 import api from "../../api/api";
 import Button from "../common/Button";
+import { PATHS } from "../../routes/paths";
 
 export interface EmailVerificationNoticeProps {
   fullPage?: boolean;
@@ -22,12 +24,14 @@ const EmailVerificationNotice = ({
   fullPage = false,
 }: EmailVerificationNoticeProps) => {
   const [sending, setSending] = useState(false);
+  const navigate = useNavigate();
 
   const handleResend = async () => {
     setSending(true);
     try {
       await api.post("/auth/resend-verification");
-      toast.success("Verification email sent — check your inbox.");
+      toast.success("Verification code sent — check your inbox.");
+      navigate(PATHS.verifyEmail);
     } catch (err) {
       toast.error(
         (isAxiosError<{ message?: string }>(err) &&
@@ -44,11 +48,11 @@ const EmailVerificationNotice = ({
       <MailWarning className={classes.icon} />
       <h2 className={classes.title}>Verify your email to continue</h2>
       <p className={classes.description}>
-        We sent a verification email when you signed up. Please verify your
-        address to unlock this feature.
+        Please verify your email address with a one-time code to unlock this
+        feature.
       </p>
       <Button size="sm" onClick={handleResend} loading={sending}>
-        Resend verification email
+        Send verification code
       </Button>
     </div>
   );
