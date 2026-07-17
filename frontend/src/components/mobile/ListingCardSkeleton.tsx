@@ -1,10 +1,20 @@
+const classes = {
+  container:
+    "overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800",
+  image: "skeleton aspect-square",
+  body: "space-y-2 p-3.5",
+  titleLine: "skeleton h-4 w-3/4",
+  subtitleLine: "skeleton h-3 w-1/2",
+  priceLine: "skeleton h-5 w-1/3",
+};
+
 const ListingCardSkeleton = () => (
-  <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
-    <div className="skeleton aspect-square" />
-    <div className="space-y-2 p-3.5">
-      <div className="skeleton h-4 w-3/4" />
-      <div className="skeleton h-3 w-1/2" />
-      <div className="skeleton h-5 w-1/3" />
+  <div className={classes.container}>
+    <div className={classes.image} />
+    <div className={classes.body}>
+      <div className={classes.titleLine} />
+      <div className={classes.subtitleLine} />
+      <div className={classes.priceLine} />
     </div>
   </div>
 );

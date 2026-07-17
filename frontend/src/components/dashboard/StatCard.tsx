@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react";
 
 export interface StatCardProps {
   icon: LucideIcon;
@@ -7,13 +7,22 @@ export interface StatCardProps {
   accent?: string;
 }
 
+const classes = {
+  card: "rounded-xl border border-gray-200 p-5 dark:border-gray-800",
+  header: "flex items-center justify-between",
+  label: "text-sm text-gray-500",
+  icon: "size-5",
+  defaultAccent: "text-brand-600",
+  value: "mt-2 text-2xl font-bold",
+};
+
 const StatCard = ({ icon: Icon, label, value, accent }: StatCardProps) => (
-  <div className="rounded-xl border border-gray-200 p-5 dark:border-gray-800">
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-gray-500">{label}</span>
-      <Icon className={`size-5 ${accent || 'text-brand-600'}`} />
+  <div className={classes.card}>
+    <div className={classes.header}>
+      <span className={classes.label}>{label}</span>
+      <Icon className={`${classes.icon} ${accent || classes.defaultAccent}`} />
     </div>
-    <p className="mt-2 text-2xl font-bold">{value}</p>
+    <p className={classes.value}>{value}</p>
   </div>
 );
 

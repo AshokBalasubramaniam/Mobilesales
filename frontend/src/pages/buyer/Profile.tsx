@@ -1,20 +1,58 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { isAxiosError } from 'axios';
-import { Camera, MapPin, Plus, ShieldCheck, Trash2 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
-import { useAppDispatch } from '../../app/hooks';
-import { store } from '../../app/store';
-import { updateProfileThunk } from '../../features/auth/thunks';
-import api from '../../api/api';
-import type { ApiResponse } from '../../types/api';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
-import Avatar from '../../components/common/Avatar';
-import Modal from '../../components/common/Modal';
-import { PATHS } from '../../routes/paths';
-import type { Address } from '../../types/models';
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { isAxiosError } from "axios";
+import { Camera, MapPin, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { useAppDispatch } from "../../app/hooks";
+import { store } from "../../app/store";
+import { updateProfileThunk } from "../../features/auth/thunks";
+import api from "../../api/api";
+import type { ApiResponse } from "../../types/api";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import Avatar from "../../components/common/Avatar";
+import Modal from "../../components/common/Modal";
+import { PATHS } from "../../routes/paths";
+import type { Address } from "../../types/models";
+
+const classes = {
+  resendButton:
+    "mt-1 text-xs font-medium text-brand-600 hover:underline disabled:opacity-50",
+  container: "space-y-6",
+  avatarCard:
+    "flex items-center gap-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  avatarWrapper: "relative",
+  avatarUploadLabel:
+    "absolute right-0 bottom-0 cursor-pointer rounded-full bg-brand-600 p-1.5 text-white",
+  cameraIcon: "size-3.5",
+  userName: "font-semibold",
+  userEmail: "text-sm text-gray-500",
+  emailNotVerifiedText: "mt-1 text-xs text-amber-600",
+  formPanel:
+    "space-y-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  sectionTitle: "font-semibold",
+  addressesPanel: "rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  addressesHeader: "mb-3 flex items-center justify-between",
+  noAddressesText: "text-sm text-gray-500",
+  addressesList: "space-y-2",
+  addressItem:
+    "flex items-start justify-between rounded-lg border border-gray-100 p-3 text-sm dark:border-gray-800",
+  addressItemContent: "flex gap-2",
+  mapPinIcon: "mt-0.5 size-4 text-gray-400",
+  addressLabel: "font-medium",
+  addressDetail: "text-gray-500",
+  trashIcon: "size-4 text-gray-400 hover:text-red-500",
+  becomeSellerBanner:
+    "flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 p-6 dark:border-brand-800 dark:bg-brand-900/20",
+  becomeSellerContent: "flex items-center gap-3",
+  shieldIcon: "size-8 text-brand-600",
+  promoTitle: "font-semibold",
+  promoDescription: "text-sm text-gray-500",
+  modalForm: "space-y-3",
+  modalGrid: "grid grid-cols-3 gap-2",
+  saveAddressButton: "w-full",
+};
 
 const ResendVerification = () => {
   const [sending, setSending] = useState(false);
@@ -22,18 +60,26 @@ const ResendVerification = () => {
   const handleResend = async () => {
     setSending(true);
     try {
-      await api.post('/auth/resend-verification');
-      toast.success('Verification email sent — check your inbox.');
+      await api.post("/auth/resend-verification");
+      toast.success("Verification email sent — check your inbox.");
     } catch (err) {
-      toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not send verification email');
+      toast.error(
+        (isAxiosError<{ message?: string }>(err) &&
+          err.response?.data?.message) ||
+          "Could not send verification email",
+      );
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <button onClick={handleResend} disabled={sending} className="mt-1 text-xs font-medium text-brand-600 hover:underline disabled:opacity-50">
-      {sending ? 'Sending…' : 'Resend verification email'}
+    <button
+      onClick={handleResend}
+      disabled={sending}
+      className={classes.resendButton}
+    >
+      {sending ? "Sending…" : "Resend verification email"}
     </button>
   );
 };
@@ -49,13 +95,25 @@ interface NewAddressForm {
 const Profile = () => {
   const { user, isBuyer } = useAuth();
   const dispatch = useAppDispatch();
-  const [form, setForm] = useState({ name: user?.name ?? '', phone: user?.phone ?? '' });
+  const [form, setForm] = useState({
+    name: user?.name ?? "",
+    phone: user?.phone ?? "",
+  });
   const [saving, setSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
-  const [newAddress, setNewAddress] = useState<NewAddressForm>({ label: 'Home', line1: '', city: '', state: '', pincode: '' });
+  const [newAddress, setNewAddress] = useState<NewAddressForm>({
+    label: "Home",
+    line1: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
   const [addresses, setAddresses] = useState<Address[]>(user?.addresses ?? []);
-  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+  });
   const [changingPassword, setChangingPassword] = useState(false);
 
   if (!user) return null;
@@ -65,9 +123,9 @@ const Profile = () => {
     setSaving(true);
     const user = await dispatch(updateProfileThunk(form));
     if (user) {
-      toast.success('Profile updated');
+      toast.success("Profile updated");
     } else {
-      toast.error(store.getState().auth.error || 'Could not update profile');
+      toast.error(store.getState().auth.error || "Could not update profile");
     }
     setSaving(false);
   };
@@ -78,11 +136,13 @@ const Profile = () => {
     setAvatarUploading(true);
     try {
       const avatarForm = new FormData();
-      avatarForm.append('avatar', file);
-      await api.post('/users/me/avatar', avatarForm, { headers: { 'Content-Type': 'multipart/form-data' } });
-      toast.success('Avatar updated — refresh to see changes');
+      avatarForm.append("avatar", file);
+      await api.post("/users/me/avatar", avatarForm, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Avatar updated — refresh to see changes");
     } catch {
-      toast.error('Could not upload avatar');
+      toast.error("Could not upload avatar");
     } finally {
       setAvatarUploading(false);
     }
@@ -91,18 +151,33 @@ const Profile = () => {
   const handleAddAddress = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await api.post<ApiResponse<Address[]>>('/users/me/addresses', newAddress);
+      const { data } = await api.post<ApiResponse<Address[]>>(
+        "/users/me/addresses",
+        newAddress,
+      );
       setAddresses(data.data);
       setAddressModalOpen(false);
-      setNewAddress({ label: 'Home', line1: '', city: '', state: '', pincode: '' });
-      toast.success('Address added');
+      setNewAddress({
+        label: "Home",
+        line1: "",
+        city: "",
+        state: "",
+        pincode: "",
+      });
+      toast.success("Address added");
     } catch (err) {
-      toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not add address');
+      toast.error(
+        (isAxiosError<{ message?: string }>(err) &&
+          err.response?.data?.message) ||
+          "Could not add address",
+      );
     }
   };
 
   const handleRemoveAddress = async (id: string) => {
-    const { data } = await api.delete<ApiResponse<Address[]>>(`/users/me/addresses/${id}`);
+    const { data } = await api.delete<ApiResponse<Address[]>>(
+      `/users/me/addresses/${id}`,
+    );
     setAddresses(data.data);
   };
 
@@ -110,83 +185,113 @@ const Profile = () => {
     e.preventDefault();
     setChangingPassword(true);
     try {
-      await api.post('/auth/change-password', passwordForm);
-      toast.success('Password changed');
-      setPasswordForm({ currentPassword: '', newPassword: '' });
+      await api.post("/auth/change-password", passwordForm);
+      toast.success("Password changed");
+      setPasswordForm({ currentPassword: "", newPassword: "" });
     } catch (err) {
-      toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not change password');
+      toast.error(
+        (isAxiosError<{ message?: string }>(err) &&
+          err.response?.data?.message) ||
+          "Could not change password",
+      );
     } finally {
       setChangingPassword(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800">
-        <div className="relative">
+    <div className={classes.container}>
+      <div className={classes.avatarCard}>
+        <div className={classes.avatarWrapper}>
           <Avatar src={user.avatar} name={user.name} size="xl" />
-          <label className="absolute right-0 bottom-0 cursor-pointer rounded-full bg-brand-600 p-1.5 text-white">
-            <Camera className="size-3.5" />
-            <input type="file" accept="image/*" hidden onChange={handleAvatarChange} disabled={avatarUploading} />
+          <label className={classes.avatarUploadLabel}>
+            <Camera className={classes.cameraIcon} />
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleAvatarChange}
+              disabled={avatarUploading}
+            />
           </label>
         </div>
         <div>
-          <p className="font-semibold">{user.name}</p>
-          <p className="text-sm text-gray-500">{user.email}</p>
+          <p className={classes.userName}>{user.name}</p>
+          <p className={classes.userEmail}>{user.email}</p>
           {!user.isEmailVerified && (
             <div>
-              <p className="mt-1 text-xs text-amber-600">Email not verified</p>
+              <p className={classes.emailNotVerifiedText}>Email not verified</p>
               <ResendVerification />
             </div>
           )}
         </div>
       </div>
 
-      <form onSubmit={handleSaveProfile} className="space-y-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800">
-        <h2 className="font-semibold">Basic Info</h2>
-        <Input label="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+      <form onSubmit={handleSaveProfile} className={classes.formPanel}>
+        <h2 className={classes.sectionTitle}>Basic Info</h2>
+        <Input
+          label="Full name"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        />
+        <Input
+          label="Phone"
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+        />
         <Button type="submit" loading={saving}>
           Save Changes
         </Button>
       </form>
 
-      <div className="rounded-xl border border-gray-200 p-6 dark:border-gray-800">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold">Addresses</h2>
-          <Button size="sm" variant="secondary" icon={Plus} onClick={() => setAddressModalOpen(true)}>
+      <div className={classes.addressesPanel}>
+        <div className={classes.addressesHeader}>
+          <h2 className={classes.sectionTitle}>Addresses</h2>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={Plus}
+            onClick={() => setAddressModalOpen(true)}
+          >
             Add Address
           </Button>
         </div>
-        {addresses.length === 0 && <p className="text-sm text-gray-500">No saved addresses yet.</p>}
-        <div className="space-y-2">
+        {addresses.length === 0 && (
+          <p className={classes.noAddressesText}>No saved addresses yet.</p>
+        )}
+        <div className={classes.addressesList}>
           {addresses.map((addr) => (
-            <div key={addr._id} className="flex items-start justify-between rounded-lg border border-gray-100 p-3 text-sm dark:border-gray-800">
-              <div className="flex gap-2">
-                <MapPin className="mt-0.5 size-4 text-gray-400" />
+            <div key={addr._id} className={classes.addressItem}>
+              <div className={classes.addressItemContent}>
+                <MapPin className={classes.mapPinIcon} />
                 <div>
-                  <p className="font-medium">{addr.label}</p>
-                  <p className="text-gray-500">
+                  <p className={classes.addressLabel}>{addr.label}</p>
+                  <p className={classes.addressDetail}>
                     {addr.line1}, {addr.city}, {addr.state} - {addr.pincode}
                   </p>
                 </div>
               </div>
               <button onClick={() => handleRemoveAddress(addr._id)}>
-                <Trash2 className="size-4 text-gray-400 hover:text-red-500" />
+                <Trash2 className={classes.trashIcon} />
               </button>
             </div>
           ))}
         </div>
       </div>
 
-      <form onSubmit={handleChangePassword} className="space-y-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800">
-        <h2 className="font-semibold">Change Password</h2>
+      <form onSubmit={handleChangePassword} className={classes.formPanel}>
+        <h2 className={classes.sectionTitle}>Change Password</h2>
         <Input
           label="Current password"
           type="password"
           required
           value={passwordForm.currentPassword}
-          onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+          onChange={(e) =>
+            setPasswordForm({
+              ...passwordForm,
+              currentPassword: e.target.value,
+            })
+          }
         />
         <Input
           label="New password"
@@ -194,7 +299,9 @@ const Profile = () => {
           required
           minLength={8}
           value={passwordForm.newPassword}
-          onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+          onChange={(e) =>
+            setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+          }
         />
         <Button type="submit" loading={changingPassword}>
           Update Password
@@ -202,12 +309,14 @@ const Profile = () => {
       </form>
 
       {isBuyer && (
-        <div className="flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 p-6 dark:border-brand-800 dark:bg-brand-900/20">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="size-8 text-brand-600" />
+        <div className={classes.becomeSellerBanner}>
+          <div className={classes.becomeSellerContent}>
+            <ShieldCheck className={classes.shieldIcon} />
             <div>
-              <p className="font-semibold">Want to sell phones too?</p>
-              <p className="text-sm text-gray-500">Get verified and start listing in minutes.</p>
+              <p className={classes.promoTitle}>Want to sell phones too?</p>
+              <p className={classes.promoDescription}>
+                Get verified and start listing in minutes.
+              </p>
             </div>
           </div>
           <Link to={PATHS.becomeSeller}>
@@ -216,22 +325,58 @@ const Profile = () => {
         </div>
       )}
 
-      <Modal open={addressModalOpen} onClose={() => setAddressModalOpen(false)} title="Add Address">
-        <form onSubmit={handleAddAddress} className="space-y-3">
-          <Input label="Label" value={newAddress.label} onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })} />
-          <Input label="Address line 1" required value={newAddress.line1} onChange={(e) => setNewAddress({ ...newAddress, line1: e.target.value })} />
-          <div className="grid grid-cols-3 gap-2">
-            <Input label="City" required value={newAddress.city} onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })} />
-            <Input label="State" required value={newAddress.state} onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })} />
+      <Modal
+        open={addressModalOpen}
+        onClose={() => setAddressModalOpen(false)}
+        title="Add Address"
+      >
+        <form onSubmit={handleAddAddress} className={classes.modalForm}>
+          <Input
+            label="Label"
+            value={newAddress.label}
+            onChange={(e) =>
+              setNewAddress({ ...newAddress, label: e.target.value })
+            }
+          />
+          <Input
+            label="Address line 1"
+            required
+            value={newAddress.line1}
+            onChange={(e) =>
+              setNewAddress({ ...newAddress, line1: e.target.value })
+            }
+          />
+          <div className={classes.modalGrid}>
+            <Input
+              label="City"
+              required
+              value={newAddress.city}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, city: e.target.value })
+              }
+            />
+            <Input
+              label="State"
+              required
+              value={newAddress.state}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, state: e.target.value })
+              }
+            />
             <Input
               label="Pincode"
               required
               maxLength={6}
               value={newAddress.pincode}
-              onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value.replace(/\D/g, '') })}
+              onChange={(e) =>
+                setNewAddress({
+                  ...newAddress,
+                  pincode: e.target.value.replace(/\D/g, ""),
+                })
+              }
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className={classes.saveAddressButton}>
             Save Address
           </Button>
         </form>

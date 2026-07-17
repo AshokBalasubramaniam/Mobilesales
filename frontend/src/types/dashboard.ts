@@ -1,4 +1,4 @@
-import type { OrderStatus } from './models';
+import type { OrderStatus } from "./models";
 
 export interface SellerDashboardStats {
   views: number;

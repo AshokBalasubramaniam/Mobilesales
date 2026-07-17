@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 type UserGroupState = {
   sucessMessage: string;
@@ -16,8 +16,8 @@ type UserGroupState = {
 };
 
 const initialState: UserGroupState = {
-  sucessMessage: '',
-  failureMessage: '',
+  sucessMessage: "",
+  failureMessage: "",
   userGroupData: [],
   viewData: [],
   departmentDesignationData: [],
@@ -27,11 +27,11 @@ const initialState: UserGroupState = {
   hrMasterLocationData: [],
   userGroupList: [],
   isGroupNameExist: false,
-  errorMessage: '',
+  errorMessage: "",
 };
 
 const userGroupSlice = createSlice({
-  name: 'userGroup',
+  name: "userGroup",
   initialState,
   reducers: {
     fetchaddUserGroupSuccess: (state, action: PayloadAction<string>) => {
@@ -44,7 +44,7 @@ const userGroupSlice = createSlice({
       state.userGroupData = action.payload;
     },
     deleteUsrGroupRequest: (state) => {
-      state.failureMessage = '';
+      state.failureMessage = "";
     },
     deleteUserGroupSuccess: (state, action: PayloadAction<string>) => {
       state.sucessMessage = action.payload;
@@ -62,7 +62,10 @@ const userGroupSlice = createSlice({
     fetchUpdateUserGroupSuccess: (state, action: PayloadAction<string>) => {
       state.sucessMessage = action.payload;
     },
-    fetchDepartmentDesignationSuccess: (state, action: PayloadAction<unknown[]>) => {
+    fetchDepartmentDesignationSuccess: (
+      state,
+      action: PayloadAction<unknown[]>,
+    ) => {
       state.departmentDesignationData = action.payload;
     },
     fetchLocationSuccess: (state, action: PayloadAction<unknown[]>) => {
@@ -77,22 +80,25 @@ const userGroupSlice = createSlice({
     postFileDataSuccess: (state, action: PayloadAction<unknown[]>) => {
       state.userGroupExcelSheetUpdateData = action.payload;
     },
-    fetchUserGroupExcelSheetDataSuccess: (state, action: PayloadAction<unknown[]>) => {
+    fetchUserGroupExcelSheetDataSuccess: (
+      state,
+      action: PayloadAction<unknown[]>,
+    ) => {
       state.userGroupExcelSheetUpdateData = action.payload;
     },
     postProvisionedSuccess: (state, action: PayloadAction<string>) => {
       state.sucessMessage = action.payload;
     },
     closeSuccessMessage: (state) => {
-      state.sucessMessage = '';
-      state.failureMessage = '';
+      state.sucessMessage = "";
+      state.failureMessage = "";
     },
     fetchUserGroupDataSuccess: (state, action: PayloadAction<unknown[]>) => {
       state.userGroupList = action.payload;
     },
     validateGroupNameSuccess: (state) => {
       state.isGroupNameExist = false;
-      state.errorMessage = '';
+      state.errorMessage = "";
     },
     validateGroupNameFailure: (state, action: PayloadAction<string>) => {
       state.isGroupNameExist = true;

@@ -1,5 +1,5 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Notification } from '../../types/models';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Notification } from "../../types/models";
 
 export interface NotificationsFetchedPayload {
   items: Notification[];
@@ -9,17 +9,17 @@ export interface NotificationsFetchedPayload {
 type NotificationsState = {
   items: Notification[];
   unreadCount: number;
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  status: "idle" | "loading" | "succeeded" | "failed";
 };
 
 const initialState: NotificationsState = {
   items: [],
   unreadCount: 0,
-  status: 'idle',
+  status: "idle",
 };
 
 const notificationsSlice = createSlice({
-  name: 'notifications',
+  name: "notifications",
   initialState,
   reducers: {
     notificationReceived: (state, action: PayloadAction<Notification>) => {
@@ -28,15 +28,18 @@ const notificationsSlice = createSlice({
     },
 
     notificationsStart: (state) => {
-      state.status = 'loading';
+      state.status = "loading";
     },
-    notificationsSuccess: (state, action: PayloadAction<NotificationsFetchedPayload>) => {
+    notificationsSuccess: (
+      state,
+      action: PayloadAction<NotificationsFetchedPayload>,
+    ) => {
       state.items = action.payload.items;
       state.unreadCount = action.payload.unreadCount;
-      state.status = 'succeeded';
+      state.status = "succeeded";
     },
     notificationsFail: (state) => {
-      state.status = 'failed';
+      state.status = "failed";
     },
     notificationMarkedRead: (state, action: PayloadAction<string>) => {
       const notif = state.items.find((n) => n._id === action.payload);

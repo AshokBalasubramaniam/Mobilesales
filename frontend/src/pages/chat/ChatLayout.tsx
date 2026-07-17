@@ -1,23 +1,47 @@
-import { Outlet, useParams } from 'react-router-dom';
-import clsx from 'clsx';
-import { MessageCircle } from 'lucide-react';
-import ConversationList from '../../components/chat/ConversationList';
+import { Outlet, useParams } from "react-router-dom";
+import clsx from "clsx";
+import { MessageCircle } from "lucide-react";
+import ConversationList from "../../components/chat/ConversationList";
+
+const classes = {
+  page: "mx-auto max-w-6xl px-4 py-6",
+  panel:
+    "flex h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800",
+  listWrapper:
+    "w-full overflow-y-auto border-r border-gray-200 lg:block lg:w-80 dark:border-gray-800",
+  listWrapperHidden: "hidden",
+  content: "min-w-0 flex-1",
+  contentHidden: "hidden lg:block",
+  placeholder:
+    "flex h-full flex-col items-center justify-center gap-2 text-gray-400",
+  placeholderIcon: "size-10",
+};
 
 const ChatLayout = () => {
   const { conversationId } = useParams<{ conversationId: string }>();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
-        <div className={clsx('w-full overflow-y-auto border-r border-gray-200 lg:block lg:w-80 dark:border-gray-800', conversationId && 'hidden')}>
+    <div className={classes.page}>
+      <div className={classes.panel}>
+        <div
+          className={clsx(
+            classes.listWrapper,
+            conversationId && classes.listWrapperHidden,
+          )}
+        >
           <ConversationList />
         </div>
-        <div className={clsx('min-w-0 flex-1', !conversationId && 'hidden lg:block')}>
+        <div
+          className={clsx(
+            classes.content,
+            !conversationId && classes.contentHidden,
+          )}
+        >
           {conversationId ? (
             <Outlet />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-2 text-gray-400">
-              <MessageCircle className="size-10" />
+            <div className={classes.placeholder}>
+              <MessageCircle className={classes.placeholderIcon} />
               <p>Select a conversation to start chatting</p>
             </div>
           )}

@@ -1,16 +1,18 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-export type Theme = 'light' | 'dark';
+export type Theme = "light" | "dark";
 
 const getInitialTheme = (): Theme => {
-  const stored = localStorage.getItem('theme');
-  if (stored === 'light' || stored === 'dark') return stored;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const stored = localStorage.getItem("theme");
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 };
 
 const applyTheme = (theme: Theme): void => {
-  document.documentElement.classList.toggle('dark', theme === 'dark');
-  localStorage.setItem('theme', theme);
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  localStorage.setItem("theme", theme);
 };
 
 const initialTheme = getInitialTheme();
@@ -27,11 +29,11 @@ const initialState: UiState = {
 };
 
 const uiSlice = createSlice({
-  name: 'ui',
+  name: "ui",
   initialState,
   reducers: {
     toggleTheme: (state) => {
-      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      state.theme = state.theme === "dark" ? "light" : "dark";
       applyTheme(state.theme);
     },
     setMobileNavOpen: (state, action: PayloadAction<boolean>) => {

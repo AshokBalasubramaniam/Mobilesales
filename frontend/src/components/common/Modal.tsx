@@ -10,6 +10,15 @@ export interface ModalProps {
   className?: string;
 }
 
+const classes = {
+  overlay: 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4',
+  panel: 'w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900',
+  header: 'mb-4 flex items-center justify-between',
+  title: 'text-lg font-semibold',
+  closeButton: 'rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800',
+  closeIcon: 'size-5',
+};
+
 const Modal = ({ open, onClose, title, children, className }: ModalProps) => {
   useEffect(() => {
     if (!open) return undefined;
@@ -25,18 +34,18 @@ const Modal = ({ open, onClose, title, children, className }: ModalProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div className={classes.overlay} onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
-        className={clsx('w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900', className)}
+        className={clsx(classes.panel, className)}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{title}</h2>
-            <button onClick={onClose} className="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Close">
-              <X className="size-5" />
+          <div className={classes.header}>
+            <h2 className={classes.title}>{title}</h2>
+            <button onClick={onClose} className={classes.closeButton} aria-label="Close">
+              <X className={classes.closeIcon} />
             </button>
           </div>
         )}

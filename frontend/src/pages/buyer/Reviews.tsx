@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Star } from 'lucide-react';
-import api from '../../api/api';
-import ReviewList from '../../components/mobile/ReviewList';
-import Pagination from '../../components/common/Pagination';
-import EmptyState from '../../components/common/EmptyState';
-import type { ApiResponse, PaginationMeta } from '../../types/api';
-import type { Review } from '../../types/models';
+import { useEffect, useState } from "react";
+import { Star } from "lucide-react";
+import api from "../../api/api";
+import ReviewList from "../../components/mobile/ReviewList";
+import Pagination from "../../components/common/Pagination";
+import EmptyState from "../../components/common/EmptyState";
+import type { ApiResponse, PaginationMeta } from "../../types/api";
+import type { Review } from "../../types/models";
+
+const classes = {
+  title: "mb-4 text-lg font-semibold",
+};
 
 const Reviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -16,7 +20,7 @@ const Reviews = () => {
   useEffect(() => {
     setLoading(true);
     api
-      .get<ApiResponse<Review[]>>('/reviews/my', { params: { page } })
+      .get<ApiResponse<Review[]>>("/reviews/my", { params: { page } })
       .then(({ data }) => {
         setReviews(data.data);
         setMeta(data.meta ?? null);
@@ -26,9 +30,13 @@ const Reviews = () => {
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold">My Reviews</h2>
+      <h2 className={classes.title}>My Reviews</h2>
       {!loading && reviews.length === 0 ? (
-        <EmptyState icon={Star} title="No reviews written yet" description="Reviews you leave after completed orders will appear here." />
+        <EmptyState
+          icon={Star}
+          title="No reviews written yet"
+          description="Reviews you leave after completed orders will appear here."
+        />
       ) : (
         <ReviewList reviews={reviews} loading={loading} />
       )}

@@ -3,6 +3,11 @@ import clsx from 'clsx';
 
 const PADDING = { sm: 'p-4', md: 'p-5' } as const;
 
+const classes = {
+  base: 'rounded-xl border border-gray-200 dark:border-gray-800',
+  hoverable: 'transition-colors hover:border-brand-400 hover:shadow-sm',
+};
+
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   hoverable?: boolean;
@@ -14,9 +19,9 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 const Card = ({ children, hoverable, padding = 'md', className, ...props }: CardProps) => (
   <div
     className={clsx(
-      'rounded-xl border border-gray-200 dark:border-gray-800',
+      classes.base,
       PADDING[padding],
-      hoverable && 'transition-colors hover:border-brand-400 hover:shadow-sm',
+      hoverable && classes.hoverable,
       className
     )}
     {...props}

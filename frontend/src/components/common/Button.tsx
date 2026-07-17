@@ -17,6 +17,12 @@ const SIZES = {
   lg: 'px-6 py-3 text-base',
 } as const;
 
+const classes = {
+  base: 'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-70',
+  icon: 'size-4 animate-spin',
+  actionIcon: 'size-4',
+};
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: keyof typeof VARIANTS;
   size?: keyof typeof SIZES;
@@ -27,7 +33,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = ({ variant = 'primary', size = 'md', loading, disabled, className, children, icon: Icon, ...props }: ButtonProps) => (
   <button
     className={clsx(
-      'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-70',
+      classes.base,
       VARIANTS[variant],
       SIZES[size],
       className
@@ -35,7 +41,7 @@ const Button = ({ variant = 'primary', size = 'md', loading, disabled, className
     disabled={disabled || loading}
     {...props}
   >
-    {loading ? <Loader2 className="size-4 animate-spin" /> : Icon ? <Icon className="size-4" /> : null}
+    {loading ? <Loader2 className={classes.icon} /> : Icon ? <Icon className={classes.actionIcon} /> : null}
     {children}
   </button>
 );

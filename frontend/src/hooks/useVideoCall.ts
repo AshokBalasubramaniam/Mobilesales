@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { getSocket } from '../lib/socket';
-import api from '../api/api';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getSocket } from "../lib/socket";
+import api from "../api/api";
 
-const ICE_SERVERS: RTCConfiguration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+const ICE_SERVERS: RTCConfiguration = {
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+};
 
-export type CallStatus = 'idle' | 'calling' | 'ringing' | 'active';
+export type CallStatus = "idle" | "calling" | "ringing" | "active";
 
 export interface UseVideoCallArgs {
   conversationId: string;
@@ -35,8 +37,11 @@ interface CallEndPayload {
  * (call:invite/answer/ice-candidate/end/decline). Media is negotiated
  * peer-to-peer; the server only relays SDP/ICE payloads.
  */
-export const useVideoCall = ({ conversationId, otherUserId }: UseVideoCallArgs) => {
-  const [status, setStatus] = useState<CallStatus>('idle');
+export const useVideoCall = ({
+  conversationId,
+  otherUserId,
+}: UseVideoCallArgs) => {
+  const [status, setStatus] = useState<CallStatus>("idle");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -48,7 +53,7 @@ export const useVideoCall = ({ conversationId, otherUserId }: UseVideoCallArgs) 
     localStream?.getTracks().forEach((t) => t.stop());
     setLocalStream(null);
     setRemoteStream(null);
-    setStatus('idle');
+    setStatus("idle");
   }, [localStream]);
 
   const createPeerConnection = useCallback(
@@ -57,64 +62,93 @@ export const useVideoCall = ({ conversationId, otherUserId }: UseVideoCallArgs) 
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
       pc.ontrack = (e) => setRemoteStream(e.streams[0]);
       pc.onicecandidate = (e) => {
-        if (e.candidate) getSocket()?.emit('call:ice-candidate', { toUserId: otherUserId, candidate: e.candidate });
+        if (e.candidate)
+          getSocket()?.emit("call:ice-candidate", {
+            toUserId: otherUserId,
+            candidate: e.candidate,
+          });
       };
       pcRef.current = pc;
       return pc;
     },
-    [otherUserId]
+    [otherUserId],
   );
 
   const startCall = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
     setLocalStream(stream);
     const pc = createPeerConnection(stream);
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    getSocket()?.emit('call:invite', { conversationId, toUserId: otherUserId, sdp: offer });
+    getSocket()?.emit("call:invite", {
+      conversationId,
+      toUserId: otherUserId,
+      sdp: offer,
+    });
     startedAtRef.current = Date.now();
-    setStatus('calling');
+    setStatus("calling");
   }, [conversationId, otherUserId, createPeerConnection]);
 
   const answerCall = useCallback(
     async (offerSdp: RTCSessionDescriptionInit) => {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
       setLocalStream(stream);
       const pc = createPeerConnection(stream);
       await pc.setRemoteDescription(offerSdp);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      getSocket()?.emit('call:answer', { toUserId: otherUserId, sdp: answer });
+      getSocket()?.emit("call:answer", { toUserId: otherUserId, sdp: answer });
       startedAtRef.current = Date.now();
-      setStatus('active');
+      setStatus("active");
     },
-    [otherUserId, createPeerConnection]
+    [otherUserId, createPeerConnection],
   );
 
   const logEvent = useCallback(
     (event: string) => {
-      const durationSeconds = startedAtRef.current ? Math.round((Date.now() - startedAtRef.current) / 1000) : undefined;
-      api.post(`/chat/conversations/${conversationId}/call-events`, { event, durationSeconds }).catch(() => {});
+      const durationSeconds = startedAtRef.current
+        ? Math.round((Date.now() - startedAtRef.current) / 1000)
+        : undefined;
+      api
+        .post(`/chat/conversations/${conversationId}/call-events`, {
+          event,
+          durationSeconds,
+        })
+        .catch(() => {});
     },
-    [conversationId]
+    [conversationId],
   );
 
   const endCall = useCallback(
     (notify = true) => {
-      if (notify) getSocket()?.emit('call:end', { toUserId: otherUserId, conversationId });
-      logEvent(status === 'active' ? 'ended' : 'missed');
+      if (notify)
+        getSocket()?.emit("call:end", {
+          toUserId: otherUserId,
+          conversationId,
+        });
+      logEvent(status === "active" ? "ended" : "missed");
       cleanup();
     },
-    [otherUserId, conversationId, status, logEvent, cleanup]
+    [otherUserId, conversationId, status, logEvent, cleanup],
   );
 
   const declineCall = useCallback(() => {
-    getSocket()?.emit('call:decline', { toUserId: otherUserId, conversationId });
-    logEvent('declined');
+    getSocket()?.emit("call:decline", {
+      toUserId: otherUserId,
+      conversationId,
+    });
+    logEvent("declined");
     cleanup();
   }, [otherUserId, conversationId, logEvent, cleanup]);
 
-  const [incomingOffer, setIncomingOffer] = useState<RTCSessionDescriptionInit | null>(null);
+  const [incomingOffer, setIncomingOffer] =
+    useState<RTCSessionDescriptionInit | null>(null);
 
   useEffect(() => {
     const socket = getSocket();
@@ -123,14 +157,17 @@ export const useVideoCall = ({ conversationId, otherUserId }: UseVideoCallArgs) 
     const onInvite = ({ fromUserId, sdp }: CallInvitePayload) => {
       if (fromUserId !== otherUserId) return;
       setIncomingOffer(sdp);
-      setStatus('ringing');
+      setStatus("ringing");
     };
     const onAnswer = ({ fromUserId, sdp }: CallAnswerPayload) => {
       if (fromUserId !== otherUserId || !pcRef.current) return;
       pcRef.current.setRemoteDescription(sdp);
-      setStatus('active');
+      setStatus("active");
     };
-    const onIceCandidate = ({ fromUserId, candidate }: CallIceCandidatePayload) => {
+    const onIceCandidate = ({
+      fromUserId,
+      candidate,
+    }: CallIceCandidatePayload) => {
       if (fromUserId !== otherUserId || !pcRef.current) return;
       pcRef.current.addIceCandidate(candidate).catch(() => {});
     };
@@ -145,20 +182,29 @@ export const useVideoCall = ({ conversationId, otherUserId }: UseVideoCallArgs) 
       setIncomingOffer(null);
     };
 
-    socket.on('call:invite', onInvite);
-    socket.on('call:answer', onAnswer);
-    socket.on('call:ice-candidate', onIceCandidate);
-    socket.on('call:end', onEnd);
-    socket.on('call:decline', onDecline);
+    socket.on("call:invite", onInvite);
+    socket.on("call:answer", onAnswer);
+    socket.on("call:ice-candidate", onIceCandidate);
+    socket.on("call:end", onEnd);
+    socket.on("call:decline", onDecline);
 
     return () => {
-      socket.off('call:invite', onInvite);
-      socket.off('call:answer', onAnswer);
-      socket.off('call:ice-candidate', onIceCandidate);
-      socket.off('call:end', onEnd);
-      socket.off('call:decline', onDecline);
+      socket.off("call:invite", onInvite);
+      socket.off("call:answer", onAnswer);
+      socket.off("call:ice-candidate", onIceCandidate);
+      socket.off("call:end", onEnd);
+      socket.off("call:decline", onDecline);
     };
   }, [otherUserId, cleanup]);
 
-  return { status, localStream, remoteStream, incomingOffer, startCall, answerCall, endCall, declineCall };
+  return {
+    status,
+    localStream,
+    remoteStream,
+    incomingOffer,
+    startCall,
+    answerCall,
+    endCall,
+    declineCall,
+  };
 };

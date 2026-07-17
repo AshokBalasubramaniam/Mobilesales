@@ -15,6 +15,21 @@ export interface StepPricingProps {
   setForm: Dispatch<SetStateAction<SellPhoneForm>>;
 }
 
+const classes = {
+  container: 'space-y-4',
+  heading: 'text-lg font-bold',
+  suggestButton: 'mt-2',
+  suggestionBox: 'mt-2 rounded-lg bg-brand-50 p-3 text-sm dark:bg-brand-900/20',
+  useSuggestionButton: 'ml-2 font-medium text-brand-700 hover:underline dark:text-brand-300',
+  checkboxLabel: 'flex items-center gap-2 text-sm',
+  fieldLabel: 'mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300',
+  billRow: 'flex items-center gap-2 text-sm',
+  billIcon: 'size-4',
+  removeBillIcon: 'size-3.5',
+  billUploadLabel:
+    'flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 dark:border-gray-700',
+};
+
 const StepPricing = ({ form, setForm }: StepPricingProps) => {
   const [suggesting, setSuggesting] = useState(false);
   const [suggestion, setSuggestion] = useState<PriceSuggestion | null>(null);
@@ -49,24 +64,24 @@ const StepPricing = ({ form, setForm }: StepPricingProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-bold">Set your price</h2>
+    <div className={classes.container}>
+      <h2 className={classes.heading}>Set your price</h2>
 
       <Input label="Original price / MRP (optional)" type="number" value={form.mrp} onChange={(e) => setForm({ ...form, mrp: e.target.value })} />
 
       <div>
         <Input label="Expected price (₹)" type="number" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-        <Button type="button" variant="secondary" size="sm" className="mt-2" icon={Sparkles} loading={suggesting} onClick={handleSuggest}>
+        <Button type="button" variant="secondary" size="sm" className={classes.suggestButton} icon={Sparkles} loading={suggesting} onClick={handleSuggest}>
           Get AI Price Suggestion
         </Button>
         {suggestion && (
-          <div className="mt-2 rounded-lg bg-brand-50 p-3 text-sm dark:bg-brand-900/20">
+          <div className={classes.suggestionBox}>
             Suggested price: <strong>{formatCurrency(suggestion.suggestedPrice)}</strong> (range {formatCurrency(suggestion.priceRange.min)}–
             {formatCurrency(suggestion.priceRange.max)})
             <button
               type="button"
               onClick={() => setForm({ ...form, price: String(suggestion.suggestedPrice) })}
-              className="ml-2 font-medium text-brand-700 hover:underline dark:text-brand-300"
+              className={classes.useSuggestionButton}
             >
               Use this price
             </button>
@@ -74,7 +89,7 @@ const StepPricing = ({ form, setForm }: StepPricingProps) => {
         )}
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
+      <label className={classes.checkboxLabel}>
         <input type="checkbox" checked={form.negotiable} onChange={(e) => setForm({ ...form, negotiable: e.target.checked })} />
         Open to price negotiation
       </label>
@@ -88,17 +103,17 @@ const StepPricing = ({ form, setForm }: StepPricingProps) => {
       />
 
       <div>
-        <p className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">Purchase bill (optional)</p>
+        <p className={classes.fieldLabel}>Purchase bill (optional)</p>
         {form.purchaseBill ? (
-          <div className="flex items-center gap-2 text-sm">
-            <FileUp className="size-4" /> {form.purchaseBill.name}
+          <div className={classes.billRow}>
+            <FileUp className={classes.billIcon} /> {form.purchaseBill.name}
             <button type="button" onClick={() => setForm({ ...form, purchaseBill: null })}>
-              <X className="size-3.5" />
+              <X className={classes.removeBillIcon} />
             </button>
           </div>
         ) : (
-          <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 dark:border-gray-700">
-            <FileUp className="size-4" /> Upload bill (image or PDF)
+          <label className={classes.billUploadLabel}>
+            <FileUp className={classes.billIcon} /> Upload bill (image or PDF)
             <input type="file" accept="image/*,application/pdf" hidden onChange={onPurchaseBillSelected} />
           </label>
         )}

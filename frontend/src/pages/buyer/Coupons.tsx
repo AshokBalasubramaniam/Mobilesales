@@ -1,13 +1,24 @@
-import { useEffect, useState } from 'react';
-import { Ticket } from 'lucide-react';
-import toast from 'react-hot-toast';
-import api from '../../api/api';
-import EmptyState from '../../components/common/EmptyState';
-import Spinner from '../../components/common/Spinner';
-import Badge from '../../components/common/Badge';
-import { formatCurrency, formatDate } from '../../utils/format';
-import type { ApiResponse } from '../../types/api';
-import type { Coupon } from '../../types/models';
+import { useEffect, useState } from "react";
+import { Ticket } from "lucide-react";
+import toast from "react-hot-toast";
+import api from "../../api/api";
+import EmptyState from "../../components/common/EmptyState";
+import Spinner from "../../components/common/Spinner";
+import Badge from "../../components/common/Badge";
+import { formatCurrency, formatDate } from "../../utils/format";
+import type { ApiResponse } from "../../types/api";
+import type { Coupon } from "../../types/models";
+
+const classes = {
+  title: "mb-4 text-lg font-semibold",
+  grid: "grid grid-cols-1 gap-3 sm:grid-cols-2",
+  couponCard:
+    "rounded-xl border-2 border-dashed border-brand-300 p-4 text-left hover:bg-brand-50 dark:border-brand-800 dark:hover:bg-brand-900/20",
+  couponHeader: "flex items-center justify-between",
+  code: "font-mono text-lg font-bold text-brand-700 dark:text-brand-300",
+  description: "mt-1 text-sm text-gray-500",
+  meta: "mt-2 text-xs text-gray-400",
+};
 
 const Coupons = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -15,7 +26,7 @@ const Coupons = () => {
 
   useEffect(() => {
     api
-      .get<ApiResponse<Coupon[]>>('/coupons/active')
+      .get<ApiResponse<Coupon[]>>("/coupons/active")
       .then(({ data }) => setCoupons(data.data))
       .finally(() => setLoading(false));
   }, []);
@@ -29,26 +40,34 @@ const Coupons = () => {
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold">Available Coupons</h2>
+      <h2 className={classes.title}>Available Coupons</h2>
       {coupons.length === 0 ? (
-        <EmptyState icon={Ticket} title="No active coupons" description="Check back later for new offers." />
+        <EmptyState
+          icon={Ticket}
+          title="No active coupons"
+          description="Check back later for new offers."
+        />
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className={classes.grid}>
           {coupons.map((c) => (
             <button
               key={c._id}
               onClick={() => copyCode(c.code)}
-              className="rounded-xl border-2 border-dashed border-brand-300 p-4 text-left hover:bg-brand-50 dark:border-brand-800 dark:hover:bg-brand-900/20"
+              className={classes.couponCard}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-lg font-bold text-brand-700 dark:text-brand-300">{c.code}</span>
+              <div className={classes.couponHeader}>
+                <span className={classes.code}>{c.code}</span>
                 <Badge variant="brand">
-                  {c.discountType === 'flat' ? formatCurrency(c.discountValue) : `${c.discountValue}%`} off
+                  {c.discountType === "flat"
+                    ? formatCurrency(c.discountValue)
+                    : `${c.discountValue}%`}{" "}
+                  off
                 </Badge>
               </div>
-              <p className="mt-1 text-sm text-gray-500">{c.description}</p>
-              <p className="mt-2 text-xs text-gray-400">
-                Min. order {formatCurrency(c.minOrderValue)} · Valid till {formatDate(c.validUntil)}
+              <p className={classes.description}>{c.description}</p>
+              <p className={classes.meta}>
+                Min. order {formatCurrency(c.minOrderValue)} · Valid till{" "}
+                {formatDate(c.validUntil)}
               </p>
             </button>
           ))}

@@ -17,9 +17,14 @@ export interface BadgeProps {
   icon?: LucideIcon;
 }
 
+const classes = {
+  base: 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
+  icon: 'size-3',
+};
+
 const Badge = ({ variant = 'gray', className, children, icon: Icon }: BadgeProps) => (
-  <span className={clsx('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium', VARIANTS[variant], className)}>
-    {Icon && <Icon className="size-3" />}
+  <span className={clsx(classes.base, VARIANTS[variant], className)}>
+    {Icon && <Icon className={classes.icon} />}
     {children}
   </span>
 );

@@ -1,7 +1,11 @@
-import FAQSection from '../../components/home/FAQSection';
+import FAQSection from "../../components/home/FAQSection";
+
+const classes = {
+  wrapper: "pt-6",
+};
 
 const Faq = () => (
-  <div className="pt-6">
+  <div className={classes.wrapper}>
     <FAQSection />
   </div>
 );

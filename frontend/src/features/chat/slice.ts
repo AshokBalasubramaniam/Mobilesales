@@ -1,5 +1,5 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Conversation, Message, OfferStatus } from '../../types/models';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Conversation, Message, OfferStatus } from "../../types/models";
 
 export interface PresenceUpdatedPayload {
   userId: string;
@@ -25,7 +25,7 @@ export interface MessagesFetchedPayload {
 
 type ChatState = {
   conversations: Conversation[];
-  conversationsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  conversationsStatus: "idle" | "loading" | "succeeded" | "failed";
   activeConversationId: string | null;
   messagesByConversation: Record<string, Message[]>;
   typingByConversation: Record<string, string[]>;
@@ -35,7 +35,7 @@ type ChatState = {
 
 const initialState: ChatState = {
   conversations: [],
-  conversationsStatus: 'idle',
+  conversationsStatus: "idle",
   activeConversationId: null,
   messagesByConversation: {},
   typingByConversation: {},
@@ -44,7 +44,7 @@ const initialState: ChatState = {
 };
 
 const chatSlice = createSlice({
-  name: 'chat',
+  name: "chat",
   initialState,
   reducers: {
     setActiveConversation: (state, action: PayloadAction<string>) => {
@@ -59,9 +59,15 @@ const chatSlice = createSlice({
         state.messagesByConversation[message.conversation] = [...list, message];
       }
 
-      const conv = state.conversations.find((c) => c._id === message.conversation);
+      const conv = state.conversations.find(
+        (c) => c._id === message.conversation,
+      );
       if (conv) {
-        conv.lastMessage = { text: message.content || `[${message.type}]`, type: message.type, sentAt: message.createdAt };
+        conv.lastMessage = {
+          text: message.content || `[${message.type}]`,
+          type: message.type,
+          sentAt: message.createdAt,
+        };
         if (state.activeConversationId !== message.conversation) {
           conv.unreadCount = (conv.unreadCount || 0) + 1;
         }
@@ -69,7 +75,9 @@ const chatSlice = createSlice({
     },
     presenceUpdated: (state, action: PayloadAction<PresenceUpdatedPayload>) => {
       const { userId, online, lastSeen } = action.payload;
-      state.onlineUserIds = online ? [...new Set([...state.onlineUserIds, userId])] : state.onlineUserIds.filter((id) => id !== userId);
+      state.onlineUserIds = online
+        ? [...new Set([...state.onlineUserIds, userId])]
+        : state.onlineUserIds.filter((id) => id !== userId);
       if (!online && lastSeen) state.lastSeenByUserId[userId] = lastSeen;
     },
     presenceSnapshot: (state, action: PayloadAction<string[]>) => {
@@ -78,9 +86,14 @@ const chatSlice = createSlice({
     typingUpdated: (state, action: PayloadAction<TypingUpdatedPayload>) => {
       const { conversationId, userId, isTyping } = action.payload;
       const current = state.typingByConversation[conversationId] || [];
-      state.typingByConversation[conversationId] = isTyping ? [...new Set([...current, userId])] : current.filter((id) => id !== userId);
+      state.typingByConversation[conversationId] = isTyping
+        ? [...new Set([...current, userId])]
+        : current.filter((id) => id !== userId);
     },
-    offerStatusUpdated: (state, action: PayloadAction<OfferStatusUpdatedPayload>) => {
+    offerStatusUpdated: (
+      state,
+      action: PayloadAction<OfferStatusUpdatedPayload>,
+    ) => {
       const { messageId, status } = action.payload;
       Object.values(state.messagesByConversation).forEach((list) => {
         const msg = list.find((m) => m._id === messageId);
@@ -89,14 +102,15 @@ const chatSlice = createSlice({
     },
 
     conversationsStart: (state) => {
-      state.conversationsStatus = 'loading';
+      state.conversationsStatus = "loading";
     },
     conversationsSuccess: (state, action: PayloadAction<Conversation[]>) => {
       state.conversations = action.payload;
-      state.conversationsStatus = 'succeeded';
+      state.conversationsStatus = "succeeded";
     },
     messagesFetched: (state, action: PayloadAction<MessagesFetchedPayload>) => {
-      state.messagesByConversation[action.payload.conversationId] = action.payload.messages;
+      state.messagesByConversation[action.payload.conversationId] =
+        action.payload.messages;
     },
   },
 });

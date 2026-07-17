@@ -1,63 +1,80 @@
-import { useState, type ComponentType, type Dispatch, type SetStateAction } from 'react';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { isAxiosError } from 'axios';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import WizardProgress from '../../components/sell/WizardProgress';
-import StepIdentity, { type SellPhoneForm } from '../../components/sell/StepIdentity';
-import StepCondition from '../../components/sell/StepCondition';
-import StepLocation from '../../components/sell/StepLocation';
-import StepMedia from '../../components/sell/StepMedia';
-import StepPricing from '../../components/sell/StepPricing';
-import Button from '../../components/common/Button';
-import EmailVerificationNotice from '../../components/auth/EmailVerificationNotice';
-import { useAuth } from '../../hooks/useAuth';
-import api from '../../api/api';
-import type { ApiResponse } from '../../types/api';
-import type { CreateMobilePayload } from '../../types/mobile';
-import { PATHS } from '../../routes/paths';
-import type { Mobile, MobileCondition } from '../../types/models';
+import {
+  useState,
+  type ComponentType,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { isAxiosError } from "axios";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import WizardProgress from "../../components/sell/WizardProgress";
+import StepIdentity, {
+  type SellPhoneForm,
+} from "../../components/sell/StepIdentity";
+import StepCondition from "../../components/sell/StepCondition";
+import StepLocation from "../../components/sell/StepLocation";
+import StepMedia from "../../components/sell/StepMedia";
+import StepPricing from "../../components/sell/StepPricing";
+import Button from "../../components/common/Button";
+import EmailVerificationNotice from "../../components/auth/EmailVerificationNotice";
+import { useAuth } from "../../hooks/useAuth";
+import api from "../../api/api";
+import type { ApiResponse } from "../../types/api";
+import type { CreateMobilePayload } from "../../types/mobile";
+import { PATHS } from "../../routes/paths";
+import type { Mobile, MobileCondition } from "../../types/models";
 
-const STEPS = ['Phone', 'Condition', 'Location', 'Photos', 'Price'];
+const STEPS = ["Phone", "Condition", "Location", "Photos", "Price"];
 
 const INITIAL_FORM: SellPhoneForm = {
-  brand: '',
-  model: '',
-  storage: '',
-  ram: '',
-  color: '',
-  condition: '',
+  brand: "",
+  model: "",
+  storage: "",
+  ram: "",
+  color: "",
+  condition: "",
   batteryHealth: 80,
-  imei: '',
-  warranty: { hasWarranty: false, expiryDate: '' },
+  imei: "",
+  warranty: { hasWarranty: false, expiryDate: "" },
   hasRepairHistory: false,
-  repairNote: '',
+  repairNote: "",
   originalBoxAvailable: false,
   accessoriesIncluded: [],
-  location: { state: '', city: '', pincode: '', lat: undefined, lng: undefined },
+  location: {
+    state: "",
+    city: "",
+    pincode: "",
+    lat: undefined,
+    lng: undefined,
+  },
   photos: [],
   video: null,
   purchaseBill: null,
-  mrp: '',
-  price: '',
+  mrp: "",
+  price: "",
   negotiable: true,
-  description: '',
+  description: "",
 };
 
 const validateStep = (step: number, form: SellPhoneForm): string | null => {
   switch (step) {
     case 0:
-      return form.brand && form.model && form.storage && form.ram ? null : 'Please fill in brand, model, storage and RAM';
-    case 1:
-      return form.condition ? null : 'Please select the overall condition';
-    case 2:
-      return form.location.state && form.location.city && form.location.pincode.length === 6
+      return form.brand && form.model && form.storage && form.ram
         ? null
-        : 'Please fill in state, city and a valid 6-digit pincode';
+        : "Please fill in brand, model, storage and RAM";
+    case 1:
+      return form.condition ? null : "Please select the overall condition";
+    case 2:
+      return form.location.state &&
+        form.location.city &&
+        form.location.pincode.length === 6
+        ? null
+        : "Please fill in state, city and a valid 6-digit pincode";
     case 3:
-      return form.photos.length >= 3 ? null : 'Please add at least 3 photos';
+      return form.photos.length >= 3 ? null : "Please add at least 3 photos";
     case 4:
-      return form.price ? null : 'Please set your expected price';
+      return form.price ? null : "Please set your expected price";
     default:
       return null;
   }
@@ -68,7 +85,21 @@ interface StepComponentProps {
   setForm: Dispatch<SetStateAction<SellPhoneForm>>;
 }
 
-const STEP_COMPONENTS: ComponentType<StepComponentProps>[] = [StepIdentity, StepCondition, StepLocation, StepMedia, StepPricing];
+const STEP_COMPONENTS: ComponentType<StepComponentProps>[] = [
+  StepIdentity,
+  StepCondition,
+  StepLocation,
+  StepMedia,
+  StepPricing,
+];
+
+const classes = {
+  container: "mx-auto max-w-2xl px-4 py-10",
+  title: "mb-6 text-center text-2xl font-bold",
+  card: "rounded-2xl border border-gray-200 p-6 dark:border-gray-800",
+  footer: "mt-6 flex justify-between",
+  nextIcon: "size-4",
+};
 
 const SellPhone = () => {
   const [step, setStep] = useState(0);
@@ -87,7 +118,10 @@ const SellPhone = () => {
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const handlePublish = async () => {
-    if (!user.isEmailVerified) return toast.error('Please verify your email before publishing a listing');
+    if (!user.isEmailVerified)
+      return toast.error(
+        "Please verify your email before publishing a listing",
+      );
 
     const error = validateStep(step, form);
     if (error) return toast.error(error);
@@ -108,11 +142,17 @@ const SellPhone = () => {
         imei: form.imei || undefined,
         warranty: {
           hasWarranty: form.warranty.hasWarranty,
-          expiryDate: form.warranty.hasWarranty && form.warranty.expiryDate ? form.warranty.expiryDate : undefined,
+          expiryDate:
+            form.warranty.hasWarranty && form.warranty.expiryDate
+              ? form.warranty.expiryDate
+              : undefined,
         },
-        repairHistory: form.hasRepairHistory && form.repairNote ? [{ issue: form.repairNote }] : [],
+        repairHistory:
+          form.hasRepairHistory && form.repairNote
+            ? [{ issue: form.repairNote }]
+            : [],
         originalBoxAvailable: form.originalBoxAvailable,
-        chargerIncluded: form.accessoriesIncluded.includes('Charger'),
+        chargerIncluded: form.accessoriesIncluded.includes("Charger"),
         accessoriesIncluded: form.accessoriesIncluded,
         description: form.description || undefined,
         location: {
@@ -124,28 +164,38 @@ const SellPhone = () => {
         },
       };
 
-      const { data } = await api.post<ApiResponse<Mobile>>('/mobiles', payload);
+      const { data } = await api.post<ApiResponse<Mobile>>("/mobiles", payload);
       const mobileId = data.data._id;
 
       const imagesForm = new FormData();
-      form.photos.forEach((f) => imagesForm.append('images', f));
-      await api.post(`/mobiles/${mobileId}/images`, imagesForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+      form.photos.forEach((f) => imagesForm.append("images", f));
+      await api.post(`/mobiles/${mobileId}/images`, imagesForm, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       if (form.video) {
         const videoForm = new FormData();
-        videoForm.append('video', form.video);
-        await api.post(`/mobiles/${mobileId}/video`, videoForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+        videoForm.append("video", form.video);
+        await api.post(`/mobiles/${mobileId}/video`, videoForm, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
       if (form.purchaseBill) {
         const billForm = new FormData();
-        billForm.append('bill', form.purchaseBill);
-        await api.post(`/mobiles/${mobileId}/purchase-bill`, billForm, { headers: { 'Content-Type': 'multipart/form-data' } });
+        billForm.append("bill", form.purchaseBill);
+        await api.post(`/mobiles/${mobileId}/purchase-bill`, billForm, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
-      toast.success('Listing submitted for approval!');
+      toast.success("Listing submitted for approval!");
       navigate(PATHS.seller.listings);
     } catch (err) {
-      toast.error((isAxiosError<{ message?: string }>(err) && err.response?.data?.message) || 'Could not publish listing');
+      toast.error(
+        (isAxiosError<{ message?: string }>(err) &&
+          err.response?.data?.message) ||
+          "Could not publish listing",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -154,25 +204,34 @@ const SellPhone = () => {
   const StepComponent = STEP_COMPONENTS[step];
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-6 text-center text-2xl font-bold">Sell Your Phone</h1>
+    <div className={classes.container}>
+      <h1 className={classes.title}>Sell Your Phone</h1>
       {!user.isEmailVerified && <EmailVerificationNotice />}
       <WizardProgress steps={STEPS} currentStep={step} />
 
-      <div className="rounded-2xl border border-gray-200 p-6 dark:border-gray-800">
+      <div className={classes.card}>
         <StepComponent form={form} setForm={setForm} />
       </div>
 
-      <div className="mt-6 flex justify-between">
-        <Button variant="secondary" onClick={back} disabled={step === 0} icon={ChevronLeft}>
+      <div className={classes.footer}>
+        <Button
+          variant="secondary"
+          onClick={back}
+          disabled={step === 0}
+          icon={ChevronLeft}
+        >
           Back
         </Button>
         {step < STEPS.length - 1 ? (
           <Button onClick={next}>
-            Next <ChevronRight className="size-4" />
+            Next <ChevronRight className={classes.nextIcon} />
           </Button>
         ) : (
-          <Button onClick={handlePublish} loading={submitting} disabled={!user.isEmailVerified}>
+          <Button
+            onClick={handlePublish}
+            loading={submitting}
+            disabled={!user.isEmailVerified}
+          >
             Publish Listing
           </Button>
         )}

@@ -1,32 +1,73 @@
-import { useEffect, useState } from 'react';
-import { Users, ListChecks, ShoppingBag, Wallet, Clock, Flag } from 'lucide-react';
-import api from '../../api/api';
-import type { AdminDashboardStats } from '../../types/dashboard';
-import type { ApiResponse } from '../../types/api';
-import StatCard from '../../components/dashboard/StatCard';
-import Spinner from '../../components/common/Spinner';
-import { formatCurrency } from '../../utils/format';
+import { useEffect, useState } from "react";
+import {
+  Users,
+  ListChecks,
+  ShoppingBag,
+  Wallet,
+  Clock,
+  Flag,
+} from "lucide-react";
+import api from "../../api/api";
+import type { AdminDashboardStats } from "../../types/dashboard";
+import type { ApiResponse } from "../../types/api";
+import StatCard from "../../components/dashboard/StatCard";
+import Spinner from "../../components/common/Spinner";
+import { formatCurrency } from "../../utils/format";
+
+const classes = {
+  title: "mb-4 text-lg font-semibold",
+  grid: "grid grid-cols-2 gap-4 sm:grid-cols-3",
+};
 
 const Overview = () => {
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
 
   useEffect(() => {
-    api.get<ApiResponse<AdminDashboardStats>>('/dashboard/admin').then(({ data }) => setStats(data.data));
+    api
+      .get<ApiResponse<AdminDashboardStats>>("/dashboard/admin")
+      .then(({ data }) => setStats(data.data));
   }, []);
 
   if (!stats) return <Spinner full />;
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold">Platform Overview</h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <h2 className={classes.title}>Platform Overview</h2>
+      <div className={classes.grid}>
         <StatCard icon={Users} label="Total Users" value={stats.totalUsers} />
-        <StatCard icon={Users} label="Total Sellers" value={stats.totalSellers} />
-        <StatCard icon={ListChecks} label="Total Listings" value={stats.totalListings} />
-        <StatCard icon={Clock} label="Pending Approvals" value={stats.pendingApprovals} accent="text-amber-500" />
-        <StatCard icon={ShoppingBag} label="Total Orders" value={stats.totalOrders} />
-        <StatCard icon={Wallet} label="Revenue" value={formatCurrency(stats.revenue)} accent="text-green-600" />
-        <StatCard icon={Flag} label="Pending Reports" value={stats.fraudReports} accent="text-red-500" />
+        <StatCard
+          icon={Users}
+          label="Total Sellers"
+          value={stats.totalSellers}
+        />
+        <StatCard
+          icon={ListChecks}
+          label="Total Listings"
+          value={stats.totalListings}
+        />
+        <StatCard
+          icon={Clock}
+          label="Pending Approvals"
+          value={stats.pendingApprovals}
+          accent="text-amber-500"
+        />
+        <StatCard
+          icon={ShoppingBag}
+          label="Total Orders"
+          value={stats.totalOrders}
+        />
+        <StatCard
+          icon={Wallet}
+          label="Revenue"
+          value={formatCurrency(stats.revenue)}
+          accent="text-green-600"
+        />
+        <StatCard
+          icon={Flag}
+          label="Pending Reports"
+          value={stats.fraudReports}
+          accent="text-red-500"
+        />
       </div>
     </div>
   );

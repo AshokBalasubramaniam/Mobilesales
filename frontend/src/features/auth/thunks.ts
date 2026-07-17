@@ -1,9 +1,9 @@
-import type { Dispatch } from '@reduxjs/toolkit';
-import { isAxiosError } from 'axios';
-import api, { refreshAccessToken } from '../../api/api';
-import { setAccessToken, clearAccessToken } from '../../api/tokenManager';
-import type { ApiResponse } from '../../types/api';
-import type { Role, User } from '../../types/models';
+import type { Dispatch } from "@reduxjs/toolkit";
+import { isAxiosError } from "axios";
+import api, { refreshAccessToken } from "../../api/api";
+import { setAccessToken, clearAccessToken } from "../../api/tokenManager";
+import type { ApiResponse } from "../../types/api";
+import type { Role, User } from "../../types/models";
 import {
   registerStart,
   registerSuccess,
@@ -24,7 +24,7 @@ import {
   logoutSuccess,
   updateProfileSuccess,
   updateProfileFail,
-} from './slice';
+} from "./slice";
 
 export interface AuthSession {
   user: User;
@@ -36,7 +36,7 @@ export interface RegisterPayload {
   email: string;
   phone?: string;
   password: string;
-  role: Extract<Role, 'buyer' | 'seller'>;
+  role: Extract<Role, "buyer" | "seller">;
 }
 
 export interface LoginPayload {
@@ -46,7 +46,7 @@ export interface LoginPayload {
 
 export interface GoogleLoginPayload {
   idToken: string;
-  role?: Extract<Role, 'buyer' | 'seller'>;
+  role?: Extract<Role, "buyer" | "seller">;
 }
 
 export interface VerifyOtpPayload {
@@ -60,33 +60,43 @@ export interface UpdateProfilePayload {
 }
 
 const extractError = (err: unknown): string =>
-  isAxiosError<{ message?: string }>(err) ? err.response?.data?.message ?? 'Something went wrong' : 'Something went wrong';
+  isAxiosError<{ message?: string }>(err)
+    ? (err.response?.data?.message ?? "Something went wrong")
+    : "Something went wrong";
 
-const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const wait = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 const applySession = (data: AuthSession): User => {
   if (data.accessToken) setAccessToken(data.accessToken);
   return data.user;
 };
 
-export const register = (payload: RegisterPayload) => async (dispatch: Dispatch) => {
-  try {
-    dispatch(registerStart());
-    const response = await api.post<ApiResponse<AuthSession>>('/auth/register', payload);
-    if (response.status === 201) {
-      const user = applySession(response.data.data);
-      dispatch(registerSuccess(user));
-      return user;
+export const register =
+  (payload: RegisterPayload) => async (dispatch: Dispatch) => {
+    try {
+      dispatch(registerStart());
+      const response = await api.post<ApiResponse<AuthSession>>(
+        "/auth/register",
+        payload,
+      );
+      if (response.status === 201) {
+        const user = applySession(response.data.data);
+        dispatch(registerSuccess(user));
+        return user;
+      }
+    } catch (error) {
+      dispatch(registerFail(extractError(error)));
     }
-  } catch (error) {
-    dispatch(registerFail(extractError(error)));
-  }
-};
+  };
 
 export const login = (payload: LoginPayload) => async (dispatch: Dispatch) => {
   try {
     dispatch(loginStart());
-    const response = await api.post<ApiResponse<AuthSession>>('/auth/login', payload);
+    const response = await api.post<ApiResponse<AuthSession>>(
+      "/auth/login",
+      payload,
+    );
     if (response.status === 200) {
       const user = applySession(response.data.data);
       dispatch(loginSuccess(user));
@@ -97,23 +107,29 @@ export const login = (payload: LoginPayload) => async (dispatch: Dispatch) => {
   }
 };
 
-export const googleLogin = (payload: GoogleLoginPayload) => async (dispatch: Dispatch) => {
-  try {
-    dispatch(googleLoginStart());
-    const response = await api.post<ApiResponse<AuthSession>>('/auth/google', payload);
-    if (response.status === 200) {
-      const user = applySession(response.data.data);
-      dispatch(googleLoginSuccess(user));
-      return user;
+export const googleLogin =
+  (payload: GoogleLoginPayload) => async (dispatch: Dispatch) => {
+    try {
+      dispatch(googleLoginStart());
+      const response = await api.post<ApiResponse<AuthSession>>(
+        "/auth/google",
+        payload,
+      );
+      if (response.status === 200) {
+        const user = applySession(response.data.data);
+        dispatch(googleLoginSuccess(user));
+        return user;
+      }
+    } catch (error) {
+      dispatch(googleLoginFail(extractError(error)));
     }
-  } catch (error) {
-    dispatch(googleLoginFail(extractError(error)));
-  }
-};
+  };
 
 export const requestOtp = (phone: string) => async (dispatch: Dispatch) => {
   try {
-    const response = await api.post<ApiResponse<null>>('/auth/otp/request', { phone });
+    const response = await api.post<ApiResponse<null>>("/auth/otp/request", {
+      phone,
+    });
     if (response.status === 200) {
       dispatch(otpRequestSuccess(phone));
       return phone;
@@ -123,19 +139,23 @@ export const requestOtp = (phone: string) => async (dispatch: Dispatch) => {
   }
 };
 
-export const verifyOtp = (payload: VerifyOtpPayload) => async (dispatch: Dispatch) => {
-  try {
-    dispatch(verifyOtpStart());
-    const response = await api.post<ApiResponse<AuthSession>>('/auth/otp/verify', payload);
-    if (response.status === 200) {
-      const user = applySession(response.data.data);
-      dispatch(verifyOtpSuccess(user));
-      return user;
+export const verifyOtp =
+  (payload: VerifyOtpPayload) => async (dispatch: Dispatch) => {
+    try {
+      dispatch(verifyOtpStart());
+      const response = await api.post<ApiResponse<AuthSession>>(
+        "/auth/otp/verify",
+        payload,
+      );
+      if (response.status === 200) {
+        const user = applySession(response.data.data);
+        dispatch(verifyOtpSuccess(user));
+        return user;
+      }
+    } catch (error) {
+      dispatch(verifyOtpFail(extractError(error)));
     }
-  } catch (error) {
-    dispatch(verifyOtpFail(extractError(error)));
-  }
-};
+  };
 
 // Restores the session on page load. Uses the same deduped refreshAccessToken
 // used by the response interceptor, so a concurrent 401-triggered refresh
@@ -148,7 +168,7 @@ export const verifyOtp = (payload: VerifyOtpPayload) => async (dispatch: Dispatc
 export const bootstrapAuth = () => async (dispatch: Dispatch) => {
   const attempt = async (): Promise<User | undefined> => {
     await refreshAccessToken();
-    const response = await api.get<ApiResponse<User>>('/auth/me');
+    const response = await api.get<ApiResponse<User>>("/auth/me");
     if (response.status === 200) return response.data.data;
   };
 
@@ -171,21 +191,22 @@ export const bootstrapAuth = () => async (dispatch: Dispatch) => {
 
 export const logout = () => async (dispatch: Dispatch) => {
   try {
-    await api.post('/auth/logout');
+    await api.post("/auth/logout");
   } finally {
     clearAccessToken();
     dispatch(logoutSuccess());
   }
 };
 
-export const updateProfileThunk = (payload: UpdateProfilePayload) => async (dispatch: Dispatch) => {
-  try {
-    const response = await api.patch<ApiResponse<User>>('/users/me', payload);
-    if (response.status === 200) {
-      dispatch(updateProfileSuccess(response.data.data));
-      return response.data.data;
+export const updateProfileThunk =
+  (payload: UpdateProfilePayload) => async (dispatch: Dispatch) => {
+    try {
+      const response = await api.patch<ApiResponse<User>>("/users/me", payload);
+      if (response.status === 200) {
+        dispatch(updateProfileSuccess(response.data.data));
+        return response.data.data;
+      }
+    } catch (error) {
+      dispatch(updateProfileFail(extractError(error)));
     }
-  } catch (error) {
-    dispatch(updateProfileFail(extractError(error)));
-  }
-};
+  };

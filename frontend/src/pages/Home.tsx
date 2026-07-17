@@ -1,24 +1,27 @@
-import { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { fetchHomeSections } from '../features/mobiles/thunks';
-import { fetchHomeReviews } from '../features/reviews/thunks';
-import { selectHomeSections, selectHomeSectionsStatus } from '../features/mobiles/selectors';
-import { selectHomeReviews } from '../features/reviews/selectors';
-import HeroBanner from '../components/home/HeroBanner';
-import QuickFilters from '../components/home/QuickFilters';
-import HomeSection from '../components/home/HomeSection';
-import PopularBrands from '../components/home/PopularBrands';
-import FeaturedSellers from '../components/home/FeaturedSellers';
-import CustomerReviews from '../components/home/CustomerReviews';
-import FAQSection from '../components/home/FAQSection';
-import { PATHS } from '../routes/paths';
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { fetchHomeSections } from "../features/mobiles/thunks";
+import { fetchHomeReviews } from "../features/reviews/thunks";
+import {
+  selectHomeSections,
+  selectHomeSectionsStatus,
+} from "../features/mobiles/selectors";
+import { selectHomeReviews } from "../features/reviews/selectors";
+import HeroBanner from "../components/home/HeroBanner";
+import QuickFilters from "../components/home/QuickFilters";
+import HomeSection from "../components/home/HomeSection";
+import PopularBrands from "../components/home/PopularBrands";
+import FeaturedSellers from "../components/home/FeaturedSellers";
+import CustomerReviews from "../components/home/CustomerReviews";
+import FAQSection from "../components/home/FAQSection";
+import { PATHS } from "../routes/paths";
 
 const Home = () => {
   const dispatch = useAppDispatch();
   const sections = useAppSelector(selectHomeSections);
   const sectionsStatus = useAppSelector(selectHomeSectionsStatus);
   const reviews = useAppSelector(selectHomeReviews);
-  const loading = sectionsStatus === 'idle' || sectionsStatus === 'loading';
+  const loading = sectionsStatus === "idle" || sectionsStatus === "loading";
 
   useEffect(() => {
     dispatch(fetchHomeSections());
@@ -26,7 +29,12 @@ const Home = () => {
 
   useEffect(() => {
     if (!sections) return;
-    const sampleIds = [...(sections.verified || []), ...(sections.premium || [])].slice(0, 2).map((m) => m._id);
+    const sampleIds = [
+      ...(sections.verified || []),
+      ...(sections.premium || []),
+    ]
+      .slice(0, 2)
+      .map((m) => m._id);
     if (sampleIds.length) dispatch(fetchHomeReviews(sampleIds));
   }, [sections, dispatch]);
 
@@ -63,7 +71,9 @@ const Home = () => {
         listings={sections?.recentlyAdded}
         loading={loading}
       />
-      <FeaturedSellers mobiles={[...(sections?.verified || []), ...(sections?.premium || [])]} />
+      <FeaturedSellers
+        mobiles={[...(sections?.verified || []), ...(sections?.premium || [])]}
+      />
       <CustomerReviews reviews={reviews} />
       <FAQSection />
     </div>

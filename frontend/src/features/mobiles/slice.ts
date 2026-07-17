@@ -1,5 +1,5 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Mobile } from '../../types/models';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Mobile } from "../../types/models";
 
 export interface HomeSections {
   verified: Mobile[];
@@ -11,34 +11,35 @@ export interface HomeSections {
 
 type MobilesState = {
   homeSections: HomeSections | null;
-  homeSectionsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  homeSectionsStatus: "idle" | "loading" | "succeeded" | "failed";
   homeSectionsError: string | null;
 };
 
 const initialState: MobilesState = {
   homeSections: null,
-  homeSectionsStatus: 'idle',
+  homeSectionsStatus: "idle",
   homeSectionsError: null,
 };
 
 const mobilesSlice = createSlice({
-  name: 'mobiles',
+  name: "mobiles",
   initialState,
   reducers: {
     homeSectionsStart: (state) => {
-      state.homeSectionsStatus = 'loading';
+      state.homeSectionsStatus = "loading";
       state.homeSectionsError = null;
     },
     homeSectionsSuccess: (state, action: PayloadAction<HomeSections>) => {
-      state.homeSectionsStatus = 'succeeded';
+      state.homeSectionsStatus = "succeeded";
       state.homeSections = action.payload;
     },
     homeSectionsFail: (state, action: PayloadAction<string>) => {
-      state.homeSectionsStatus = 'failed';
+      state.homeSectionsStatus = "failed";
       state.homeSectionsError = action.payload;
     },
   },
 });
 
-export const { homeSectionsStart, homeSectionsSuccess, homeSectionsFail } = mobilesSlice.actions;
+export const { homeSectionsStart, homeSectionsSuccess, homeSectionsFail } =
+  mobilesSlice.actions;
 export default mobilesSlice.reducer;

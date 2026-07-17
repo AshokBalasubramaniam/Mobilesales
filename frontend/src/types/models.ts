@@ -1,40 +1,68 @@
 // Domain types mirroring backend Mongoose schemas (backend/src/models/*.js).
 // ObjectId fields are serialized as strings over the wire; Date fields as ISO strings.
 
-export type Role = 'buyer' | 'seller' | 'admin';
-export type AuthProvider = 'local' | 'google';
-export type VerificationStatus = 'not_submitted' | 'pending' | 'approved' | 'rejected';
+export type Role = "buyer" | "seller" | "admin";
+export type AuthProvider = "local" | "google";
+export type VerificationStatus =
+  | "not_submitted"
+  | "pending"
+  | "approved"
+  | "rejected";
 
-export type MobileCondition = 'excellent' | 'good' | 'fair' | 'poor';
-export type MobileStatus = 'draft' | 'pending_approval' | 'active' | 'sold' | 'rejected' | 'removed';
+export type MobileCondition = "excellent" | "good" | "fair" | "poor";
+export type MobileStatus =
+  | "draft"
+  | "pending_approval"
+  | "active"
+  | "sold"
+  | "rejected"
+  | "removed";
 
-export type DeliveryType = 'home_delivery' | 'local_delivery' | 'store_pickup';
-export type DeliveryStatus = 'pending' | 'packed' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled';
-export type OrderStatus = 'placed' | 'confirmed' | 'cancelled' | 'completed' | 'disputed';
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
-export type PaymentMethod = 'upi' | 'card' | 'netbanking' | 'wallet' | 'emi';
+export type DeliveryType = "home_delivery" | "local_delivery" | "store_pickup";
+export type DeliveryStatus =
+  | "pending"
+  | "packed"
+  | "shipped"
+  | "out_for_delivery"
+  | "delivered"
+  | "cancelled";
+export type OrderStatus =
+  | "placed"
+  | "confirmed"
+  | "cancelled"
+  | "completed"
+  | "disputed";
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type PaymentMethod = "upi" | "card" | "netbanking" | "wallet" | "emi";
 
-export type MessageType = 'text' | 'image' | 'voice' | 'offer' | 'location' | 'video_call_event' | 'system';
-export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered';
-export type CallEvent = 'started' | 'ended' | 'missed' | 'declined';
+export type MessageType =
+  | "text"
+  | "image"
+  | "voice"
+  | "offer"
+  | "location"
+  | "video_call_event"
+  | "system";
+export type OfferStatus = "pending" | "accepted" | "rejected" | "countered";
+export type CallEvent = "started" | "ended" | "missed" | "declined";
 
-export type ReportType = 'listing' | 'user' | 'chat';
-export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-export type DisputeStatus = 'open' | 'in_review' | 'resolved' | 'rejected';
+export type ReportType = "listing" | "user" | "chat";
+export type ReportStatus = "pending" | "reviewed" | "resolved" | "dismissed";
+export type DisputeStatus = "open" | "in_review" | "resolved" | "rejected";
 
 export type NotificationType =
-  | 'order'
-  | 'chat'
-  | 'offer'
-  | 'listing_approved'
-  | 'listing_rejected'
-  | 'price_drop'
-  | 'wishlist'
-  | 'system'
-  | 'verification';
+  | "order"
+  | "chat"
+  | "offer"
+  | "listing_approved"
+  | "listing_rejected"
+  | "price_drop"
+  | "wishlist"
+  | "system"
+  | "verification";
 
-export type CouponDiscountType = 'flat' | 'percentage';
-export type CouponApplicableFor = 'all' | 'new_users';
+export type CouponDiscountType = "flat" | "percentage";
+export type CouponApplicableFor = "all" | "new_users";
 
 export interface Address {
   _id: string;
@@ -119,7 +147,7 @@ export interface MobileLocation {
 
 export interface Mobile {
   _id: string;
-  seller: string | Pick<User, '_id' | 'name' | 'avatar' | 'sellerProfile'>;
+  seller: string | Pick<User, "_id" | "name" | "avatar" | "sellerProfile">;
   brand: string;
   model: string;
   color?: string;
@@ -168,9 +196,14 @@ export interface ConversationLastMessage {
 
 export interface Conversation {
   _id: string;
-  participants: Pick<User, '_id' | 'name' | 'avatar' | 'email' | 'role' | 'lastSeen'>[] | string[];
-  otherParticipant?: Pick<User, '_id' | 'name' | 'avatar'>;
-  mobile?: Pick<Mobile, '_id' | 'brand' | 'model' | 'images' | 'price' | 'status'>;
+  participants:
+    | Pick<User, "_id" | "name" | "avatar" | "email" | "role" | "lastSeen">[]
+    | string[];
+  otherParticipant?: Pick<User, "_id" | "name" | "avatar">;
+  mobile?: Pick<
+    Mobile,
+    "_id" | "brand" | "model" | "images" | "price" | "status"
+  >;
   lastMessage?: ConversationLastMessage;
   unreadCount?: number;
   isBlocked: boolean;
@@ -198,7 +231,7 @@ export interface MessageCallEvent {
 export interface Message {
   _id: string;
   conversation: string;
-  sender: string | Pick<User, '_id' | 'name' | 'avatar' | 'role'>;
+  sender: string | Pick<User, "_id" | "name" | "avatar" | "role">;
   type: MessageType;
   content?: string;
   mediaUrl?: string;
@@ -240,9 +273,9 @@ export interface OrderDeliveryAddress {
 export interface Order {
   _id: string;
   orderNumber: string;
-  buyer: string | Pick<User, '_id' | 'name' | 'avatar' | 'email'>;
-  seller: string | Pick<User, '_id' | 'name' | 'avatar' | 'email'>;
-  mobile: string | Pick<Mobile, '_id' | 'brand' | 'model' | 'images' | 'price'>;
+  buyer: string | Pick<User, "_id" | "name" | "avatar" | "email">;
+  seller: string | Pick<User, "_id" | "name" | "avatar" | "email">;
+  mobile: string | Pick<Mobile, "_id" | "brand" | "model" | "images" | "price">;
   pricing: OrderPricing;
   deliveryType: DeliveryType;
   deliveryAddress?: OrderDeliveryAddress;
@@ -300,7 +333,7 @@ export interface SellerReply {
 export interface Review {
   _id: string;
   order: string;
-  buyer: string | Pick<User, '_id' | 'name' | 'avatar'>;
+  buyer: string | Pick<User, "_id" | "name" | "avatar">;
   seller: string;
   mobile: string;
   rating: number;
@@ -313,8 +346,8 @@ export interface Review {
 
 export interface Dispute {
   _id: string;
-  order: string | Pick<Order, '_id' | 'orderNumber'>;
-  raisedBy: string | Pick<User, '_id' | 'name'>;
+  order: string | Pick<Order, "_id" | "orderNumber">;
+  raisedBy: string | Pick<User, "_id" | "name">;
   reason: string;
   description?: string;
   evidenceUrls: string[];
@@ -328,7 +361,7 @@ export interface Dispute {
 
 export interface Report {
   _id: string;
-  reportedBy: string | Pick<User, '_id' | 'name'>;
+  reportedBy: string | Pick<User, "_id" | "name">;
   reportType: ReportType;
   targetId: string;
   reason: string;
@@ -345,7 +378,7 @@ export interface PaymentRefund {
   refundId?: string;
   amount?: number;
   reason?: string;
-  status: 'none' | 'pending' | 'processed' | 'failed';
+  status: "none" | "pending" | "processed" | "failed";
   processedAt?: string;
 }
 
@@ -358,7 +391,7 @@ export interface Payment {
   amount: number;
   currency: string;
   method?: PaymentMethod;
-  status: 'created' | 'authorized' | 'captured' | 'failed' | 'refunded';
+  status: "created" | "authorized" | "captured" | "failed" | "refunded";
   refund?: PaymentRefund;
   invoiceUrl?: string;
   isMock: boolean;

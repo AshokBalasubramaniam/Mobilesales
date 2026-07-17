@@ -1,5 +1,5 @@
-import type { MobileCondition, MobileLocation } from './models';
-import type { PaginationParams } from './api';
+import type { MobileCondition, MobileLocation } from "./models";
+import type { PaginationParams } from "./api";
 
 export interface MobileListParams extends PaginationParams {
   q?: string;
@@ -17,7 +17,7 @@ export interface MobileListParams extends PaginationParams {
   lat?: number;
   lng?: number;
   radiusKm?: number;
-  sort?: 'newest' | 'price_low' | 'price_high' | 'popular';
+  sort?: "newest" | "price_low" | "price_high" | "popular";
 }
 
 export interface CreateMobilePayload {

@@ -16,6 +16,13 @@ export interface ReportButtonProps {
   label?: string;
 }
 
+const classes = {
+  trigger: 'flex items-center gap-1 text-xs text-gray-400 hover:text-red-500',
+  triggerIcon: 'size-3.5',
+  form: 'space-y-4',
+  submitButton: 'w-full',
+};
+
 const ReportButton = ({ reportType, targetId, label = 'Report' }: ReportButtonProps) => {
   const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
@@ -43,15 +50,15 @@ const ReportButton = ({ reportType, targetId, label = 'Report' }: ReportButtonPr
     <>
       <button
         onClick={() => (isAuthenticated ? setOpen(true) : toast.error('Please login to report'))}
-        className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500"
+        className={classes.trigger}
       >
-        <Flag className="size-3.5" /> {label}
+        <Flag className={classes.triggerIcon} /> {label}
       </button>
       <Modal open={open} onClose={() => setOpen(false)} title="Report">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className={classes.form}>
           <Input label="Reason" required value={reason} onChange={(e) => setReason(e.target.value)} />
           <Textarea label="Details (optional)" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
-          <Button type="submit" variant="danger" className="w-full" loading={submitting}>
+          <Button type="submit" variant="danger" className={classes.submitButton} loading={submitting}>
             Submit Report
           </Button>
         </form>

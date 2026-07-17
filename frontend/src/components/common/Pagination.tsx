@@ -7,6 +7,17 @@ export interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
+const classes = {
+  nav: 'flex items-center justify-center gap-1 py-6',
+  navButton: 'rounded-lg p-2 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-800',
+  navIcon: 'size-4',
+  pageGroup: 'flex items-center',
+  ellipsis: 'px-1 text-gray-400',
+  pageButton: 'size-9 rounded-lg text-sm font-medium',
+  pageButtonActive: 'bg-brand-600 text-white',
+  pageButtonInactive: 'hover:bg-gray-100 dark:hover:bg-gray-800',
+};
+
 const Pagination = ({ meta, onPageChange }: PaginationProps) => {
   if (!meta || meta.totalPages <= 1) return null;
 
@@ -15,24 +26,24 @@ const Pagination = ({ meta, onPageChange }: PaginationProps) => {
   );
 
   return (
-    <nav className="flex items-center justify-center gap-1 py-6">
+    <nav className={classes.nav}>
       <button
         onClick={() => onPageChange(meta.page - 1)}
         disabled={!meta.hasPrevPage}
-        className="rounded-lg p-2 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className={classes.navButton}
         aria-label="Previous page"
       >
-        <ChevronLeft className="size-4" />
+        <ChevronLeft className={classes.navIcon} />
       </button>
 
       {pages.map((p, idx) => (
-        <span key={p} className="flex items-center">
-          {idx > 0 && pages[idx - 1] !== p - 1 && <span className="px-1 text-gray-400">…</span>}
+        <span key={p} className={classes.pageGroup}>
+          {idx > 0 && pages[idx - 1] !== p - 1 && <span className={classes.ellipsis}>…</span>}
           <button
             onClick={() => onPageChange(p)}
             className={clsx(
-              'size-9 rounded-lg text-sm font-medium',
-              p === meta.page ? 'bg-brand-600 text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+              classes.pageButton,
+              p === meta.page ? classes.pageButtonActive : classes.pageButtonInactive
             )}
           >
             {p}
@@ -43,10 +54,10 @@ const Pagination = ({ meta, onPageChange }: PaginationProps) => {
       <button
         onClick={() => onPageChange(meta.page + 1)}
         disabled={!meta.hasNextPage}
-        className="rounded-lg p-2 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className={classes.navButton}
         aria-label="Next page"
       >
-        <ChevronRight className="size-4" />
+        <ChevronRight className={classes.navIcon} />
       </button>
     </nav>
   );

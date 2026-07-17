@@ -10,6 +10,13 @@ import { ORDER_STATUS_LABELS } from '../../utils/constants';
 import type { ApiResponse, PaginationMeta } from '../../types/api';
 import type { Order, OrderStatus } from '../../types/models';
 
+const classes = {
+  headerRow: 'mb-4 flex items-center justify-between',
+  title: 'text-lg font-semibold',
+  statusSelect: 'w-40',
+  ordersList: 'space-y-3',
+};
+
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | undefined>(undefined);
@@ -30,9 +37,9 @@ const Orders = () => {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Orders Received</h2>
-        <Select value={status} onChange={(e) => { setStatus(e.target.value as OrderStatus | ''); setPage(1); }} className="w-40">
+      <div className={classes.headerRow}>
+        <h2 className={classes.title}>Orders Received</h2>
+        <Select value={status} onChange={(e) => { setStatus(e.target.value as OrderStatus | ''); setPage(1); }} className={classes.statusSelect}>
           <option value="">All statuses</option>
           {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -47,7 +54,7 @@ const Orders = () => {
       ) : orders.length === 0 ? (
         <EmptyState icon={ShoppingBag} title="No orders yet" description="Orders from buyers will show up here." />
       ) : (
-        <div className="space-y-3">
+        <div className={classes.ordersList}>
           {orders.map((order) => (
             <OrderListItem key={order._id} order={order} counterpartLabel="Buyer" />
           ))}
