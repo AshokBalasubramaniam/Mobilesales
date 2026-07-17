@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc",
+    "postinstall": "tsc",
     "dev": "tsx watch src/server.ts",
     "seed": "tsx src/seed/seed.ts",
     "seed:destroy": "tsx src/seed/seed.ts --destroy",
