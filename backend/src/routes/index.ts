@@ -31,6 +31,6 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/admin', adminRoutes);
 router.use('/upload', uploadRoutes);
 
-router.get('/health', (_req, res) => res.json({ success: true, message: 'API is healthy', timestamp: new Date().toISOString() }));
+router.get('/health', (_req, res) => res.json({ flag: 'success', message: 'API is healthy', timestamp: new Date().toISOString() }));
 
 export default router;

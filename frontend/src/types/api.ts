@@ -1,4 +1,4 @@
-// Mirrors backend/src/utils/ApiResponse.js and pagination.js response envelopes.
+// Mirrors the backend's plain `res.status(code).json({ flag, message, data, meta })` envelope.
 
 export interface PaginationMeta {
   page: number;
@@ -10,8 +10,7 @@ export interface PaginationMeta {
 }
 
 export interface ApiResponse<T = null> {
-  success: boolean;
-  statusCode: number;
+  flag: "success" | "error";
   message: string;
   data: T;
   meta?: PaginationMeta;

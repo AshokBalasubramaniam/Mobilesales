@@ -1,4 +1,4 @@
-import getRedisClient from '../config/redis';
+import getRedisClient from "../config/redis";
 
 /**
  * Thin cache wrapper that no-ops when Redis isn't configured, so callers
@@ -11,10 +11,16 @@ export const get = async <T>(key: string): Promise<T | null> => {
   return raw ? (JSON.parse(raw) as T) : null;
 };
 
-export const set = async (key: string, value: unknown, ttlSeconds = 300): Promise<void> => {
+export const set = async (
+  key: string,
+  value: unknown,
+  ttlSeconds = 300,
+): Promise<void> => {
   const client = getRedisClient();
   if (!client) return;
-  await client.set(key, JSON.stringify(value), 'EX', ttlSeconds).catch(() => {});
+  await client
+    .set(key, JSON.stringify(value), "EX", ttlSeconds)
+    .catch(() => {});
 };
 
 export const del = async (key: string): Promise<void> => {

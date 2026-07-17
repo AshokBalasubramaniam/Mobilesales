@@ -15,7 +15,7 @@ export const notFound = (req: Request, _res: Response, next: NextFunction): void
   next(ApiError.notFound(`Route not found: ${req.method} ${req.originalUrl}`));
 };
 
-const convertToApiError = (err: Error): ApiError => {
+export const convertToApiError = (err: Error): ApiError => {
   if (err instanceof ApiError) return err;
 
   if (err instanceof mongoose.Error.ValidationError) {
@@ -48,8 +48,7 @@ export const errorHandler = (err: Error, _req: Request, res: Response, _next: Ne
   }
 
   res.status(apiError.statusCode).json({
-    success: false,
-    statusCode: apiError.statusCode,
+    flag: 'error',
     message: apiError.message,
     errors: apiError.errors,
     ...(env.nodeEnv === 'development' && { stack: err.stack }),
