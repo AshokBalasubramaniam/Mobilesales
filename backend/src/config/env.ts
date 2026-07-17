@@ -59,15 +59,12 @@ const env: Env = {
     return Boolean(this.cloudinary.cloudName && this.cloudinary.apiKey && this.cloudinary.apiSecret);
   },
 
-  smtp: {
-    host: process.env.SMTP_HOST || '',
-    port: Number(process.env.SMTP_PORT) || 587,
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-    from: process.env.EMAIL_FROM || 'Mobile Sales <no-reply@mobilesales.local>',
+  resend: {
+    apiKey: process.env.RESEND_API_KEY || '',
+    from: process.env.EMAIL_FROM || 'Mobile Sales <onboarding@resend.dev>',
   },
-  get isSmtpConfigured() {
-    return Boolean(this.smtp.host && this.smtp.user && this.smtp.pass);
+  get isEmailConfigured() {
+    return Boolean(this.resend.apiKey);
   },
 
   sms: {

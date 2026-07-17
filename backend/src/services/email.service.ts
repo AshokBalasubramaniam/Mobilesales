@@ -1,26 +1,9 @@
-import type { Transporter } from 'nodemailer';
 import env from '../config/env';
 import logger from '../utils/logger';
 import { getEmailFromAddress } from './settings.service';
 
 const BRAND_NAME = 'Mobile Sales';
 const BRAND_COLOR = '#4f46e5';
-
-let transporter: Transporter | null = null;
-
-const getTransporter = (): Transporter | null => {
-  if (!env.isSmtpConfigured) return null;
-  if (transporter) return transporter;
-  // eslint-disable-next-line global-require
-  const nodemailer: typeof import('nodemailer') = require('nodemailer');
-  transporter = nodemailer.createTransport({
-    host: env.smtp.host,
-    port: env.smtp.port,
-    secure: env.smtp.port === 465,
-    auth: { user: env.smtp.user, pass: env.smtp.pass },
-  });
-  return transporter;
-};
 
 export interface SendEmailArgs {
   to: string;
@@ -35,23 +18,38 @@ export interface SendEmailResult {
 }
 
 /**
- * Sends an email via SMTP when configured, otherwise logs it to the console
- * so auth flows (verification, password reset) remain testable without a
- * real mail provider. The mock path is logged at `warn` (not `info`) since an
- * unset SMTP_HOST/USER/PASS in production silently makes every "email sent"
- * response a no-op — this keeps that visible in server logs.
+ * Sends an email via the Resend HTTP API when configured, otherwise logs it
+ * to the console so auth flows (verification, password reset) remain
+ * testable without a real mail provider. HTTP (not SMTP) is deliberate: many
+ * hosts (Render included) block outbound SMTP ports (25/465/587) on their
+ * free/starter tiers to prevent abuse, which silently times out real SMTP
+ * sends in production while working fine from a local machine. The mock
+ * path is logged at `warn` (not `info`) since an unset RESEND_API_KEY in
+ * production silently makes every "email sent" response a no-op — this
+ * keeps that visible in server logs.
  */
 export const sendEmail = async ({ to, subject, html, text }: SendEmailArgs): Promise<SendEmailResult> => {
-  const client = getTransporter();
-
-  if (!client) {
-    logger.warn(`[email:mock] SMTP is not configured — no real email was sent. To: ${to} | Subject: ${subject}`);
+  if (!env.isEmailConfigured) {
+    logger.warn(`[email:mock] RESEND_API_KEY is not configured — no real email was sent. To: ${to} | Subject: ${subject}`);
     logger.info(`[email:mock] Body: ${text || html}`);
     return { delivered: false, mock: true };
   }
 
   const address = await getEmailFromAddress();
-  await client.sendMail({ from: `${BRAND_NAME} <${address}>`, to, subject, html, text });
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.resend.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from: `${BRAND_NAME} <${address}>`, to, subject, html, text }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Resend API request failed (${response.status}): ${body}`);
+  }
+
   return { delivered: true, mock: false };
 };
 

@@ -1,13 +1,13 @@
 import Settings from '../models/Settings';
 import env from '../config/env';
 
-// env.smtp.from is a full "Name <email>" string; admin-configured settings
+// env.resend.from is a full "Name <email>" string; admin-configured settings
 // store only the bare address (see email.service.ts's xssSanitizer, which
 // mangles literal `<`/`>` in request bodies), so fall back to the address
 // portion of the env default rather than the whole string.
 const extractDefaultEmail = (): string => {
-  const match = env.smtp.from.match(/<([^>]+)>/);
-  return match ? match[1] : env.smtp.from;
+  const match = env.resend.from.match(/<([^>]+)>/);
+  return match ? match[1] : env.resend.from;
 };
 
 export const getEmailFromAddress = async (): Promise<string> => {

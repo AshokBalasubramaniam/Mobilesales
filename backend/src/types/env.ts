@@ -44,14 +44,11 @@ export interface Env {
   };
   readonly isCloudinaryConfigured: boolean;
 
-  smtp: {
-    host: string;
-    port: number;
-    user: string;
-    pass: string;
+  resend: {
+    apiKey: string;
     from: string;
   };
-  readonly isSmtpConfigured: boolean;
+  readonly isEmailConfigured: boolean;
 
   sms: {
     apiKey: string;
