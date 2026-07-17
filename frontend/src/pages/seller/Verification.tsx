@@ -13,27 +13,27 @@ import Button from "../../components/common/Button";
 import { useAuth } from "../../hooks/useAuth";
 
 const classes = {
-  fieldLabel: "mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300",
+  fieldLabel: "mb-1.5 text-sm font-medium text-gray-700",
   fieldRequired: "text-red-500",
   dropzone:
-    "flex w-full cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 dark:border-gray-700",
+    "flex w-full cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500",
   dropzoneIcon: "size-4",
   approvedContainer:
-    "flex flex-col items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-10 text-center dark:border-green-900 dark:bg-green-900/20",
+    "flex flex-col items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-10 text-center",
   approvedIcon: "size-10 text-green-600",
   approvedTitle: "text-lg font-bold",
   approvedText: "text-sm text-gray-500",
   pendingContainer:
-    "flex flex-col items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-10 text-center dark:border-amber-900 dark:bg-amber-900/20",
+    "flex flex-col items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-10 text-center",
   pendingIcon: "size-10 text-amber-600",
   pendingTitle: "text-lg font-bold",
   pendingText: "text-sm text-gray-500",
   pageTitle: "mb-1 text-lg font-semibold",
   pageDescription: "mb-6 text-sm text-gray-500",
   rejectedBanner:
-    "mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-900/20 dark:text-red-400",
+    "mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700",
   rejectedIcon: "size-4 shrink-0",
-  form: "space-y-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  form: "space-y-4 rounded-xl border border-gray-200 p-6",
   submitButton: "w-full",
 };
 

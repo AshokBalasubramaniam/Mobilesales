@@ -24,8 +24,8 @@ export interface OrderListItemProps {
 
 const classes = {
   container:
-    "flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-brand-300 dark:border-gray-800",
-  thumbnail: "size-16 rounded-lg bg-gray-100 object-cover dark:bg-gray-800",
+    "flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-brand-300",
+  thumbnail: "size-16 rounded-lg bg-gray-100 object-cover",
   details: "min-w-0 flex-1",
   title: "truncate font-semibold",
   meta: "text-xs text-gray-500",

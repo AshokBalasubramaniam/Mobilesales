@@ -18,8 +18,8 @@ import type { ApiResponse, PaginationMeta } from "../../types/api";
 const classes = {
   title: "mb-4 text-lg font-semibold",
   list: "space-y-3",
-  card: "flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 p-4 dark:border-gray-800",
-  avatar: "size-16 rounded-lg bg-gray-100 object-cover dark:bg-gray-800",
+  card: "flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 p-4",
+  avatar: "size-16 rounded-lg bg-gray-100 object-cover",
   info: "min-w-0 flex-1",
   link: "font-semibold hover:text-brand-600",
   subtitle: "text-sm text-gray-500",

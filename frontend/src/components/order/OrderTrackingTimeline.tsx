@@ -26,18 +26,18 @@ export interface OrderTrackingTimelineProps {
 
 const classes = {
   cancelled:
-    "flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-900 dark:bg-red-900/20 dark:text-red-400",
+    "flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700",
   cancelledIcon: "size-5",
   container: "flex items-start",
   step: "flex flex-1 flex-col items-center text-center last:flex-none",
   stepRow: "flex w-full items-center",
   circleBase: "flex size-9 shrink-0 items-center justify-center rounded-full",
   circleDone: "bg-brand-600 text-white",
-  circleNotDone: "bg-gray-200 text-gray-400 dark:bg-gray-800",
+  circleNotDone: "bg-gray-200 text-gray-400",
   stepIcon: "size-4",
   connectorBase: "h-0.5 flex-1",
   connectorDone: "bg-brand-600",
-  connectorNotDone: "bg-gray-200 dark:bg-gray-800",
+  connectorNotDone: "bg-gray-200",
   label: "mt-2 text-xs font-medium capitalize",
   timestamp: "text-[10px] text-gray-400",
 };

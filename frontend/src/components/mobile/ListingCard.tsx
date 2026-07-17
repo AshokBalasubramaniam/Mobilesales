@@ -20,27 +20,27 @@ export interface ListingCardProps {
 }
 
 const classes = {
-  card: "group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:border-gray-800 dark:bg-gray-900",
+  card: "group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-lg",
   imageWrapper:
-    "relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-800",
+    "relative aspect-square overflow-hidden bg-gray-100",
   image:
     "size-full object-cover transition-transform duration-300 group-hover:scale-105",
   noImage: "flex size-full items-center justify-center text-gray-400",
   wishlistButton:
-    "absolute top-2 right-2 rounded-full bg-white/90 p-2 shadow hover:bg-white dark:bg-gray-900/90",
+    "absolute top-2 right-2 rounded-full bg-white/90 p-2 shadow hover:bg-white",
   wishlistIconBase: "size-4",
   wishlistIconActive: "fill-red-500 text-red-500",
   wishlistIconInactive: "text-gray-500",
   discountBadge: "absolute top-2 left-2",
   compareLabel:
-    "absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-xs font-medium shadow dark:bg-gray-900/90",
+    "absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-white/90 px-2 py-1 text-xs font-medium shadow",
   body: "flex flex-1 flex-col gap-1.5 p-3.5",
   titleRow: "flex items-center gap-1.5",
-  title: "truncate text-sm font-semibold text-gray-900 dark:text-gray-100",
+  title: "truncate text-sm font-semibold text-gray-900",
   verifiedIcon: "size-4 shrink-0 text-brand-600",
   subtitle: "text-xs text-gray-500",
   priceRow: "mt-1 flex items-baseline gap-2",
-  price: "text-lg font-bold text-gray-900 dark:text-gray-100",
+  price: "text-lg font-bold text-gray-900",
   mrp: "text-xs text-gray-400 line-through",
   footerRow: "mt-1 flex items-center justify-between text-xs text-gray-500",
   locationInfo: "flex items-center gap-1 truncate",

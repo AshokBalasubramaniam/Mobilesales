@@ -1,6 +1,6 @@
-import { useState, type InputHTMLAttributes } from 'react';
-import clsx from 'clsx';
-import { Eye, EyeOff, type LucideIcon } from 'lucide-react';
+import { useState, type InputHTMLAttributes } from "react";
+import clsx from "clsx";
+import { Eye, EyeOff, type LucideIcon } from "lucide-react";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -10,25 +10,36 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const classes = {
-  wrapper: 'w-full',
-  label: 'mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300',
-  inputContainer: 'relative',
-  iconWrapper: 'pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400',
+  wrapper: "w-full",
+  label: "mb-1.5 block text-sm font-medium text-gray-700",
+  inputContainer: "relative",
+  iconWrapper:
+    "pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400",
   inputBase:
-    'w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400',
-  inputFocus: 'focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:bg-gray-900 dark:text-gray-100 dark:focus:ring-brand-900/40',
-  inputError: 'border-red-400',
-  inputNormal: 'border-gray-300 dark:border-gray-700',
-  inputWithIcon: 'pl-10',
-  inputWithToggle: 'pr-10',
-  toggleButton: 'absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300',
-  hint: 'mt-1 text-xs text-gray-500',
-  error: 'mt-1 text-xs text-red-500',
+    "w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400",
+  inputFocus: "focus:border-brand-500 focus:ring-2 focus:ring-brand-100",
+  inputError: "border-red-400",
+  inputNormal: "border-gray-300",
+  inputWithIcon: "pl-10",
+  inputWithToggle: "pr-10",
+  toggleButton:
+    "absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600",
+  hint: "mt-1 text-xs text-gray-500",
+  error: "mt-1 text-xs text-red-500",
 };
 
-const Input = ({ label, error, hint, className, id, type, icon: Icon, ...props }: InputProps) => {
+const Input = ({
+  label,
+  error,
+  hint,
+  className,
+  id,
+  type,
+  icon: Icon,
+  ...props
+}: InputProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const isPassword = type === 'password';
+  const isPassword = type === "password";
 
   return (
     <div className={classes.wrapper}>
@@ -45,14 +56,14 @@ const Input = ({ label, error, hint, className, id, type, icon: Icon, ...props }
         )}
         <input
           id={id}
-          type={isPassword && showPassword ? 'text' : type}
+          type={isPassword && showPassword ? "text" : type}
           className={clsx(
             classes.inputBase,
             classes.inputFocus,
             error ? classes.inputError : classes.inputNormal,
             Icon && classes.inputWithIcon,
             isPassword && classes.inputWithToggle,
-            className
+            className,
           )}
           {...props}
         />
@@ -62,7 +73,7 @@ const Input = ({ label, error, hint, className, id, type, icon: Icon, ...props }
             tabIndex={-1}
             onClick={() => setShowPassword((prev) => !prev)}
             className={classes.toggleButton}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>

@@ -60,13 +60,12 @@ const classes = {
   cornerHeadCell: "w-40 p-3 text-left",
   headCell: "p-3 text-left",
   cardWrapper: "relative w-40",
-  removeButton:
-    "absolute -top-1 -right-1 rounded-full bg-gray-100 p-1 dark:bg-gray-800",
+  removeButton: "absolute -top-1 -right-1 rounded-full bg-gray-100 p-1",
   removeIcon: "size-3",
   thumbnail:
-    "mb-2 aspect-square w-full rounded-lg bg-gray-100 object-cover dark:bg-gray-800",
+    "mb-2 aspect-square w-full rounded-lg bg-gray-100 object-cover",
   cardTitle: "font-semibold hover:text-brand-600",
-  bodyRow: "border-t border-gray-100 dark:border-gray-800",
+  bodyRow: "border-t border-gray-100",
   labelCell: "p-3 font-medium text-gray-500",
   valueCell: "p-3",
 };

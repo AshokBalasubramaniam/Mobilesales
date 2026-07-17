@@ -15,8 +15,7 @@ const classes = {
   title: "text-lg font-semibold",
   description: "max-w-sm text-sm text-gray-500",
   fullPageWrapper: "flex min-h-[60vh] items-center justify-center p-6",
-  inlineWrapper:
-    "mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-900/10",
+  inlineWrapper: "mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4",
 };
 
 const EmailVerificationNotice = ({

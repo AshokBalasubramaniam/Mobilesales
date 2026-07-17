@@ -48,8 +48,7 @@ const COLUMNS: FooterColumn[] = [
 ];
 
 const classes = {
-  footer:
-    "mt-auto border-t border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950",
+  footer: "mt-auto border-t border-gray-200 bg-white",
   container: "mx-auto max-w-7xl px-4 py-10",
   grid: "grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5",
   brandColumn: "col-span-2",
@@ -58,11 +57,11 @@ const classes = {
   description: "mt-3 max-w-xs text-sm text-gray-500",
   socialRow: "mt-4 flex gap-3 text-gray-400",
   socialIcon: "size-5 hover:text-brand-600",
-  columnTitle: "mb-3 text-sm font-semibold text-gray-900 dark:text-gray-100",
+  columnTitle: "mb-3 text-sm font-semibold text-gray-900",
   linkList: "space-y-2",
   link: "text-sm text-gray-500 hover:text-brand-600",
   copyright:
-    "mt-8 border-t border-gray-100 pt-6 text-center text-xs text-gray-400 dark:border-gray-800",
+    "mt-8 border-t border-gray-100 pt-6 text-center text-xs text-gray-400",
 };
 
 const Footer = () => (

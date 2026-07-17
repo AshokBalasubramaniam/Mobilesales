@@ -8,7 +8,7 @@ import Spinner from "../../components/common/Spinner";
 const classes = {
   container: "space-y-8",
   heading: "text-lg font-semibold",
-  card: "rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  card: "rounded-xl border border-gray-200 p-6",
   cardTitle: "mb-4 font-semibold",
 };
 

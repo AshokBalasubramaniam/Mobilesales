@@ -96,7 +96,7 @@ const STEP_COMPONENTS: ComponentType<StepComponentProps>[] = [
 const classes = {
   container: "mx-auto max-w-2xl px-4 py-10",
   title: "mb-6 text-center text-2xl font-bold",
-  card: "rounded-2xl border border-gray-200 p-6 dark:border-gray-800",
+  card: "rounded-2xl border border-gray-200 p-6",
   footer: "mt-6 flex justify-between",
   nextIcon: "size-4",
 };

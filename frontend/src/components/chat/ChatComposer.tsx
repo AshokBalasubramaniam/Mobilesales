@@ -12,16 +12,15 @@ export interface ChatComposerProps {
 }
 
 const classes = {
-  unverifiedWrapper: "border-t border-gray-200 p-3 dark:border-gray-800",
-  form: "flex items-center gap-1.5 border-t border-gray-200 p-3 dark:border-gray-800",
-  iconButton:
-    "rounded-full p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800",
+  unverifiedWrapper: "border-t border-gray-200 p-3",
+  form: "flex items-center gap-1.5 border-t border-gray-200 p-3",
+  iconButton: "rounded-full p-2 text-gray-500 hover:bg-gray-100",
   icon: "size-5",
   recordingButtonBase: "rounded-full p-2",
   recordingActive: "bg-red-100 text-red-600",
-  recordingInactive: "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800",
+  recordingInactive: "text-gray-500 hover:bg-gray-100",
   textInput:
-    "flex-1 rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900",
+    "flex-1 rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm outline-none focus:border-brand-500",
   sendButton: "rounded-full bg-brand-600 p-2.5 text-white disabled:opacity-50",
   sendIcon: "size-4",
 };

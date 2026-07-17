@@ -27,7 +27,7 @@ const classes = {
   ordersTitle: "mb-3 font-semibold",
   ordersList: "flex flex-wrap gap-3",
   orderStatusChip:
-    "rounded-lg border border-gray-200 px-4 py-2 text-sm capitalize dark:border-gray-800",
+    "rounded-lg border border-gray-200 px-4 py-2 text-sm capitalize",
   emptyMessage: "text-sm text-gray-500",
 };
 

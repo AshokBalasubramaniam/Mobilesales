@@ -1,6 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
-import { X } from 'lucide-react';
-import clsx from 'clsx';
+import { useEffect, type ReactNode } from "react";
+import { X } from "lucide-react";
+import clsx from "clsx";
 
 export interface ModalProps {
   open: boolean;
@@ -11,23 +11,24 @@ export interface ModalProps {
 }
 
 const classes = {
-  overlay: 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4',
-  panel: 'w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900',
-  header: 'mb-4 flex items-center justify-between',
-  title: 'text-lg font-semibold',
-  closeButton: 'rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800',
-  closeIcon: 'size-5',
+  overlay:
+    "fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4",
+  panel: "w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl",
+  header: "mb-4 flex items-center justify-between",
+  title: "text-lg font-semibold",
+  closeButton: "rounded-full p-1 hover:bg-gray-100",
+  closeIcon: "size-5",
 };
 
 const Modal = ({ open, onClose, title, children, className }: ModalProps) => {
   useEffect(() => {
     if (!open) return undefined;
-    const onKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose?.();
-    document.addEventListener('keydown', onKeyDown);
-    document.body.style.overflow = 'hidden';
+    const onKeyDown = (e: KeyboardEvent) => e.key === "Escape" && onClose?.();
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = '';
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
     };
   }, [open, onClose]);
 
@@ -44,7 +45,11 @@ const Modal = ({ open, onClose, title, children, className }: ModalProps) => {
         {title && (
           <div className={classes.header}>
             <h2 className={classes.title}>{title}</h2>
-            <button onClick={onClose} className={classes.closeButton} aria-label="Close">
+            <button
+              onClick={onClose}
+              className={classes.closeButton}
+              aria-label="Close"
+            >
               <X className={classes.closeIcon} />
             </button>
           </div>

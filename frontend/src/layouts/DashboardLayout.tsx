@@ -23,8 +23,7 @@ const classes = {
   navLinkBase:
     "flex shrink-0 items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors",
   navLinkActive: "bg-brand-600 text-white",
-  navLinkInactive:
-    "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+  navLinkInactive: "text-gray-600 hover:bg-gray-100",
   navIcon: "size-4",
   content: "min-w-0 flex-1",
 };

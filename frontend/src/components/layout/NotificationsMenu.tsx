@@ -16,14 +16,13 @@ import { formatRelativeTime } from "../../utils/format";
 
 const classes = {
   container: "relative",
-  trigger: "relative rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800",
+  trigger: "relative rounded-full p-2 hover:bg-gray-100",
   triggerIcon: "size-5",
   badge:
     "absolute -top-0.5 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white",
   panel:
-    "absolute right-0 z-40 mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900",
-  panelHeader:
-    "flex items-center justify-between border-b border-gray-100 p-3 dark:border-gray-800",
+    "absolute right-0 z-40 mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-lg",
+  panelHeader: "flex items-center justify-between border-b border-gray-100 p-3",
   panelTitle: "text-sm font-semibold",
   markAllButton:
     "flex items-center gap-1 text-xs text-brand-600 hover:underline",
@@ -31,9 +30,9 @@ const classes = {
   list: "max-h-96 overflow-y-auto",
   emptyMessage: "p-4 text-center text-sm text-gray-500",
   itemBase:
-    "block w-full border-b border-gray-50 p-3 text-left text-sm hover:bg-gray-50 dark:border-gray-800/50 dark:hover:bg-gray-800/50",
-  itemUnread: "bg-brand-50/60 dark:bg-brand-900/10",
-  itemTitle: "font-medium text-gray-900 dark:text-gray-100",
+    "block w-full border-b border-gray-50 p-3 text-left text-sm hover:bg-gray-50",
+  itemUnread: "bg-brand-50/60",
+  itemTitle: "font-medium text-gray-900",
   itemMessage: "mt-0.5 line-clamp-2 text-xs text-gray-500",
   itemTime: "mt-1 text-[11px] text-gray-400",
 };

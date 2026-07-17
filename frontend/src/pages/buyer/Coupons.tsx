@@ -13,9 +13,9 @@ const classes = {
   title: "mb-4 text-lg font-semibold",
   grid: "grid grid-cols-1 gap-3 sm:grid-cols-2",
   couponCard:
-    "rounded-xl border-2 border-dashed border-brand-300 p-4 text-left hover:bg-brand-50 dark:border-brand-800 dark:hover:bg-brand-900/20",
+    "rounded-xl border-2 border-dashed border-brand-300 p-4 text-left hover:bg-brand-50",
   couponHeader: "flex items-center justify-between",
-  code: "font-mono text-lg font-bold text-brand-700 dark:text-brand-300",
+  code: "font-mono text-lg font-bold text-brand-700",
   description: "mt-1 text-sm text-gray-500",
   meta: "mt-2 text-xs text-gray-400",
 };

@@ -6,9 +6,9 @@ import ConversationList from "../../components/chat/ConversationList";
 const classes = {
   page: "mx-auto max-w-6xl px-4 py-6",
   panel:
-    "flex h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800",
+    "flex h-[calc(100vh-8rem)] overflow-hidden rounded-2xl border border-gray-200",
   listWrapper:
-    "w-full overflow-y-auto border-r border-gray-200 lg:block lg:w-80 dark:border-gray-800",
+    "w-full overflow-y-auto border-r border-gray-200 lg:block lg:w-80",
   listWrapperHidden: "hidden",
   content: "min-w-0 flex-1",
   contentHidden: "hidden lg:block",

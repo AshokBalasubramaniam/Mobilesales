@@ -36,24 +36,23 @@ const classes = {
   headerRow: "mb-6 flex items-center justify-between",
   orderTitle: "text-xl font-bold",
   orderDate: "text-sm text-gray-500",
-  timelineCard:
-    "mb-6 rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  timelineCard: "mb-6 rounded-xl border border-gray-200 p-6",
   mobileCard:
-    "mb-6 flex items-center gap-4 rounded-xl border border-gray-200 p-4 dark:border-gray-800",
-  mobileImage: "size-16 rounded-lg bg-gray-100 object-cover dark:bg-gray-800",
+    "mb-6 flex items-center gap-4 rounded-xl border border-gray-200 p-4",
+  mobileImage: "size-16 rounded-lg bg-gray-100 object-cover",
   mobileInfo: "flex-1",
   mobileLink: "font-semibold hover:text-brand-600",
   soldBy: "text-sm text-gray-500",
   totalAmount: "font-bold",
   pricingCard:
-    "mb-6 space-y-1 rounded-xl border border-gray-200 p-4 text-sm dark:border-gray-800",
+    "mb-6 space-y-1 rounded-xl border border-gray-200 p-4 text-sm",
   pricingRow: "flex justify-between",
   pricingLabel: "text-gray-500",
   discountRow: "flex justify-between text-green-600",
   pricingTotalRow:
-    "flex justify-between border-t border-gray-100 pt-2 font-bold dark:border-gray-800",
+    "flex justify-between border-t border-gray-100 pt-2 font-bold",
   trackingCard:
-    "mb-6 flex items-end gap-2 rounded-xl border border-gray-200 p-4 dark:border-gray-800",
+    "mb-6 flex items-end gap-2 rounded-xl border border-gray-200 p-4",
   trackingSelect: "flex-1",
   actionsRow: "flex flex-wrap gap-2",
   modalForm: "space-y-4",

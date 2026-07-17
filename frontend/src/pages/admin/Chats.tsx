@@ -17,7 +17,7 @@ const classes = {
   subheading: "mb-4 text-sm text-gray-500",
   list: "space-y-2",
   conversationLink:
-    "flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-brand-300 dark:border-gray-800",
+    "flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-brand-300",
   avatarStack: "flex shrink-0 -space-x-2",
   content: "min-w-0 flex-1",
   participants: "truncate text-sm font-semibold",

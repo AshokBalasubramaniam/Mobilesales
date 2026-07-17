@@ -27,7 +27,7 @@ const classes = {
   title: "mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide",
   list: "flex flex-wrap gap-2",
   bucket:
-    "rounded-full border border-gray-300 px-4 py-1.5 text-sm hover:border-brand-500 hover:text-brand-600 dark:border-gray-700",
+    "rounded-full border border-gray-300 px-4 py-1.5 text-sm hover:border-brand-500 hover:text-brand-600",
 };
 
 const QuickFilters = () => (

@@ -33,7 +33,7 @@ const FAQS: Faq[] = [
 const classes = {
   section: "mx-auto max-w-3xl px-4 py-12",
   title: "mb-6 text-center text-xl font-bold",
-  list: "divide-y divide-gray-200 rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800",
+  list: "divide-y divide-gray-200 rounded-xl border border-gray-200",
   question:
     "flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium",
   icon: "size-4 shrink-0 transition-transform",

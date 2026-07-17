@@ -12,7 +12,7 @@ const classes = {
   section: "mx-auto max-w-7xl px-4 py-8",
   title: "mb-4 text-xl font-bold",
   grid: "grid grid-cols-1 gap-4 sm:grid-cols-3",
-  comment: "mt-2 text-sm text-gray-600 dark:text-gray-400",
+  comment: "mt-2 text-sm text-gray-600",
   buyerRow: "mt-4 flex items-center gap-2",
   buyerName: "text-sm font-medium",
 };

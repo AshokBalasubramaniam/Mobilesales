@@ -14,12 +14,12 @@ const classes = {
     "flex size-8 items-center justify-center rounded-full text-xs font-semibold",
   circleDone: "bg-brand-600 text-white",
   circleCurrent: "border-2 border-brand-600 text-brand-600",
-  circleUpcoming: "border-2 border-gray-200 text-gray-400 dark:border-gray-700",
+  circleUpcoming: "border-2 border-gray-200 text-gray-400",
   checkIcon: "size-4",
   label: "hidden text-[11px] text-gray-500 sm:block",
   connectorBase: "mx-1 h-0.5 flex-1",
   connectorDone: "bg-brand-600",
-  connectorUpcoming: "bg-gray-200 dark:bg-gray-700",
+  connectorUpcoming: "bg-gray-200",
 };
 
 const WizardProgress = ({ steps, currentStep }: WizardProgressProps) => (

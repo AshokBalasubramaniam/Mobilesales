@@ -39,9 +39,9 @@ type ChatParticipant = Pick<
 const classes = {
   container: "flex h-full flex-col",
   header:
-    "flex items-center gap-3 border-b border-gray-200 p-3 dark:border-gray-800",
+    "flex items-center gap-3 border-b border-gray-200 p-3",
   backButton:
-    "rounded-full p-1.5 hover:bg-gray-100 lg:hidden dark:hover:bg-gray-800",
+    "rounded-full p-1.5 hover:bg-gray-100 lg:hidden",
   backIcon: "size-5",
   headerInfo: "min-w-0 flex-1",
   headerName: "flex items-center gap-1 truncate text-sm font-semibold",

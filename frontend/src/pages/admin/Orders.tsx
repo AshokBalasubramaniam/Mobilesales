@@ -29,12 +29,12 @@ const classes = {
   title: "text-lg font-semibold",
   statusSelect: "w-40",
   tableWrapper:
-    "overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800",
+    "overflow-x-auto rounded-xl border border-gray-200",
   table: "w-full min-w-[700px] text-sm",
   thead:
-    "bg-gray-50 text-left text-xs text-gray-500 uppercase dark:bg-gray-900",
+    "bg-gray-50 text-left text-xs text-gray-500 uppercase",
   th: "p-3",
-  tbody: "divide-y divide-gray-100 dark:divide-gray-800",
+  tbody: "divide-y divide-gray-100",
   td: "p-3",
   orderLink: "font-medium hover:text-brand-600",
   mobileText: "text-xs text-gray-400",

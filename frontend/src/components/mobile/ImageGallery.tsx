@@ -10,9 +10,9 @@ export interface ImageGalleryProps {
 
 const classes = {
   emptyState:
-    "flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-400 dark:bg-gray-800",
+    "flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-400",
   mainImageWrapper:
-    "relative aspect-square cursor-zoom-in overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800",
+    "relative aspect-square cursor-zoom-in overflow-hidden rounded-xl bg-gray-100",
   mainImage: "size-full object-cover select-none",
   zoomBadge:
     "absolute right-2 bottom-2 rounded-full bg-black/50 p-1.5 text-white",
@@ -28,8 +28,8 @@ const classes = {
   spinToggleBase:
     "flex shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium",
   spinToggleActive:
-    "border-brand-600 bg-brand-50 text-brand-700 dark:bg-brand-900/30",
-  spinToggleInactive: "border-gray-300 dark:border-gray-700",
+    "border-brand-600 bg-brand-50 text-brand-700",
+  spinToggleInactive: "border-gray-300",
   spinToggleIcon: "size-3.5",
   videoWrapper: "mt-3",
   video: "w-full rounded-xl",

@@ -21,8 +21,8 @@ import type { Mobile } from "../../types/models";
 const classes = {
   browseLink: "text-sm font-medium text-brand-600 hover:underline",
   list: "space-y-3",
-  item: "flex items-center gap-4 rounded-xl border border-gray-200 p-4 dark:border-gray-800",
-  thumbnail: "size-20 rounded-lg bg-gray-100 object-cover dark:bg-gray-800",
+  item: "flex items-center gap-4 rounded-xl border border-gray-200 p-4",
+  thumbnail: "size-20 rounded-lg bg-gray-100 object-cover",
   info: "flex-1",
   title: "font-semibold hover:text-brand-600",
   meta: "text-sm text-gray-500",

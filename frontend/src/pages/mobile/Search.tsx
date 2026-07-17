@@ -39,17 +39,16 @@ const classes = {
   contentRow: "flex gap-8",
   desktopSidebar: "hidden lg:block",
   mobileFiltersOverlay: "fixed inset-0 z-40 flex bg-black/50 lg:hidden",
-  mobileFiltersPanel:
-    "ml-auto h-full w-80 overflow-y-auto bg-white p-4 dark:bg-gray-950",
+  mobileFiltersPanel: "ml-auto h-full w-80 overflow-y-auto bg-white p-4",
   mobileFiltersHeader: "mb-4 flex justify-end",
   closeIcon: "size-5",
   resultsColumn: "min-w-0 flex-1",
   compareBar:
-    "fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white p-4 shadow-lg dark:border-gray-800 dark:bg-gray-900",
+    "fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white p-4 shadow-lg",
   compareBarInner: "mx-auto flex max-w-7xl items-center justify-between gap-4",
   compareChips: "flex gap-2 overflow-x-auto",
   compareChip:
-    "flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs dark:bg-gray-800",
+    "flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs",
   compareChipRemoveIcon: "size-3",
 };
 

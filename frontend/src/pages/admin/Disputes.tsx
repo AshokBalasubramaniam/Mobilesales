@@ -35,7 +35,7 @@ const STATUS_VARIANT: Record<
 const classes = {
   heading: "mb-4 text-lg font-semibold",
   list: "space-y-3",
-  card: "rounded-xl border border-gray-200 p-4 dark:border-gray-800",
+  card: "rounded-xl border border-gray-200 p-4",
   cardHeader: "flex items-start justify-between",
   orderLink: "font-medium hover:text-brand-600",
   reason: "text-sm text-gray-500",

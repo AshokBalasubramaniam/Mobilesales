@@ -24,9 +24,9 @@ type ConversationParticipant = Pick<
 >;
 
 const classes = {
-  container: "divide-y divide-gray-100 dark:divide-gray-800",
-  link: "flex items-center gap-3 p-3.5 hover:bg-gray-50 dark:hover:bg-gray-900",
-  linkActive: "bg-brand-50 dark:bg-brand-900/20",
+  container: "divide-y divide-gray-100",
+  link: "flex items-center gap-3 p-3.5 hover:bg-gray-50",
+  linkActive: "bg-brand-50",
   content: "min-w-0 flex-1",
   row: "flex items-center justify-between",
   name: "truncate text-sm font-semibold",

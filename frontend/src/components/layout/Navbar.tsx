@@ -3,17 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
-  Moon,
   Search,
-  Sun,
   Menu,
   Smartphone,
   X,
 } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { useAppSelector } from "../../app/hooks";
 import { useAuth } from "../../hooks/useAuth";
-import { toggleTheme } from "../../features/ui/slice";
-import { selectTheme } from "../../features/ui/selectors";
 import { selectChatUnreadTotal } from "../../features/chat/selectors";
 import { PATHS } from "../../routes/paths";
 import Button from "../common/Button";
@@ -22,7 +18,7 @@ import UserMenu from "./UserMenu";
 
 const classes = {
   header:
-    "sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur dark:border-gray-800 dark:bg-gray-950/90",
+    "sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur",
   bar: "mx-auto flex max-w-7xl items-center gap-3 px-4 py-3",
   logo: "flex shrink-0 items-center gap-1.5 text-lg font-bold text-brand-600",
   logoIcon: "size-6",
@@ -30,21 +26,19 @@ const classes = {
   desktopSearchForm: "relative hidden flex-1 md:block",
   searchIcon: "absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400",
   desktopSearchInput:
-    "w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-sm outline-none focus:border-brand-500 focus:bg-white dark:border-gray-700 dark:bg-gray-900",
+    "w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-sm outline-none focus:border-brand-500 focus:bg-white",
   actions: "ml-auto flex items-center gap-1.5",
-  iconButton: "rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800",
+  iconButton: "rounded-full p-2 hover:bg-gray-100",
   actionIcon: "size-5",
-  chatButton:
-    "relative rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800",
+  chatButton: "relative rounded-full p-2 hover:bg-gray-100",
   chatBadge:
     "absolute -top-0.5 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white",
   sellButton: "hidden sm:inline-flex",
-  mobileToggleButton:
-    "rounded-full p-2 hover:bg-gray-100 md:hidden dark:hover:bg-gray-800",
-  mobilePanel: "border-t border-gray-100 p-3 md:hidden dark:border-gray-800",
+  mobileToggleButton: "rounded-full p-2 hover:bg-gray-100 md:hidden",
+  mobilePanel: "border-t border-gray-100 p-3 md:hidden",
   mobileSearchForm: "relative mb-3",
   mobileSearchInput:
-    "w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-sm outline-none dark:border-gray-700 dark:bg-gray-900",
+    "w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-sm outline-none",
   mobileSellButton: "w-full",
 };
 
@@ -52,9 +46,7 @@ const Navbar = () => {
   const [query, setQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isAuthenticated, isSeller } = useAuth();
-  const theme = useAppSelector(selectTheme);
   const chatUnread = useAppSelector(selectChatUnreadTotal);
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const handleSearch = (e: FormEvent) => {
@@ -84,18 +76,6 @@ const Navbar = () => {
         </form>
 
         <div className={classes.actions}>
-          <button
-            onClick={() => dispatch(toggleTheme())}
-            className={classes.iconButton}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? (
-              <Sun className={classes.actionIcon} />
-            ) : (
-              <Moon className={classes.actionIcon} />
-            )}
-          </button>
-
           {isAuthenticated ? (
             <>
               <Link

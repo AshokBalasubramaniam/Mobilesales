@@ -53,12 +53,12 @@ interface CheckboxGroupProps {
 }
 
 const classes = {
-  fieldLabel: "mb-2 text-sm font-medium text-gray-700 dark:text-gray-300",
+  fieldLabel: "mb-2 text-sm font-medium text-gray-700",
   checkboxOptions: "flex flex-wrap gap-2",
   checkboxButtonBase: "rounded-full border px-3 py-1 text-xs font-medium",
   checkboxButtonActive:
-    "border-brand-600 bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300",
-  checkboxButtonInactive: "border-gray-300 dark:border-gray-700",
+    "border-brand-600 bg-brand-50 text-brand-700",
+  checkboxButtonInactive: "border-gray-300",
   container: "w-full shrink-0 space-y-6 lg:w-72",
   header: "flex items-center justify-between",
   headerTitle: "text-sm font-semibold",

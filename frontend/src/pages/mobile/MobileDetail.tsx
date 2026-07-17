@@ -59,8 +59,7 @@ const classes = {
   titleRow: "flex items-start justify-between",
   title: "text-2xl font-bold",
   subtitle: "text-sm text-gray-500",
-  wishlistButton:
-    "rounded-full border border-gray-200 p-2.5 dark:border-gray-700",
+  wishlistButton: "rounded-full border border-gray-200 p-2.5",
   wishlistIconActive: "size-5 fill-red-500 text-red-500",
   wishlistIconInactive: "size-5",
   priceRow: "mt-4 flex items-baseline gap-3",
@@ -68,13 +67,13 @@ const classes = {
   mrp: "text-gray-400 line-through",
   badgeRow: "mt-4 flex flex-wrap gap-2",
   infoGrid:
-    "mt-6 grid grid-cols-2 gap-3 rounded-xl border border-gray-200 p-4 dark:border-gray-800",
+    "mt-6 grid grid-cols-2 gap-3 rounded-xl border border-gray-200 p-4",
   accessoriesRow: "mt-3 flex flex-wrap gap-1.5",
-  description: "mt-4 text-sm text-gray-600 dark:text-gray-400",
+  description: "mt-4 text-sm text-gray-600",
   actionsRow: "mt-6 flex flex-wrap gap-2",
   editLink: "mt-6 inline-block",
   sellerLink:
-    "mt-6 flex items-center gap-3 rounded-xl border border-gray-200 p-4 hover:border-brand-400 dark:border-gray-800",
+    "mt-6 flex items-center gap-3 rounded-xl border border-gray-200 p-4 hover:border-brand-400",
   sellerInfo: "flex-1",
   sellerNameRow: "flex items-center gap-1.5",
   sellerName: "font-semibold",

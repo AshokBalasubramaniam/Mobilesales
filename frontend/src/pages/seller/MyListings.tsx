@@ -42,12 +42,10 @@ const classes = {
   tabsRow: "mb-4 flex gap-2 overflow-x-auto",
   tabButtonBase: "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium",
   tabButtonActive: "bg-brand-600 text-white",
-  tabButtonInactive:
-    "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+  tabButtonInactive: "bg-gray-100 text-gray-600",
   listingsList: "space-y-3",
-  listingCard:
-    "flex items-center gap-4 rounded-xl border border-gray-200 p-4 dark:border-gray-800",
-  listingImage: "size-16 rounded-lg bg-gray-100 object-cover dark:bg-gray-800",
+  listingCard: "flex items-center gap-4 rounded-xl border border-gray-200 p-4",
+  listingImage: "size-16 rounded-lg bg-gray-100 object-cover",
   listingInfo: "min-w-0 flex-1",
   listingLink: "truncate font-semibold hover:text-brand-600",
   listingPrice: "text-sm text-gray-500",

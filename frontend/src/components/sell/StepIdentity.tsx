@@ -40,12 +40,11 @@ export interface StepIdentityProps {
 const classes = {
   container: "space-y-4",
   heading: "text-lg font-bold",
-  fieldLabel: "mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300",
+  fieldLabel: "mb-1.5 text-sm font-medium text-gray-700",
   brandWrap: "flex flex-wrap gap-2",
   brandButton: "rounded-full border px-4 py-1.5 text-sm",
-  brandActive:
-    "border-brand-600 bg-brand-50 text-brand-700 dark:bg-brand-900/30",
-  brandInactive: "border-gray-300 dark:border-gray-700",
+  brandActive: "border-brand-600 bg-brand-50 text-brand-700",
+  brandInactive: "border-gray-300",
   otherBrandInput: "mt-2",
   specsGrid: "grid grid-cols-2 gap-4",
 };

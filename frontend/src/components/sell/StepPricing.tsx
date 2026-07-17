@@ -19,15 +19,15 @@ const classes = {
   container: 'space-y-4',
   heading: 'text-lg font-bold',
   suggestButton: 'mt-2',
-  suggestionBox: 'mt-2 rounded-lg bg-brand-50 p-3 text-sm dark:bg-brand-900/20',
-  useSuggestionButton: 'ml-2 font-medium text-brand-700 hover:underline dark:text-brand-300',
+  suggestionBox: 'mt-2 rounded-lg bg-brand-50 p-3 text-sm',
+  useSuggestionButton: 'ml-2 font-medium text-brand-700 hover:underline',
   checkboxLabel: 'flex items-center gap-2 text-sm',
-  fieldLabel: 'mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300',
+  fieldLabel: 'mb-1.5 text-sm font-medium text-gray-700',
   billRow: 'flex items-center gap-2 text-sm',
   billIcon: 'size-4',
   removeBillIcon: 'size-3.5',
   billUploadLabel:
-    'flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 dark:border-gray-700',
+    'flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500',
 };
 
 const StepPricing = ({ form, setForm }: StepPricingProps) => {

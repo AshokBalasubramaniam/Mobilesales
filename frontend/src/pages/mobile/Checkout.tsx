@@ -83,23 +83,21 @@ const classes = {
   page: "mx-auto max-w-2xl px-4 py-10",
   heading: "mb-6 text-2xl font-bold",
   summaryCard:
-    "mb-6 flex items-center gap-4 rounded-xl border border-gray-200 p-4 dark:border-gray-800",
-  thumbnail: "size-16 rounded-lg bg-gray-100 object-cover dark:bg-gray-800",
+    "mb-6 flex items-center gap-4 rounded-xl border border-gray-200 p-4",
+  thumbnail: "size-16 rounded-lg bg-gray-100 object-cover",
   itemTitle: "font-semibold",
   itemMeta: "text-sm text-gray-500",
   itemPrice: "ml-auto font-bold",
-  formCard:
-    "space-y-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  formCard: "space-y-4 rounded-xl border border-gray-200 p-6",
   addressGroup: "space-y-3",
   addressGrid: "grid grid-cols-3 gap-3",
   couponRow: "flex gap-2",
-  totalsBlock:
-    "space-y-1 border-t border-gray-100 pt-4 text-sm dark:border-gray-800",
+  totalsBlock: "space-y-1 border-t border-gray-100 pt-4 text-sm",
   summaryRow: "flex justify-between",
   summaryLabel: "text-gray-500",
   discountRow: "flex justify-between text-green-600",
   totalRow:
-    "flex justify-between border-t border-gray-100 pt-2 text-base font-bold dark:border-gray-800",
+    "flex justify-between border-t border-gray-100 pt-2 text-base font-bold",
   payButton: "w-full",
 };
 

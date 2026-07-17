@@ -18,7 +18,7 @@ interface LoginForm {
 
 const classes = {
   iconWrapper:
-    "relative mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-900/30",
+    "relative mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-brand-50",
   dotAccent: "absolute -top-1 -left-5 size-2 rounded-full bg-accent-500",
   dotBlue: "absolute top-1 -right-6 size-1.5 rounded-full bg-blue-400",
   dotFuchsia: "absolute -bottom-1 -left-6 size-1.5 rounded-full bg-fuchsia-400",
@@ -30,7 +30,7 @@ const classes = {
   forgotLink: "text-xs text-brand-600 hover:underline",
   submitButton: "w-full",
   divider: "my-5 flex items-center gap-2 text-xs text-gray-400",
-  dividerLine: "h-px flex-1 bg-gray-200 dark:bg-gray-800",
+  dividerLine: "h-px flex-1 bg-gray-200",
   altActions: "space-y-2.5",
   footer: "mt-6 text-center text-sm text-gray-500",
   registerLink: "font-medium text-brand-600 hover:underline",

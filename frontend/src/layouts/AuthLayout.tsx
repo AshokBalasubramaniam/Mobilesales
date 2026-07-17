@@ -25,7 +25,7 @@ interface TrustBadge {
 }
 
 const classes = {
-  container: "flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950",
+  container: "flex min-h-screen flex-col bg-gray-50",
   innerContainer: "flex flex-1 flex-col lg:flex-row",
   brandPanel:
     "relative hidden overflow-hidden bg-gradient-to-br from-brand-900 via-brand-700 to-brand-600 px-12 py-12 lg:flex lg:w-1/2 lg:flex-col lg:justify-center",
@@ -65,14 +65,14 @@ const classes = {
     "mb-6 flex items-center justify-center gap-1.5 text-xl font-bold text-brand-600 lg:hidden",
   mobileLogoIcon: "size-7",
   formCard:
-    "rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900",
+    "rounded-2xl border border-gray-200 bg-white p-8 shadow-sm",
   trustBar:
-    "border-t border-gray-200 bg-white px-4 py-5 dark:border-gray-800 dark:bg-gray-900",
+    "border-t border-gray-200 bg-white px-4 py-5",
   trustBarInner:
     "mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:justify-around",
   trustBadgeItem: "flex items-center justify-center gap-3 sm:justify-start",
   trustBadgeIconWrap:
-    "flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-900/30",
+    "flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600",
   trustBadgeIcon: "size-4.5",
   trustBadgeTitle: "text-sm font-semibold",
   trustBadgeDescription: "text-xs text-gray-500",

@@ -22,14 +22,13 @@ export interface StepConditionProps {
 const classes = {
   container: "space-y-4",
   heading: "text-lg font-bold",
-  fieldLabel: "mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300",
+  fieldLabel: "mb-1.5 text-sm font-medium text-gray-700",
   rangeInput: "w-full accent-brand-600",
   checkboxLabel: "flex items-center gap-2 text-sm",
   accessoriesWrap: "flex flex-wrap gap-2",
   accessoryButton: "rounded-full border px-3 py-1 text-xs",
-  accessoryActive:
-    "border-brand-600 bg-brand-50 text-brand-700 dark:bg-brand-900/30",
-  accessoryInactive: "border-gray-300 dark:border-gray-700",
+  accessoryActive: "border-brand-600 bg-brand-50 text-brand-700",
+  accessoryInactive: "border-gray-300",
 };
 
 const StepCondition = ({ form, setForm }: StepConditionProps) => {

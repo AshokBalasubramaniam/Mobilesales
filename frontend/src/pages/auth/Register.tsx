@@ -25,7 +25,7 @@ const classes = {
   form: "space-y-4",
   submitButton: "w-full",
   divider: "my-5 flex items-center gap-2 text-xs text-gray-400",
-  dividerLine: "h-px flex-1 bg-gray-200 dark:bg-gray-800",
+  dividerLine: "h-px flex-1 bg-gray-200",
   loginPrompt: "mt-6 text-center text-sm text-gray-500",
   loginLink: "font-medium text-brand-600 hover:underline",
 };

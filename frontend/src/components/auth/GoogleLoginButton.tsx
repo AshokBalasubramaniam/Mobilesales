@@ -41,10 +41,9 @@ export interface GoogleLoginButtonProps {
 
 const classes = {
   disabledButton:
-    "w-full cursor-not-allowed rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-400 dark:border-gray-700",
+    "w-full cursor-not-allowed rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-400",
   container: "flex justify-center",
 };
-
 
 const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
   const ref = useRef<HTMLDivElement>(null);

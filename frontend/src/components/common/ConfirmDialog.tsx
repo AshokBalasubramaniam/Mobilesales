@@ -1,9 +1,9 @@
-import Modal from './Modal';
-import Button, { type ButtonProps } from './Button';
+import Modal from "./Modal";
+import Button, { type ButtonProps } from "./Button";
 
 const classes = {
-  description: 'mb-5 text-sm text-gray-600 dark:text-gray-400',
-  actions: 'flex justify-end gap-2',
+  description: "mb-5 text-sm text-gray-600",
+  actions: "flex justify-end gap-2",
 };
 
 export interface ConfirmDialogProps {
@@ -13,7 +13,7 @@ export interface ConfirmDialogProps {
   title?: string;
   description?: string;
   confirmLabel?: string;
-  variant?: ButtonProps['variant'];
+  variant?: ButtonProps["variant"];
   loading?: boolean;
 }
 
@@ -21,10 +21,10 @@ const ConfirmDialog = ({
   open,
   onClose,
   onConfirm,
-  title = 'Are you sure?',
+  title = "Are you sure?",
   description,
-  confirmLabel = 'Confirm',
-  variant = 'danger',
+  confirmLabel = "Confirm",
+  variant = "danger",
   loading,
 }: ConfirmDialogProps) => (
   <Modal open={open} onClose={onClose} title={title}>

@@ -14,19 +14,19 @@ import type { Conversation, Message } from "../../types/models";
 
 const classes = {
   container:
-    "flex h-[calc(100vh-8rem)] flex-col rounded-2xl border border-gray-200 dark:border-gray-800",
+    "flex h-[calc(100vh-8rem)] flex-col rounded-2xl border border-gray-200",
   header:
-    "flex items-center gap-3 border-b border-gray-200 p-3 dark:border-gray-800",
-  backButton: "rounded-full p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800",
+    "flex items-center gap-3 border-b border-gray-200 p-3",
+  backButton: "rounded-full p-1.5 hover:bg-gray-100",
   backIcon: "size-5",
   avatarStack: "flex -space-x-2",
   headerInfo: "min-w-0 flex-1",
   participants: "truncate text-sm font-semibold",
   mobileRef: "truncate text-xs text-gray-400",
   messages: "flex-1 space-y-3 overflow-y-auto p-4",
-  form: "flex items-center gap-2 border-t border-gray-200 p-3 dark:border-gray-800",
+  form: "flex items-center gap-2 border-t border-gray-200 p-3",
   input:
-    "flex-1 rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm outline-none focus:border-brand-500 dark:border-gray-700 dark:bg-gray-900",
+    "flex-1 rounded-full border border-gray-300 bg-gray-50 px-4 py-2 text-sm outline-none focus:border-brand-500",
   sendButton: "rounded-full bg-brand-600 p-2.5 text-white disabled:opacity-50",
   sendIcon: "size-4",
 };

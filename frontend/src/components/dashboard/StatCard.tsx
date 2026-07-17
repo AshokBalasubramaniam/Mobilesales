@@ -8,7 +8,7 @@ export interface StatCardProps {
 }
 
 const classes = {
-  card: "rounded-xl border border-gray-200 p-5 dark:border-gray-800",
+  card: "rounded-xl border border-gray-200 p-5",
   header: "flex items-center justify-between",
   label: "text-sm text-gray-500",
   icon: "size-5",

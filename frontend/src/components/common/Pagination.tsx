@@ -1,6 +1,6 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import clsx from 'clsx';
-import type { PaginationMeta } from '../../types/api';
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import clsx from "clsx";
+import type { PaginationMeta } from "../../types/api";
 
 export interface PaginationProps {
   meta?: PaginationMeta;
@@ -8,21 +8,21 @@ export interface PaginationProps {
 }
 
 const classes = {
-  nav: 'flex items-center justify-center gap-1 py-6',
-  navButton: 'rounded-lg p-2 disabled:opacity-40 hover:bg-gray-100 dark:hover:bg-gray-800',
-  navIcon: 'size-4',
-  pageGroup: 'flex items-center',
-  ellipsis: 'px-1 text-gray-400',
-  pageButton: 'size-9 rounded-lg text-sm font-medium',
-  pageButtonActive: 'bg-brand-600 text-white',
-  pageButtonInactive: 'hover:bg-gray-100 dark:hover:bg-gray-800',
+  nav: "flex items-center justify-center gap-1 py-6",
+  navButton: "rounded-lg p-2 disabled:opacity-40 hover:bg-gray-100",
+  navIcon: "size-4",
+  pageGroup: "flex items-center",
+  ellipsis: "px-1 text-gray-400",
+  pageButton: "size-9 rounded-lg text-sm font-medium",
+  pageButtonActive: "bg-brand-600 text-white",
+  pageButtonInactive: "hover:bg-gray-100",
 };
 
 const Pagination = ({ meta, onPageChange }: PaginationProps) => {
   if (!meta || meta.totalPages <= 1) return null;
 
   const pages = Array.from({ length: meta.totalPages }, (_, i) => i + 1).filter(
-    (p) => p === 1 || p === meta.totalPages || Math.abs(p - meta.page) <= 1
+    (p) => p === 1 || p === meta.totalPages || Math.abs(p - meta.page) <= 1,
   );
 
   return (
@@ -38,12 +38,16 @@ const Pagination = ({ meta, onPageChange }: PaginationProps) => {
 
       {pages.map((p, idx) => (
         <span key={p} className={classes.pageGroup}>
-          {idx > 0 && pages[idx - 1] !== p - 1 && <span className={classes.ellipsis}>…</span>}
+          {idx > 0 && pages[idx - 1] !== p - 1 && (
+            <span className={classes.ellipsis}>…</span>
+          )}
           <button
             onClick={() => onPageChange(p)}
             className={clsx(
               classes.pageButton,
-              p === meta.page ? classes.pageButtonActive : classes.pageButtonInactive
+              p === meta.page
+                ? classes.pageButtonActive
+                : classes.pageButtonInactive,
             )}
           >
             {p}

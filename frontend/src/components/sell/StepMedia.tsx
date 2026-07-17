@@ -19,19 +19,19 @@ const classes = {
   description: "mb-3 text-sm text-gray-500",
   photoGrid: "grid grid-cols-3 gap-3 sm:grid-cols-4",
   photoTile:
-    "relative aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800",
+    "relative aspect-square overflow-hidden rounded-lg bg-gray-100",
   photoImg: "size-full object-cover",
   removeButton:
     "absolute top-1 right-1 rounded-full bg-black/60 p-1 text-white",
   removeIcon: "size-3",
   addPhotoButton:
-    "flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand-400 dark:border-gray-700",
+    "flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand-400",
   addIcon: "size-6",
   addLabel: "text-xs",
   videoPreviewWrap: "relative w-fit",
   video: "h-40 rounded-lg",
   addVideoButton:
-    "flex h-24 w-40 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand-400 dark:border-gray-700",
+    "flex h-24 w-40 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand-400",
 };
 
 const StepMedia = ({ form, setForm }: StepMediaProps) => {

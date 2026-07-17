@@ -8,7 +8,7 @@ export interface StaticPageProps {
 const classes = {
   container: "mx-auto max-w-3xl px-4 py-12",
   title: "mb-6 text-2xl font-bold",
-  content: "space-y-4 text-sm leading-relaxed text-gray-600 dark:text-gray-400",
+  content: "space-y-4 text-sm leading-relaxed text-gray-600",
 };
 
 const StaticPage = ({ title, children }: StaticPageProps) => (

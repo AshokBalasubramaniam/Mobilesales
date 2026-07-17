@@ -20,10 +20,9 @@ export type RespondOfferHandler = (
 ) => void;
 
 const classes = {
-  offerCard:
-    "rounded-xl border border-brand-200 bg-white p-3 dark:border-brand-800 dark:bg-gray-900",
+  offerCard: "rounded-xl border border-brand-200 bg-white p-3",
   offerLabel: "text-xs text-gray-500",
-  offerAmount: "text-lg font-bold text-brand-700 dark:text-brand-300",
+  offerAmount: "text-lg font-bold text-brand-700",
   offerStatusBase: "mt-1 text-xs font-medium capitalize",
   offerStatusAccepted: "text-green-600",
   offerStatusRejected: "text-red-500",
@@ -48,7 +47,7 @@ const classes = {
   bubbleBase: "rounded-2xl px-3.5 py-2 text-sm",
   bubbleOffer: "bg-transparent p-0",
   bubbleOwn: "rounded-br-sm bg-brand-600 text-white",
-  bubbleOther: "rounded-bl-sm bg-gray-100 dark:bg-gray-800",
+  bubbleOther: "rounded-bl-sm bg-gray-100",
   image: "max-h-60 rounded-lg",
   locationLink: "flex items-center gap-1.5 underline",
   locationIcon: "size-4",

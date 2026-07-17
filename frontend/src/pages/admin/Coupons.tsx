@@ -37,7 +37,7 @@ const classes = {
   heading: "text-lg font-semibold",
   list: "space-y-2",
   couponRow:
-    "flex items-center justify-between rounded-xl border border-gray-200 p-4 dark:border-gray-800",
+    "flex items-center justify-between rounded-xl border border-gray-200 p-4",
   codeRow: "flex items-center gap-2",
   code: "font-mono font-bold",
   description: "text-sm text-gray-500",

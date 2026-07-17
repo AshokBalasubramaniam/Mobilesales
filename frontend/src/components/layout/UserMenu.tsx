@@ -11,15 +11,15 @@ const classes = {
   container: "relative",
   trigger: "flex items-center gap-2 rounded-full",
   panel:
-    "absolute right-0 z-40 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg dark:border-gray-800 dark:bg-gray-900",
-  header: "border-b border-gray-100 p-2.5 dark:border-gray-800",
+    "absolute right-0 z-40 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg",
+  header: "border-b border-gray-100 p-2.5",
   name: "truncate text-sm font-semibold",
   email: "truncate text-xs text-gray-500",
   menuItem:
-    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800",
+    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100",
   menuItemIcon: "size-4",
   logoutButton:
-    "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20",
+    "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50",
 };
 
 const UserMenu = () => {

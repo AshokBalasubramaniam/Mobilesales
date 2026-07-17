@@ -20,7 +20,7 @@ const classes = {
   historyTitle: "mb-3 font-semibold",
   historyList: "space-y-2",
   paymentRow:
-    "flex items-center justify-between rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-800",
+    "flex items-center justify-between rounded-lg border border-gray-200 p-3 text-sm",
   orderNumber: "font-medium",
   paymentDate: "text-xs text-gray-400",
   amountWrapper: "text-right",

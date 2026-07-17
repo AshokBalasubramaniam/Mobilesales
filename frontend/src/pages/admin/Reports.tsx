@@ -29,7 +29,7 @@ const classes = {
   title: "text-lg font-semibold",
   statusSelect: "w-40",
   list: "space-y-3",
-  card: "rounded-xl border border-gray-200 p-4 dark:border-gray-800",
+  card: "rounded-xl border border-gray-200 p-4",
   cardHeader: "flex items-start justify-between",
   reportTitle: "font-medium capitalize",
   reason: "text-sm text-gray-500",

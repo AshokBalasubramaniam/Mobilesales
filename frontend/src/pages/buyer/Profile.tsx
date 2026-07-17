@@ -21,7 +21,7 @@ const classes = {
     "mt-1 text-xs font-medium text-brand-600 hover:underline disabled:opacity-50",
   container: "space-y-6",
   avatarCard:
-    "flex items-center gap-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+    "flex items-center gap-4 rounded-xl border border-gray-200 p-6",
   avatarWrapper: "relative",
   avatarUploadLabel:
     "absolute right-0 bottom-0 cursor-pointer rounded-full bg-brand-600 p-1.5 text-white",
@@ -30,21 +30,21 @@ const classes = {
   userEmail: "text-sm text-gray-500",
   emailNotVerifiedText: "mt-1 text-xs text-amber-600",
   formPanel:
-    "space-y-4 rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+    "space-y-4 rounded-xl border border-gray-200 p-6",
   sectionTitle: "font-semibold",
-  addressesPanel: "rounded-xl border border-gray-200 p-6 dark:border-gray-800",
+  addressesPanel: "rounded-xl border border-gray-200 p-6",
   addressesHeader: "mb-3 flex items-center justify-between",
   noAddressesText: "text-sm text-gray-500",
   addressesList: "space-y-2",
   addressItem:
-    "flex items-start justify-between rounded-lg border border-gray-100 p-3 text-sm dark:border-gray-800",
+    "flex items-start justify-between rounded-lg border border-gray-100 p-3 text-sm",
   addressItemContent: "flex gap-2",
   mapPinIcon: "mt-0.5 size-4 text-gray-400",
   addressLabel: "font-medium",
   addressDetail: "text-gray-500",
   trashIcon: "size-4 text-gray-400 hover:text-red-500",
   becomeSellerBanner:
-    "flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 p-6 dark:border-brand-800 dark:bg-brand-900/20",
+    "flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 p-6",
   becomeSellerContent: "flex items-center gap-3",
   shieldIcon: "size-8 text-brand-600",
   promoTitle: "font-semibold",

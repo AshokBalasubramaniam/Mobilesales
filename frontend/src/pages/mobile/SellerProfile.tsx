@@ -19,7 +19,7 @@ import type { Mobile, Review, User } from "../../types/models";
 const classes = {
   page: "mx-auto max-w-6xl px-4 py-8",
   header:
-    "flex flex-col items-center gap-4 rounded-2xl border border-gray-200 p-8 text-center sm:flex-row sm:text-left dark:border-gray-800",
+    "flex flex-col items-center gap-4 rounded-2xl border border-gray-200 p-8 text-center sm:flex-row sm:text-left",
   headerInfo: "flex-1",
   nameRow: "flex items-center justify-center gap-1.5 sm:justify-start",
   name: "text-xl font-bold",

@@ -1,6 +1,6 @@
 const classes = {
   container:
-    "overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800",
+    "overflow-hidden rounded-xl border border-gray-200",
   image: "skeleton aspect-square",
   body: "space-y-2 p-3.5",
   titleLine: "skeleton h-4 w-3/4",
