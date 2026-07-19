@@ -11,4 +11,7 @@ export default defineConfig({
       '/uploads': { target: 'http://localhost:5000', changeOrigin: true },
     },
   },
+  preview: {
+    allowedHosts: ['noble-gratitude-production-f7a9.up.railway.app', 'www.mobilesales.com'],
+  },
 });
