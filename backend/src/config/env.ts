@@ -85,6 +85,14 @@ const env: Env = {
     max: Number(process.env.RATE_LIMIT_MAX) || 300,
   },
 
+  bruteForce: {
+    maxAttempts: Number(process.env.BRUTE_FORCE_MAX_ATTEMPTS) || 5,
+    windowMs: Number(process.env.BRUTE_FORCE_WINDOW_MS) || 15 * 60 * 1000,
+    lockBaseMs: Number(process.env.BRUTE_FORCE_LOCK_BASE_MS) || 60 * 1000,
+    lockMaxMs: Number(process.env.BRUTE_FORCE_LOCK_MAX_MS) || 24 * 60 * 60 * 1000,
+    progressiveDelayMs: Number(process.env.BRUTE_FORCE_PROGRESSIVE_DELAY_MS) || 500,
+  },
+
   toBool,
 };
 

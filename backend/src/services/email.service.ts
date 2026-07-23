@@ -98,6 +98,26 @@ export const sendVerificationEmail = (to: string, code: string): Promise<SendEma
     ),
   });
 
+export const sendNewDeviceLoginEmail = (
+  to: string,
+  { browser, os, ip }: { browser: string; os: string; ip?: string },
+): Promise<SendEmailResult> =>
+  sendEmail({
+    to,
+    subject: `New sign-in to your ${BRAND_NAME} account`,
+    text: `We noticed a new sign-in to your account from ${browser} on ${os}${ip ? ` (IP ${ip})` : ''}. If this was you, no action is needed. If it wasn't, change your password immediately.`,
+    html: emailLayout(
+      'New sign-in detected',
+      `<p style="margin:0 0 20px;font-size:14px;color:#374151;">We noticed a new sign-in to your account:</p>
+       <p style="margin:0 0 20px;font-size:14px;color:#111827;">
+         <strong>Browser:</strong> ${browser}<br/>
+         <strong>Device:</strong> ${os}<br/>
+         ${ip ? `<strong>IP address:</strong> ${ip}<br/>` : ''}
+       </p>
+       <p style="margin:0;font-size:12px;color:#9ca3af;">If this was you, no action is needed. If you don't recognize this activity, change your password immediately.</p>`
+    ),
+  });
+
 export const sendPasswordResetOtpEmail = (to: string, code: string): Promise<SendEmailResult> =>
   sendEmail({
     to,

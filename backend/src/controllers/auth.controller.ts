@@ -8,11 +8,16 @@ import * as tokenService from "../services/token.service";
 import * as emailService from "../services/email.service";
 import * as smsService from "../services/sms.service";
 import * as googleAuthService from "../services/googleAuth.service";
+import * as bruteForce from "../services/bruteForce.service";
+import { logAuthEvent } from "../services/authAudit.service";
 import { generateNumericOTP, hashToken } from "../utils/otp";
+import { parseUserAgent } from "../utils/parseUserAgent";
 import { AUTH_PROVIDER } from "../config/constants";
 import type { AuthenticatedUser } from "../types/express";
 import type { IRefreshToken } from "../types/models";
 import type { Role } from "../types/constants";
+
+const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Frontend and backend are served from different domains in production
 // (e.g. Netlify + Render), so the refresh cookie needs SameSite=None to be
@@ -36,13 +41,22 @@ const setRefreshCookie = (
   });
 };
 
+/**
+ * Whether this login/register isn't coming from any device already on file
+ * for this user — a best-effort heuristic (see parseUserAgent) used only to
+ * decide whether to send a "new device" email, not a security boundary.
+ */
+const isNewDevice = (user: AuthenticatedUser, ip?: string, userAgent?: string): boolean =>
+  !(user.refreshTokens || []).some((rt) => rt.ip === ip && rt.userAgent === userAgent);
+
 const issueSession = async (
   res: Response,
   user: AuthenticatedUser,
   req: Request,
+  family?: string,
 ): Promise<{ accessToken: string; refreshToken: string }> => {
-  const { accessToken, refreshToken, refreshExpiresAt } =
-    tokenService.issueTokenPair(user);
+  const { accessToken, refreshToken, refreshExpiresAt, family: sessionFamily } =
+    tokenService.issueTokenPair(user, family);
 
   user.refreshTokens = (user.refreshTokens || []).filter(
     (rt) => rt.expiresAt > new Date(),
@@ -52,6 +66,7 @@ const issueSession = async (
     expiresAt: refreshExpiresAt,
     userAgent: req.headers["user-agent"],
     ip: req.ip,
+    family: sessionFamily,
   } as IRefreshToken);
   user.lastLoginAt = new Date();
   await user.save();
@@ -116,6 +131,7 @@ export const register = async (
     await sendEmailVerificationOtp(user);
 
     const { accessToken } = await issueSession(res, user, req);
+    await logAuthEvent({ type: "register", userId: user._id.toString(), email, ip: req.ip, userAgent: req.headers["user-agent"] });
 
     res.status(201).json({
       flag: "success",
@@ -138,9 +154,56 @@ export const login = async (
 ) => {
   try {
     const { email, password } = req.body;
+    const ip = req.ip;
+    const userAgent = req.headers["user-agent"];
+    const ipKey = `ip:${ip}`;
+
+    // Per-IP lock guards against one attacker spraying many accounts from a
+    // single source, independent of whether any single account is locked.
+    const ipLock = await bruteForce.checkLock(ipKey);
+    if (ipLock) {
+      return res.status(429).json({
+        flag: "error",
+        message: `Too many failed attempts from this network. Try again after ${ipLock.toISOString()}`,
+      });
+    }
 
     const user = await User.findOne({ email }).select("+password");
-    if (!user || !(await user.comparePassword(password))) {
+    const acctKey = user ? `acct:${user._id.toString()}` : null;
+
+    if (acctKey) {
+      const acctLock = await bruteForce.checkLock(acctKey);
+      if (acctLock) {
+        await logAuthEvent({ type: "login_locked", userId: user!._id.toString(), email, ip, userAgent, meta: { lockUntil: acctLock } });
+        return res.status(423).json({
+          flag: "error",
+          message: `This account is temporarily locked due to repeated failed attempts. Try again after ${acctLock.toISOString()}`,
+        });
+      }
+    }
+
+    const passwordValid = user ? await user.comparePassword(password) : false;
+    if (!user || !passwordValid) {
+      const ipResult = await bruteForce.registerFailedAttempt(ipKey);
+      const acctResult = acctKey ? await bruteForce.registerFailedAttempt(acctKey) : null;
+      await logAuthEvent({ type: "login_failed", userId: user?._id.toString(), email, ip, userAgent });
+
+      if (acctResult?.locked) {
+        await logAuthEvent({
+          type: "account_locked",
+          userId: user!._id.toString(),
+          email,
+          ip,
+          userAgent,
+          meta: { lockUntil: acctResult.lockUntil },
+        });
+      }
+
+      // Slows down automated guessing before the hard lockout threshold hits,
+      // without fully blocking attempts that are still within budget.
+      const delayMs = Math.max(ipResult.delayMs, acctResult?.delayMs ?? 0);
+      if (delayMs) await wait(delayMs);
+
       return res
         .status(401)
         .json({ flag: "error", message: "Invalid email or password" });
@@ -151,7 +214,20 @@ export const login = async (
         .json({ flag: "error", message: "Your account has been blocked" });
     }
 
+    await bruteForce.resetAttempts(ipKey);
+    await bruteForce.resetAttempts(acctKey!);
+
+    const newDevice = isNewDevice(user, ip, userAgent);
     const { accessToken } = await issueSession(res, user, req);
+    await logAuthEvent({ type: "login_success", userId: user._id.toString(), email, ip, userAgent });
+
+    if (newDevice) {
+      const device = parseUserAgent(userAgent);
+      emailService.sendNewDeviceLoginEmail(user.email, { ...device, ip }).catch((err: Error) => {
+        logger.warn(`Failed to send new-device login email to ${user.email}: ${err.message}`);
+      });
+      await logAuthEvent({ type: "new_device_login", userId: user._id.toString(), email, ip, userAgent, meta: { ...device } as Record<string, unknown> });
+    }
 
     res.status(200).json({
       flag: "success",
@@ -200,6 +276,7 @@ export const googleLogin = async (
     }
 
     const { accessToken } = await issueSession(res, user, req);
+    await logAuthEvent({ type: "login_success", userId: user._id.toString(), email: user.email, ip: req.ip, userAgent: req.headers["user-agent"], meta: { provider: "google" } });
 
     res.status(200).json({
       flag: "success",
@@ -302,6 +379,7 @@ export const verifyOtp = async (
     await user.save();
 
     const { accessToken } = await issueSession(res, user, req);
+    await logAuthEvent({ type: "login_success", userId: user._id.toString(), email: user.email, ip: req.ip, userAgent: req.headers["user-agent"], meta: { provider: "otp" } });
 
     res.status(200).json({
       flag: "success",
@@ -352,16 +430,34 @@ export const refreshTokenHandler = async (
       (rt) => rt.token === incomingToken,
     );
     if (!storedToken || storedToken.expiresAt < new Date()) {
+      // The token's signature verified (it's genuinely one we issued), but it's
+      // not in the user's active set — most likely a rotated-out token being
+      // replayed by whoever stole it earlier. Kill every session in the same
+      // family so the thief's session dies along with the legitimate one.
+      const reusedFamily = payload.family as string | undefined;
+      const revoked = reusedFamily ? user.refreshTokens.filter((rt) => rt.family === reusedFamily) : [];
+      if (revoked.length > 0) {
+        user.refreshTokens = user.refreshTokens.filter((rt) => rt.family !== reusedFamily);
+        await user.save();
+        await logAuthEvent({
+          type: "token_reuse_detected",
+          userId: user._id.toString(),
+          email: user.email,
+          ip: req.ip,
+          userAgent: req.headers["user-agent"],
+          meta: { family: reusedFamily, revokedSessions: revoked.length },
+        });
+      }
       return res
         .status(401)
         .json({ flag: "error", message: "Refresh token is no longer valid" });
     }
 
-    // rotate: drop the used token, issue a new pair
+    // rotate: drop the used token, issue a new pair in the same session family
     user.refreshTokens = user.refreshTokens.filter(
       (rt) => rt.token !== incomingToken,
     );
-    const { accessToken } = await issueSession(res, user, req);
+    const { accessToken } = await issueSession(res, user, req, storedToken.family);
 
     res
       .status(200)
@@ -387,6 +483,7 @@ export const logout = async (
         { _id: req.user._id },
         { $pull: { refreshTokens: { token: incomingToken } } },
       );
+      await logAuthEvent({ type: "logout", userId: req.user._id.toString(), email: req.user.email, ip: req.ip, userAgent: req.headers["user-agent"] });
     }
     res.clearCookie(env.refreshCookieName, { path: "/api/auth" });
     res
@@ -398,6 +495,72 @@ export const logout = async (
       });
   } catch (error) {
     sendError(res, "log out", error);
+  }
+};
+
+/** Active sessions (one per device/browser) derived from the user's refresh-token list. */
+export const listSessions = async (req: Request, res: Response) => {
+  try {
+    const user = await User.findById(req.user!._id).select("+refreshTokens");
+    const cookieToken = req.cookies?.[env.refreshCookieName];
+
+    let currentFamily: string | undefined;
+    if (cookieToken) {
+      try {
+        const decoded = tokenService.verifyRefreshToken(cookieToken);
+        if (typeof decoded !== "string") currentFamily = decoded.family as string | undefined;
+      } catch {
+        // No cookie (e.g. a non-browser client) or an expired one — just
+        // means no session in the list gets flagged "current", not fatal.
+      }
+    }
+
+    const sessions = (user?.refreshTokens ?? [])
+      .filter((rt) => rt.expiresAt > new Date())
+      .map((rt) => ({
+        family: rt.family,
+        device: parseUserAgent(rt.userAgent),
+        ip: rt.ip,
+        createdAt: rt.createdAt,
+        expiresAt: rt.expiresAt,
+        current: rt.family === currentFamily,
+      }));
+
+    res.status(200).json({ flag: "success", data: sessions });
+  } catch (error) {
+    sendError(res, "list sessions", error);
+  }
+};
+
+/** Revokes a single session/device by family, without touching the caller's other sessions. */
+export const revokeSession = async (
+  req: Request<{ family: string }>,
+  res: Response,
+) => {
+  try {
+    const { family } = req.params;
+    await User.updateOne(
+      { _id: req.user!._id },
+      { $pull: { refreshTokens: { family } } },
+    );
+    await logAuthEvent({ type: "session_revoked", userId: req.user!._id.toString(), email: req.user!.email, ip: req.ip, userAgent: req.headers["user-agent"], meta: { family } });
+
+    res.status(200).json({ flag: "success", data: null, message: "Session revoked" });
+  } catch (error) {
+    sendError(res, "revoke session", error);
+  }
+};
+
+/** Logs the user out of every device by clearing all refresh tokens, including this one. */
+export const revokeAllSessions = async (req: Request, res: Response) => {
+  try {
+    await User.updateOne({ _id: req.user!._id }, { $set: { refreshTokens: [] } });
+    await logAuthEvent({ type: "logout_all", userId: req.user!._id.toString(), email: req.user!.email, ip: req.ip, userAgent: req.headers["user-agent"] });
+
+    res.clearCookie(env.refreshCookieName, { path: "/api/auth" });
+    res.status(200).json({ flag: "success", data: null, message: "Logged out of all devices" });
+  } catch (error) {
+    sendError(res, "log out of all devices", error);
   }
 };
 
@@ -508,6 +671,7 @@ export const forgotPassword = async (
         attempts: 0,
       };
       await user.save();
+      await logAuthEvent({ type: "password_reset_requested", userId: user._id.toString(), email: user.email, ip: req.ip, userAgent: req.headers["user-agent"] });
       try {
         await emailService.sendPasswordResetOtpEmail(user.email, code);
       } catch (err) {
@@ -575,6 +739,7 @@ export const resetPassword = async (
     user.passwordResetOtp = undefined;
     user.refreshTokens = []; // invalidate all existing sessions
     await user.save();
+    await logAuthEvent({ type: "password_reset", userId: user._id.toString(), email: user.email, ip: req.ip, userAgent: req.headers["user-agent"] });
 
     res
       .status(200)
@@ -611,6 +776,7 @@ export const changePassword = async (
 
     user!.password = newPassword;
     await user!.save();
+    await logAuthEvent({ type: "password_changed", userId: user!._id.toString(), email: user!.email, ip: req.ip, userAgent: req.headers["user-agent"] });
 
     res
       .status(200)

@@ -66,5 +66,13 @@ export interface Env {
     max: number;
   };
 
+  bruteForce: {
+    maxAttempts: number;
+    windowMs: number;
+    lockBaseMs: number;
+    lockMaxMs: number;
+    progressiveDelayMs: number;
+  };
+
   toBool: (val: unknown) => boolean;
 }

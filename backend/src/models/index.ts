@@ -11,6 +11,7 @@ import Dispute from './Dispute';
 import Notification from './Notification';
 import Coupon from './Coupon';
 import Settings from './Settings';
+import AuthEvent from './AuthEvent';
 
 export default {
   User,
@@ -26,4 +27,5 @@ export default {
   Notification,
   Coupon,
   Settings,
+  AuthEvent,
 };
