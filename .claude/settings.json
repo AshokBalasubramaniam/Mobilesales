@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(frontend/node_modules/**)",
+      "Read(backend/node_modules/**)",
+      "Read(frontend/dist/**)",
+      "Read(backend/dist/**)",
+      "Read(frontend/dist-ssr/**)",
+      "Read(frontend/build/**)",
+      "Read(backend/build/**)",
+      "Read(frontend/coverage/**)",
+      "Read(backend/coverage/**)",
+      "Read(frontend/package-lock.json)",
+      "Read(backend/package-lock.json)",
+      "Read(**/*.log)",
+      "Read(frontend/logs/**)",
+      "Read(backend/uploads/**)"
+    ]
+  }
+}
