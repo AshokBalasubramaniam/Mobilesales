@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { connectSocket, disconnectSocket } from '../../lib/socket';
-import { getAccessToken } from '../../api/tokenManager';
+import { refreshAccessToken } from '../../api/api';
+import { notifyUnauthorized } from '../../api/tokenManager';
 import {
   messageAppended,
   presenceUpdated,
@@ -26,7 +27,7 @@ const SocketManager = () => {
   useEffect(() => {
     if (!bootstrapped || !user) return undefined;
 
-    const socket = connectSocket(getAccessToken());
+    const socket = connectSocket();
 
     socket.on('message:new', (message: Message) => dispatch(messageAppended(message)));
     socket.on('presence:online', ({ userId }: { userId: string }) => dispatch(presenceUpdated({ userId, online: true })));
@@ -38,6 +39,36 @@ const SocketManager = () => {
     socket.on('notification:new', (notification: Notification) => {
       dispatch(notificationReceived(notification));
       toast(notification.title, { icon: '🔔' });
+    });
+
+    const AUTH_FAILURE_REASONS = [
+      'Authentication token missing',
+      'Invalid or expired token',
+      'Unauthorized',
+    ];
+
+    // The handshake rejected the current token. Refresh proactively so the token
+    // socket.io-client re-reads via the auth callback on its next scheduled
+    // reconnection attempt (see lib/socket.ts) is already valid by then.
+    socket.on('connect_error', (err: Error) => {
+      if (!AUTH_FAILURE_REASONS.includes(err.message)) return;
+      refreshAccessToken().catch(() => notifyUnauthorized());
+    });
+
+    socket.on('disconnect', (reason) => {
+      if (reason === 'io client disconnect') return;
+      toast.error('Connection lost — reconnecting…', { id: 'socket-status' });
+    });
+
+    socket.on('reconnect', () => {
+      toast.success('Reconnected', { id: 'socket-status' });
+    });
+
+    socket.on('reconnect_failed', () => {
+      toast.error('Unable to reconnect — please refresh the page.', {
+        id: 'socket-status',
+        duration: Infinity,
+      });
     });
 
     return () => {
