@@ -13,6 +13,9 @@ import {
   forgotPassword,
   resetPassword,
   changePassword,
+  listSessions,
+  revokeSession,
+  revokeAllSessions,
 } from '../controllers/auth.controller';
 import validate from '../middleware/validate.middleware';
 import { authenticateToken } from '../middleware/auth.middleware';
@@ -28,6 +31,9 @@ router.post('/otp/request', otpLimiter, validate(authValidation.otpRequest), req
 router.post('/otp/verify', authLimiter, validate(authValidation.otpVerify), verifyOtp);
 router.post('/refresh-token', validate(authValidation.refreshToken), refreshTokenHandler);
 router.post('/logout', authenticateToken, logout);
+router.get('/sessions', authenticateToken, listSessions);
+router.delete('/sessions/:family', authenticateToken, revokeSession);
+router.post('/logout-all', authenticateToken, revokeAllSessions);
 router.get('/me', authenticateToken, getMe);
 router.post('/verify-email', validate(authValidation.verifyEmail), verifyEmail);
 router.post('/resend-verification', authenticateToken, resendVerificationEmail);

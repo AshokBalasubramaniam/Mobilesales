@@ -37,6 +37,7 @@ export interface IRefreshToken {
   token: string;
   userAgent?: string;
   ip?: string;
+  family: string;
   expiresAt: Date;
   createdAt: Date;
 }
@@ -101,7 +102,7 @@ export type SafeUser = Omit<IUser, 'password' | 'refreshTokens' | 'otp' | 'passw
 export interface IUserMethods {
   comparePassword(candidate: string): Promise<boolean>;
   generateAccessToken(): string;
-  generateRefreshToken(): string;
+  generateRefreshToken(family: string): string;
   toSafeJSON(): SafeUser;
 }
 
@@ -453,4 +454,33 @@ export interface ISettings extends Document {
   emailFrom: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// ---------- AuthEvent (security audit log) ----------
+
+export type AuthEventType =
+  | 'register'
+  | 'login_success'
+  | 'login_failed'
+  | 'login_locked'
+  | 'account_locked'
+  | 'logout'
+  | 'logout_all'
+  | 'session_revoked'
+  | 'token_refresh'
+  | 'token_reuse_detected'
+  | 'password_reset_requested'
+  | 'password_reset'
+  | 'password_changed'
+  | 'new_device_login';
+
+export interface IAuthEvent extends Document {
+  _id: Types.ObjectId;
+  type: AuthEventType;
+  user?: Types.ObjectId;
+  email?: string;
+  ip?: string;
+  userAgent?: string;
+  meta?: Record<string, unknown>;
+  createdAt: Date;
 }

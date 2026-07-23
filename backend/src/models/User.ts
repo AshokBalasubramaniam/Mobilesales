@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 import env from '../config/env';
 import { ROLES, AUTH_PROVIDER, VERIFICATION_STATUS } from '../config/constants';
@@ -24,6 +25,7 @@ const refreshTokenSchema = new Schema<IRefreshToken>(
     token: { type: String, required: true },
     userAgent: { type: String },
     ip: { type: String },
+    family: { type: String, required: true },
     expiresAt: { type: Date, required: true },
   },
   { _id: false, timestamps: { createdAt: true, updatedAt: false } }
@@ -111,15 +113,33 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 userSchema.index({ role: 1 });
 userSchema.index({ 'sellerProfile.verificationStatus': 1 });
 
+// Every user created/reset from now on is hashed with Argon2id, the OWASP-recommended
+// choice for password storage. bcrypt hashes from before this change still verify
+// correctly (see comparePassword below) and are transparently upgraded on next login.
+const isBcryptHash = (hash: string): boolean => /^\$2[aby]?\$/.test(hash);
+
 userSchema.pre('save', async function hashPassword(next) {
   if (!this.isModified('password') || !this.password) return next();
-  this.password = await bcrypt.hash(this.password, 12);
+  this.password = await argon2.hash(this.password, { type: argon2.argon2id });
   next();
 });
 
-userSchema.methods.comparePassword = function comparePassword(candidate: string): Promise<boolean> {
-  if (!this.password) return Promise.resolve(false);
-  return bcrypt.compare(candidate, this.password);
+userSchema.methods.comparePassword = async function comparePassword(candidate: string): Promise<boolean> {
+  if (!this.password) return false;
+
+  if (isBcryptHash(this.password)) {
+    const valid = await bcrypt.compare(candidate, this.password);
+    // Lazy migration: a successful legacy verify re-saves the same password,
+    // which re-triggers the pre('save') hook above and upgrades it to Argon2 —
+    // no forced reset, no disruption to the user.
+    if (valid) {
+      this.password = candidate;
+      await this.save();
+    }
+    return valid;
+  }
+
+  return argon2.verify(this.password, candidate);
 };
 
 userSchema.methods.generateAccessToken = function generateAccessToken(): string {
@@ -128,8 +148,8 @@ userSchema.methods.generateAccessToken = function generateAccessToken(): string 
   } as jwt.SignOptions);
 };
 
-userSchema.methods.generateRefreshToken = function generateRefreshToken(): string {
-  return jwt.sign({ sub: this._id.toString(), type: 'refresh' }, env.jwt.refreshSecret, {
+userSchema.methods.generateRefreshToken = function generateRefreshToken(family: string): string {
+  return jwt.sign({ sub: this._id.toString(), type: 'refresh', family }, env.jwt.refreshSecret, {
     expiresIn: env.jwt.refreshExpiresIn,
   } as jwt.SignOptions);
 };

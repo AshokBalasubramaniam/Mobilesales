@@ -1,15 +1,37 @@
 import type { Server } from 'socket.io';
+import type Joi from 'joi';
 import Conversation from '../models/Conversation';
 import Message from '../models/Message';
 import logger from '../utils/logger';
 import { ROLES } from '../config/constants';
 import type { AuthenticatedSocket, Ack } from '../types/socket';
+import {
+  conversationIdSchema,
+  typingSchema,
+  messageReadSchema,
+  callInviteSchema,
+  callAnswerSchema,
+  callIceCandidateSchema,
+  callEndSchema,
+} from '../validations/socket.validation';
 
 const conversationRoom = (conversationId: string): string => `conversation:${conversationId}`;
 
 const assertParticipant = async (conversationId: string, userId: string) => {
   const conversation = await Conversation.findOne({ _id: conversationId, participants: userId });
   return conversation;
+};
+
+// Rejects a malformed payload before it reaches business logic (bad ObjectId,
+// missing field, wrong type) instead of trusting whatever the client sent.
+const validate = <T>(schema: Joi.Schema<T>, payload: unknown, ack?: Ack): T | null => {
+  const { error, value } = schema.validate(payload);
+  if (error) {
+    logger.warn(`Invalid socket payload: ${error.message}`);
+    ack?.({ ok: false, error: 'Invalid payload' });
+    return null;
+  }
+  return value;
 };
 
 /**
@@ -21,7 +43,10 @@ const assertParticipant = async (conversationId: string, userId: string) => {
 const registerChatHandlers = (io: Server, socket: AuthenticatedSocket): void => {
   const { userId } = socket;
 
-  socket.on('conversation:join', async (conversationId: string, ack?: Ack) => {
+  socket.on('conversation:join', async (payload: string, ack?: Ack) => {
+    const conversationId = validate(conversationIdSchema, payload, ack);
+    if (!conversationId) return;
+
     // Admins aren't listed participants but can join any conversation for support/moderation.
     const conversation =
       socket.role === ROLES.ADMIN ? await Conversation.findById(conversationId) : await assertParticipant(conversationId, userId);
@@ -30,19 +55,29 @@ const registerChatHandlers = (io: Server, socket: AuthenticatedSocket): void => 
     ack?.({ ok: true });
   });
 
-  socket.on('conversation:leave', (conversationId: string) => {
+  socket.on('conversation:leave', (payload: string) => {
+    const conversationId = validate(conversationIdSchema, payload);
+    if (!conversationId) return;
     socket.leave(conversationRoom(conversationId));
   });
 
-  socket.on('typing:start', ({ conversationId }: { conversationId: string }) => {
-    socket.to(conversationRoom(conversationId)).emit('typing:start', { conversationId, userId });
+  socket.on('typing:start', (payload: unknown) => {
+    const data = validate(typingSchema, payload);
+    if (!data) return;
+    socket.to(conversationRoom(data.conversationId)).emit('typing:start', { conversationId: data.conversationId, userId });
   });
 
-  socket.on('typing:stop', ({ conversationId }: { conversationId: string }) => {
-    socket.to(conversationRoom(conversationId)).emit('typing:stop', { conversationId, userId });
+  socket.on('typing:stop', (payload: unknown) => {
+    const data = validate(typingSchema, payload);
+    if (!data) return;
+    socket.to(conversationRoom(data.conversationId)).emit('typing:stop', { conversationId: data.conversationId, userId });
   });
 
-  socket.on('message:read', async ({ conversationId }: { conversationId: string }, ack?: Ack) => {
+  socket.on('message:read', async (payload: unknown, ack?: Ack) => {
+    const data = validate(messageReadSchema, payload, ack);
+    if (!data) return;
+    const { conversationId } = data;
+
     const conversation = await assertParticipant(conversationId, userId);
     if (!conversation) return ack?.({ ok: false, error: 'Not a participant of this conversation' });
 
@@ -58,24 +93,34 @@ const registerChatHandlers = (io: Server, socket: AuthenticatedSocket): void => 
   });
 
   // --- WebRTC signaling relay for video calls (media negotiated peer-to-peer on the client) ---
-  socket.on('call:invite', ({ conversationId, toUserId, sdp }: { conversationId: string; toUserId: string; sdp: unknown }) => {
-    io.to(`user:${toUserId}`).emit('call:invite', { conversationId, fromUserId: userId, sdp });
+  socket.on('call:invite', (payload: unknown) => {
+    const data = validate(callInviteSchema, payload);
+    if (!data) return;
+    io.to(`user:${data.toUserId}`).emit('call:invite', { conversationId: data.conversationId, fromUserId: userId, sdp: data.sdp });
   });
 
-  socket.on('call:answer', ({ toUserId, sdp }: { toUserId: string; sdp: unknown }) => {
-    io.to(`user:${toUserId}`).emit('call:answer', { fromUserId: userId, sdp });
+  socket.on('call:answer', (payload: unknown) => {
+    const data = validate(callAnswerSchema, payload);
+    if (!data) return;
+    io.to(`user:${data.toUserId}`).emit('call:answer', { fromUserId: userId, sdp: data.sdp });
   });
 
-  socket.on('call:ice-candidate', ({ toUserId, candidate }: { toUserId: string; candidate: unknown }) => {
-    io.to(`user:${toUserId}`).emit('call:ice-candidate', { fromUserId: userId, candidate });
+  socket.on('call:ice-candidate', (payload: unknown) => {
+    const data = validate(callIceCandidateSchema, payload);
+    if (!data) return;
+    io.to(`user:${data.toUserId}`).emit('call:ice-candidate', { fromUserId: userId, candidate: data.candidate });
   });
 
-  socket.on('call:end', ({ toUserId, conversationId }: { toUserId: string; conversationId: string }) => {
-    io.to(`user:${toUserId}`).emit('call:end', { fromUserId: userId, conversationId });
+  socket.on('call:end', (payload: unknown) => {
+    const data = validate(callEndSchema, payload);
+    if (!data) return;
+    io.to(`user:${data.toUserId}`).emit('call:end', { fromUserId: userId, conversationId: data.conversationId });
   });
 
-  socket.on('call:decline', ({ toUserId, conversationId }: { toUserId: string; conversationId: string }) => {
-    io.to(`user:${toUserId}`).emit('call:decline', { fromUserId: userId, conversationId });
+  socket.on('call:decline', (payload: unknown) => {
+    const data = validate(callEndSchema, payload);
+    if (!data) return;
+    io.to(`user:${data.toUserId}`).emit('call:decline', { fromUserId: userId, conversationId: data.conversationId });
   });
 
   socket.on('error', (err: Error) => logger.warn(`Socket error for user ${userId}: ${err.message}`));

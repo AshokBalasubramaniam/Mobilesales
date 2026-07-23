@@ -7,6 +7,7 @@ import User from '../models/User';
 import logger from '../utils/logger';
 import registerChatHandlers from './chatSocket';
 import type { AuthenticatedSocket } from '../types/socket';
+import { registerSocketEvent, clearSocketRateLimit } from '../services/socketRateLimiter.service';
 
 let io: Server | null = null;
 /** userId (string) -> Set of connected socket ids, for multi-device presence */
@@ -16,23 +17,35 @@ const userRoom = (userId: string): string => `user:${userId}`;
 const conversationRoom = (conversationId: string): string => `conversation:${conversationId}`;
 
 const authenticateSocket = async (socket: Socket, next: (err?: Error) => void): Promise<void> => {
+  const ip = socket.handshake.address;
   try {
     const authToken = socket.handshake.auth?.token as string | undefined;
     const headerToken = socket.handshake.headers?.authorization?.replace('Bearer ', '');
     const token = authToken || headerToken;
-    if (!token) return next(new Error('Authentication token missing'));
+    if (!token) {
+      logger.warn(`Socket auth rejected (no token): ip=${ip} socket=${socket.id}`);
+      return next(new Error('Authentication token missing'));
+    }
 
     const decoded = jwt.verify(token, env.jwt.accessSecret);
-    if (typeof decoded === 'string') return next(new Error('Invalid or expired token'));
+    if (typeof decoded === 'string') {
+      logger.warn(`Socket auth rejected (malformed token): ip=${ip} socket=${socket.id}`);
+      return next(new Error('Invalid or expired token'));
+    }
 
     const user = await User.findById(decoded.sub);
-    if (!user || user.isBlocked) return next(new Error('Unauthorized'));
+    if (!user || user.isBlocked) {
+      logger.warn(`Socket auth rejected (unauthorized): ip=${ip} socket=${socket.id} userId=${decoded.sub}`);
+      return next(new Error('Unauthorized'));
+    }
 
     const authenticated = socket as AuthenticatedSocket;
     authenticated.userId = user._id.toString();
     authenticated.role = user.role;
+    logger.info(`Socket authenticated: user=${authenticated.userId} socket=${socket.id}`);
     next();
-  } catch {
+  } catch (err) {
+    logger.warn(`Socket auth error: ip=${ip} socket=${socket.id} reason=${(err as Error).message}`);
     next(new Error('Invalid or expired token'));
   }
 };
@@ -40,6 +53,15 @@ const authenticateSocket = async (socket: Socket, next: (err?: Error) => void): 
 export const initSocketIO = (httpServer: HttpServer): Server => {
   io = new Server(httpServer, {
     cors: { origin: env.clientUrl, credentials: true },
+    // Engine.IO heartbeat: server pings every 25s, and considers the client
+    // gone if no pong arrives within 20s — detects dead connections (dropped
+    // wifi, sleeping laptop) without waiting for a TCP-level timeout.
+    pingInterval: 25_000,
+    pingTimeout: 20_000,
+  });
+
+  io.engine.on('connection_error', (err) => {
+    logger.warn(`Socket.IO engine connection error: code=${err.code} message=${err.message}`);
   });
 
   io.use(authenticateSocket);
@@ -47,6 +69,22 @@ export const initSocketIO = (httpServer: HttpServer): Server => {
   io.on('connection', (socket: Socket) => {
     const { userId } = socket as AuthenticatedSocket;
     socket.join(userRoom(userId));
+
+    // Per-socket packet middleware: rejects (and, on repeated abuse,
+    // disconnects) a client sending events faster than a real user/UI could.
+    socket.use((packet, next) => {
+      const [event] = packet;
+      const { limited, shouldDisconnect } = registerSocketEvent(socket.id);
+      if (!limited) return next();
+
+      logger.warn(`Socket rate limit exceeded: user=${userId} socket=${socket.id} event=${event}`);
+      if (shouldDisconnect) {
+        logger.warn(`Disconnecting abusive socket: user=${userId} socket=${socket.id}`);
+        socket.disconnect(true);
+        return;
+      }
+      next(new Error('Rate limit exceeded'));
+    });
 
     if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
     onlineUsers.get(userId)?.add(socket.id);
@@ -61,7 +99,8 @@ export const initSocketIO = (httpServer: HttpServer): Server => {
 
     registerChatHandlers(io as Server, socket as AuthenticatedSocket);
 
-    socket.on('disconnect', async () => {
+    socket.on('disconnect', async (reason) => {
+      clearSocketRateLimit(socket.id);
       const sockets = onlineUsers.get(userId);
       if (sockets) {
         sockets.delete(socket.id);
@@ -76,9 +115,10 @@ export const initSocketIO = (httpServer: HttpServer): Server => {
           }
         }
       }
+      logger.info(`Socket disconnected: user=${userId} socket=${socket.id} reason=${reason}`);
     });
 
-    logger.debug(`Socket connected: user=${userId} socket=${socket.id}`);
+    logger.info(`Socket connected: user=${userId} socket=${socket.id}`);
   });
 
   return io;
