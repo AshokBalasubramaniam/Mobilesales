@@ -15,7 +15,7 @@ import type {
   IRepairHistoryItem,
 } from "../types/models";
 import type { Populated } from "../types/common";
-import type { MobileCondition, MobileStatus } from "../types/constants";
+import type { MobileCondition, MobileStatus, DeviceCategory } from "../types/constants";
 
 const sendError = (res: Response, action: string, error: unknown): void => {
   logger.error(`Failed to ${action}`, error);
@@ -37,13 +37,15 @@ interface CreateListingLocationBody {
 }
 
 interface CreateListingBody {
+  category: DeviceCategory;
+  attributes?: Record<string, string>;
   brand: string;
   model: string;
   color?: string;
-  storage: number;
-  ram: number;
+  storage?: number;
+  ram?: number;
   condition: MobileCondition;
-  batteryHealth: number;
+  batteryHealth?: number;
   price: number;
   mrp?: number;
   negotiable?: boolean;
@@ -236,15 +238,17 @@ export const updateListing = async (
   res: Response,
 ) => {
   try {
-    const mobile = await Mobile.findOne({
-      _id: req.params.id,
-      seller: req.user!._id,
-    });
+    const isAdmin = req.user!.role === ROLES.ADMIN;
+    const mobile = await Mobile.findOne(
+      isAdmin
+        ? { _id: req.params.id }
+        : { _id: req.params.id, seller: req.user!._id },
+    );
     if (!mobile)
       return res
         .status(404)
         .json({ flag: "error", message: "Listing not found" });
-    if (mobile.status === MOBILE_STATUS.SOLD)
+    if (!isAdmin && mobile.status === MOBILE_STATUS.SOLD)
       return res
         .status(400)
         .json({ flag: "error", message: "Cannot edit a sold listing" });
@@ -268,16 +272,17 @@ export const updateListing = async (
         };
       }
     }
-    mobile.status = MOBILE_STATUS.PENDING_APPROVAL; // edits require re-approval
+    // Admin edits apply immediately; seller edits require re-approval.
+    if (!isAdmin) mobile.status = MOBILE_STATUS.PENDING_APPROVAL;
     await mobile.save();
 
-    res
-      .status(200)
-      .json({
-        flag: "success",
-        data: mobile,
-        message: "Listing updated and resubmitted for approval",
-      });
+    res.status(200).json({
+      flag: "success",
+      data: mobile,
+      message: isAdmin
+        ? "Listing updated"
+        : "Listing updated and resubmitted for approval",
+    });
   } catch (error) {
     sendError(res, "update listing", error);
   }
@@ -288,10 +293,12 @@ export const deleteListing = async (
   res: Response,
 ) => {
   try {
-    const mobile = await Mobile.findOne({
-      _id: req.params.id,
-      seller: req.user!._id,
-    });
+    const isAdmin = req.user!.role === ROLES.ADMIN;
+    const mobile = await Mobile.findOne(
+      isAdmin
+        ? { _id: req.params.id }
+        : { _id: req.params.id, seller: req.user!._id },
+    );
     if (!mobile)
       return res
         .status(404)
@@ -305,6 +312,62 @@ export const deleteListing = async (
       .json({ flag: "success", data: null, message: "Listing removed" });
   } catch (error) {
     sendError(res, "delete listing", error);
+  }
+};
+
+interface AdminListQuery {
+  page?: string;
+  limit?: string;
+  status?: MobileStatus;
+  category?: DeviceCategory;
+  seller?: string;
+  q?: string;
+  sort?: "newest" | "price_asc" | "price_desc";
+}
+
+const ADMIN_SORT_MAP: Record<
+  NonNullable<AdminListQuery["sort"]>,
+  Record<string, 1 | -1>
+> = {
+  newest: { createdAt: -1 },
+  price_asc: { price: 1 },
+  price_desc: { price: -1 },
+};
+
+export const listAllListingsAdmin = async (
+  req: Request<Record<string, never>, unknown, unknown, AdminListQuery>,
+  res: Response,
+) => {
+  try {
+    const { page, limit, skip } = getPagination(req.query);
+    const filter: FilterQuery<IMobile> = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.category) filter.category = req.query.category;
+    if (req.query.seller) filter.seller = req.query.seller;
+    if (req.query.q) {
+      filter.$or = [
+        { brand: new RegExp(req.query.q, "i") },
+        { model: new RegExp(req.query.q, "i") },
+      ];
+    }
+
+    const [mobiles, total] = await Promise.all([
+      Mobile.find(filter)
+        .sort(ADMIN_SORT_MAP[req.query.sort || "newest"])
+        .skip(skip)
+        .limit(limit)
+        .populate("seller", "name email"),
+      Mobile.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      flag: "success",
+      data: mobiles,
+      message: "Listings fetched",
+      meta: buildMeta({ page, limit, total }),
+    });
+  } catch (error) {
+    sendError(res, "list all listings", error);
   }
 };
 
@@ -360,6 +423,7 @@ export const getListing = async (
 interface MobileListQuery {
   page?: string;
   limit?: string;
+  category?: DeviceCategory;
   brand?: string | string[];
   model?: string;
   q?: string;
@@ -384,6 +448,8 @@ interface MobileListQuery {
 
 const buildSearchFilter = (query: MobileListQuery): FilterQuery<IMobile> => {
   const filter: FilterQuery<IMobile> = { status: MOBILE_STATUS.ACTIVE };
+
+  if (query.category) filter.category = query.category;
 
   const brand = toArray(query.brand);
   if (brand)
@@ -524,12 +590,13 @@ export const getMyListings = async (
 };
 
 interface SuggestPriceBody {
+  category: DeviceCategory;
   brand: string;
   model: string;
-  storage: number;
-  ram: number;
+  storage?: number;
+  ram?: number;
   condition: MobileCondition;
-  batteryHealth: number;
+  batteryHealth?: number;
   mrp?: number;
 }
 
@@ -561,60 +628,47 @@ export const getPriceHistory = async (
   }
 };
 
-export const getHomeSections = async (_req: Request, res: Response) => {
+interface HomeSectionsQuery {
+  category?: DeviceCategory;
+}
+
+export const getHomeSections = async (
+  req: Request<Record<string, never>, unknown, unknown, HomeSectionsQuery>,
+  res: Response,
+) => {
   try {
     const baseFilter: FilterQuery<IMobile> = { status: MOBILE_STATUS.ACTIVE };
+    if (req.query.category) baseFilter.category = req.query.category;
 
     const sellerFields =
       "name avatar ratingAvg ratingCount sellerProfile.isVerified";
 
-    interface PopularBrandAggResult {
-      _id: string;
-      count: number;
-    }
-
-    const [verified, premium, recentlyAdded, bestDeals, popularBrandsAgg] =
-      await Promise.all([
-        Mobile.find({ ...baseFilter, imeiVerified: true })
-          .sort({ createdAt: -1 })
-          .limit(10)
-          .populate("seller", sellerFields),
-        Mobile.find({ ...baseFilter, isPremium: true })
-          .sort({ createdAt: -1 })
-          .limit(10)
-          .populate("seller", sellerFields),
-        Mobile.find(baseFilter)
-          .sort({ createdAt: -1 })
-          .limit(10)
-          .populate("seller", sellerFields),
-        Mobile.find({
-          ...baseFilter,
-          mrp: { $exists: true, $ne: null },
-          $expr: { $gte: [{ $subtract: ["$mrp", "$price"] }, 1000] },
-        })
-          .sort({ createdAt: -1 })
-          .limit(10)
-          .populate("seller", sellerFields),
-        Mobile.aggregate<PopularBrandAggResult>([
-          { $match: baseFilter },
-          { $group: { _id: "$brand", count: { $sum: 1 } } },
-          { $sort: { count: -1 } },
-          { $limit: 8 },
-        ]),
-      ]);
+    const [verified, premium, recentlyAdded, bestDeals] = await Promise.all([
+      Mobile.find({ ...baseFilter, imeiVerified: true })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate("seller", sellerFields),
+      Mobile.find({ ...baseFilter, isPremium: true })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate("seller", sellerFields),
+      Mobile.find(baseFilter)
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate("seller", sellerFields),
+      Mobile.find({
+        ...baseFilter,
+        mrp: { $exists: true, $ne: null },
+        $expr: { $gte: [{ $subtract: ["$mrp", "$price"] }, 1000] },
+      })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate("seller", sellerFields),
+    ]);
 
     res.status(200).json({
       flag: "success",
-      data: {
-        verified,
-        premium,
-        recentlyAdded,
-        bestDeals,
-        popularBrands: popularBrandsAgg.map((b) => ({
-          brand: b._id,
-          count: b.count,
-        })),
-      },
+      data: { verified, premium, recentlyAdded, bestDeals },
     });
   } catch (error) {
     sendError(res, "get home sections", error);

@@ -10,6 +10,15 @@ export type VerificationStatus =
   | "rejected";
 
 export type MobileCondition = "excellent" | "good" | "fair" | "poor";
+export type DeviceCategory =
+  | "phone"
+  | "laptop"
+  | "tablet"
+  | "smartwatch"
+  | "accessory"
+  | "gaming"
+  | "audio"
+  | "camera";
 export type MobileStatus =
   | "draft"
   | "pending_approval"
@@ -147,14 +156,21 @@ export interface MobileLocation {
 
 export interface Mobile {
   _id: string;
-  seller: string | Pick<User, "_id" | "name" | "avatar" | "sellerProfile">;
+  seller:
+    | string
+    | Pick<
+        User,
+        "_id" | "name" | "avatar" | "sellerProfile" | "ratingAvg" | "ratingCount"
+      >;
+  category: DeviceCategory;
+  attributes?: Record<string, string>;
   brand: string;
   model: string;
   color?: string;
-  storage: number;
-  ram: number;
+  storage?: number;
+  ram?: number;
   condition: MobileCondition;
-  batteryHealth: number;
+  batteryHealth?: number;
   price: number;
   mrp?: number;
   negotiable: boolean;
@@ -162,7 +178,7 @@ export interface Mobile {
   aiSuggestedPrice?: number;
   imei?: string;
   imeiLastFour?: string;
-  imeiVerified: boolean;
+  imeiVerified?: boolean;
   purchaseBillUrl?: string;
   warranty: { hasWarranty: boolean; expiryDate?: string };
   repairHistory: RepairHistoryItem[];

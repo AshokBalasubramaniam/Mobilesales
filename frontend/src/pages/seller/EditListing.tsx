@@ -69,7 +69,7 @@ const EditListing = () => {
         mrp: m.mrp ? String(m.mrp) : "",
         negotiable: m.negotiable,
         condition: m.condition,
-        batteryHealth: m.batteryHealth,
+        batteryHealth: m.batteryHealth ?? 80,
         description: m.description || "",
       });
     });

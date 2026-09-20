@@ -6,7 +6,6 @@ export interface HomeSections {
   premium: Mobile[];
   recentlyAdded: Mobile[];
   bestDeals: Mobile[];
-  popularBrands: { brand: string; count: number }[];
 }
 
 type MobilesState = {

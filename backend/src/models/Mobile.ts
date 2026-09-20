@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { MOBILE_STATUS, MOBILE_CONDITION } from '../config/constants';
+import { MOBILE_STATUS, MOBILE_CONDITION, DEVICE_CATEGORY } from '../config/constants';
 import type {
   IImage,
   IVideo,
@@ -62,13 +62,22 @@ const mobileSchema = new Schema<IMobile>(
   {
     seller: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
 
+    category: {
+      type: String,
+      enum: Object.values(DEVICE_CATEGORY),
+      required: true,
+      default: DEVICE_CATEGORY.PHONE,
+      index: true,
+    },
+    attributes: { type: Map, of: String },
+
     brand: { type: String, required: true, trim: true, index: true },
     model: { type: String, required: true, trim: true, index: true },
     color: { type: String },
-    storage: { type: Number, required: true }, // GB
-    ram: { type: Number, required: true }, // GB
+    storage: { type: Number }, // GB — phones/laptops/tablets
+    ram: { type: Number }, // GB — phones/laptops/tablets
     condition: { type: String, enum: Object.values(MOBILE_CONDITION), required: true },
-    batteryHealth: { type: Number, min: 0, max: 100, required: true },
+    batteryHealth: { type: Number, min: 0, max: 100 },
 
     price: { type: Number, required: true, index: true },
     mrp: { type: Number },
@@ -119,7 +128,7 @@ const mobileSchema = new Schema<IMobile>(
 
 mobileSchema.index({ 'location.geo': '2dsphere' });
 mobileSchema.index({ brand: 'text', model: 'text', description: 'text' });
-mobileSchema.index({ status: 1, brand: 1, price: 1, storage: 1, ram: 1, batteryHealth: 1 });
+mobileSchema.index({ status: 1, category: 1, brand: 1, price: 1 });
 mobileSchema.index({ 'location.state': 1, 'location.city': 1, 'location.pincode': 1 });
 mobileSchema.index({ createdAt: -1 });
 

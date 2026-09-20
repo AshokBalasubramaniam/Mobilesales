@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MOBILE_CONDITION } from '../config/constants';
+import { MOBILE_CONDITION, DEVICE_CATEGORY, MOBILE_STATUS, STORAGE_RAM_CATEGORIES, BATTERY_HEALTH_CATEGORIES } from '../config/constants';
 import type { ValidationSchema } from '../middleware/validate.middleware';
 
 const location = Joi.object({
@@ -11,13 +11,34 @@ const location = Joi.object({
 });
 
 const createListingBody = Joi.object({
+  category: Joi.string().valid(...Object.values(DEVICE_CATEGORY)).required(),
+  attributes: Joi.object().pattern(Joi.string(), Joi.string()).optional(),
   brand: Joi.string().required(),
   model: Joi.string().required(),
   color: Joi.string().optional(),
-  storage: Joi.number().min(1).required(),
-  ram: Joi.number().min(1).required(),
+  storage: Joi.number()
+    .min(1)
+    .when('category', {
+      is: Joi.string().valid(...STORAGE_RAM_CATEGORIES),
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
+  ram: Joi.number()
+    .min(1)
+    .when('category', {
+      is: Joi.string().valid(...STORAGE_RAM_CATEGORIES),
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
   condition: Joi.string().valid(...Object.values(MOBILE_CONDITION)).required(),
-  batteryHealth: Joi.number().min(0).max(100).required(),
+  batteryHealth: Joi.number()
+    .min(0)
+    .max(100)
+    .when('category', {
+      is: Joi.string().valid(...BATTERY_HEALTH_CATEGORIES),
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
   price: Joi.number().min(1).required(),
   mrp: Joi.number().min(1).optional(),
   negotiable: Joi.boolean().default(true),
@@ -47,6 +68,7 @@ export const updateListing: ValidationSchema = {
 
 export const listQuery: ValidationSchema = {
   query: Joi.object({
+    category: Joi.string().valid(...Object.values(DEVICE_CATEGORY)).optional(),
     brand: Joi.alternatives(Joi.string(), Joi.array().items(Joi.string())).optional(),
     model: Joi.string().optional(),
     q: Joi.string().optional(),
@@ -74,18 +96,37 @@ export const listQuery: ValidationSchema = {
   }),
 };
 
+export const adminListQuery: ValidationSchema = {
+  query: Joi.object({
+    status: Joi.string().valid(...Object.values(MOBILE_STATUS)).optional(),
+    category: Joi.string().valid(...Object.values(DEVICE_CATEGORY)).optional(),
+    seller: Joi.string().hex().length(24).optional(),
+    q: Joi.string().optional(),
+    sort: Joi.string().valid('newest', 'price_asc', 'price_desc').optional(),
+    page: Joi.number().min(1).optional(),
+    limit: Joi.number().min(1).max(100).optional(),
+  }),
+};
+
 export const idParam: ValidationSchema = {
   params: Joi.object({ id: Joi.string().hex().length(24).required() }),
 };
 
+export const homeSectionsQuery: ValidationSchema = {
+  query: Joi.object({
+    category: Joi.string().valid(...Object.values(DEVICE_CATEGORY)).optional(),
+  }),
+};
+
 export const aiPriceSuggestion: ValidationSchema = {
   body: Joi.object({
+    category: Joi.string().valid(...Object.values(DEVICE_CATEGORY)).required(),
     brand: Joi.string().required(),
     model: Joi.string().required(),
-    storage: Joi.number().required(),
-    ram: Joi.number().required(),
+    storage: Joi.number().optional(),
+    ram: Joi.number().optional(),
     condition: Joi.string().valid(...Object.values(MOBILE_CONDITION)).required(),
-    batteryHealth: Joi.number().min(0).max(100).required(),
+    batteryHealth: Joi.number().min(0).max(100).optional(),
     mrp: Joi.number().optional(),
   }),
 };

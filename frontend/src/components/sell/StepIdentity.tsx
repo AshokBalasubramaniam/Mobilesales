@@ -5,10 +5,17 @@ import {
   POPULAR_BRANDS,
   STORAGE_OPTIONS,
   RAM_OPTIONS,
+  DEVICE_CATEGORIES,
+  STORAGE_RAM_CATEGORIES,
 } from "../../utils/constants";
-import type { MobileCondition, MobileLocation } from "../../types/models";
+import type {
+  DeviceCategory,
+  MobileCondition,
+  MobileLocation,
+} from "../../types/models";
 
 export interface SellPhoneForm {
+  category: DeviceCategory | "";
   brand: string;
   model: string;
   storage: string;
@@ -51,7 +58,27 @@ const classes = {
 
 const StepIdentity = ({ form, setForm }: StepIdentityProps) => (
   <div className={classes.container}>
-    <h2 className={classes.heading}>What phone are you selling?</h2>
+    <h2 className={classes.heading}>What device are you selling?</h2>
+
+    <div>
+      <p className={classes.fieldLabel}>Category</p>
+      <div className={classes.brandWrap}>
+        {DEVICE_CATEGORIES.map((cat) => (
+          <button
+            key={cat.value}
+            type="button"
+            onClick={() => setForm({ ...form, category: cat.value })}
+            className={`${classes.brandButton} ${
+              form.category === cat.value
+                ? classes.brandActive
+                : classes.brandInactive
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+    </div>
 
     <div>
       <p className={classes.fieldLabel}>Brand</p>
@@ -85,32 +112,34 @@ const StepIdentity = ({ form, setForm }: StepIdentityProps) => (
       onChange={(e) => setForm({ ...form, model: e.target.value })}
     />
 
-    <div className={classes.specsGrid}>
-      <Select
-        label="Storage"
-        value={form.storage}
-        onChange={(e) => setForm({ ...form, storage: e.target.value })}
-      >
-        <option value="">Select</option>
-        {STORAGE_OPTIONS.map((gb) => (
-          <option key={gb} value={gb}>
-            {gb} GB
-          </option>
-        ))}
-      </Select>
-      <Select
-        label="RAM"
-        value={form.ram}
-        onChange={(e) => setForm({ ...form, ram: e.target.value })}
-      >
-        <option value="">Select</option>
-        {RAM_OPTIONS.map((gb) => (
-          <option key={gb} value={gb}>
-            {gb} GB
-          </option>
-        ))}
-      </Select>
-    </div>
+    {form.category && STORAGE_RAM_CATEGORIES.includes(form.category) && (
+      <div className={classes.specsGrid}>
+        <Select
+          label="Storage"
+          value={form.storage}
+          onChange={(e) => setForm({ ...form, storage: e.target.value })}
+        >
+          <option value="">Select</option>
+          {STORAGE_OPTIONS.map((gb) => (
+            <option key={gb} value={gb}>
+              {gb} GB
+            </option>
+          ))}
+        </Select>
+        <Select
+          label="RAM"
+          value={form.ram}
+          onChange={(e) => setForm({ ...form, ram: e.target.value })}
+        >
+          <option value="">Select</option>
+          {RAM_OPTIONS.map((gb) => (
+            <option key={gb} value={gb}>
+              {gb} GB
+            </option>
+          ))}
+        </Select>
+      </div>
+    )}
 
     <Input
       label="Color"

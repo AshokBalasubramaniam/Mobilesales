@@ -10,6 +10,7 @@ import Pagination from "../../components/common/Pagination";
 import Select from "../../components/common/Select";
 import Button from "../../components/common/Button";
 import { useDebounce } from "../../hooks/useDebounce";
+import { DEVICE_CATEGORIES } from "../../utils/constants";
 import { PATHS } from "../../routes/paths";
 import type { ApiResponse, PaginationMeta } from "../../types/api";
 import type { MobileListParams } from "../../types/mobile";
@@ -112,7 +113,12 @@ const Search = () => {
     <div className={classes.page}>
       <div className={classes.headerRow}>
         <h1 className={classes.heading}>
-          {filters.q ? `Results for "${filters.q}"` : "Browse Phones"}
+          {filters.q
+            ? `Results for "${filters.q}"`
+            : `Browse ${
+                DEVICE_CATEGORIES.find((c) => c.value === filters.category)
+                  ?.label ?? "Devices"
+              }`}
           {meta && (
             <span className={classes.resultCount}>({meta.total} found)</span>
           )}

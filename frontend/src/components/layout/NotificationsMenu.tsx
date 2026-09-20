@@ -23,7 +23,7 @@ const classes = {
   panel:
     "absolute right-0 z-40 mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-lg",
   panelHeader: "flex items-center justify-between border-b border-gray-100 p-3",
-  panelTitle: "text-sm font-semibold",
+  panelTitle: "text-sm font-semibold text-gray-900",
   markAllButton:
     "flex items-center gap-1 text-xs text-brand-600 hover:underline",
   markAllIcon: "size-3.5",

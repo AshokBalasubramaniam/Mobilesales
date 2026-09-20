@@ -6,14 +6,21 @@ import Select from "../common/Select";
 import Button from "../common/Button";
 import {
   POPULAR_BRANDS,
+  BRANDS_BY_CATEGORY,
   MOBILE_CONDITIONS,
   STORAGE_OPTIONS,
   RAM_OPTIONS,
   INDIAN_STATES,
+  DEVICE_CATEGORIES,
+  STORAGE_RAM_CATEGORIES,
+  BATTERY_HEALTH_CATEGORIES,
+  IMEI_CATEGORIES,
 } from "../../utils/constants";
+import type { DeviceCategory } from "../../types/models";
 
 export interface MobileFilters {
   q?: string;
+  category?: string;
   brand?: string[];
   storage?: string[];
   ram?: string[];
@@ -114,9 +121,26 @@ const CheckboxGroup = ({
 
 const FilterSidebar = ({ filters, onChange, onClear }: FilterSidebarProps) => {
   const [locating, setLocating] = useState(false);
+  const category = filters.category as DeviceCategory | undefined;
+  const showStorageRam = !category || STORAGE_RAM_CATEGORIES.includes(category);
+  const showBatteryHealth =
+    !category || BATTERY_HEALTH_CATEGORIES.includes(category);
+  const showImeiFilter = !category || IMEI_CATEGORIES.includes(category);
+  const brandOptions = category ? BRANDS_BY_CATEGORY[category] : POPULAR_BRANDS;
 
   const set = (patch: Partial<MobileFilters>) =>
     onChange({ ...filters, ...patch });
+
+  const setCategory = (value: string) => {
+    const nextCategory = (value || undefined) as DeviceCategory | undefined;
+    const nextBrandOptions = nextCategory
+      ? BRANDS_BY_CATEGORY[nextCategory]
+      : POPULAR_BRANDS;
+    set({
+      category: nextCategory,
+      brand: (filters.brand || []).filter((b) => nextBrandOptions.includes(b)),
+    });
+  };
 
   const toggleArrayFilter = (key: string, values: string[]) =>
     set({ [key]: values });
@@ -150,9 +174,22 @@ const FilterSidebar = ({ filters, onChange, onClear }: FilterSidebarProps) => {
         </button>
       </div>
 
+      <Select
+        label="Category"
+        value={filters.category || ""}
+        onChange={(e) => setCategory(e.target.value)}
+      >
+        <option value="">All Categories</option>
+        {DEVICE_CATEGORIES.map((cat) => (
+          <option key={cat.value} value={cat.value}>
+            {cat.label}
+          </option>
+        ))}
+      </Select>
+
       <CheckboxGroup
         label="Brand"
-        options={POPULAR_BRANDS}
+        options={brandOptions}
         selected={filters.brand || []}
         onChange={(v) => toggleArrayFilter("brand", v)}
       />
@@ -175,35 +212,41 @@ const FilterSidebar = ({ filters, onChange, onClear }: FilterSidebarProps) => {
         </div>
       </div>
 
-      <CheckboxGroup
-        label="Storage (GB)"
-        options={STORAGE_OPTIONS}
-        selected={filters.storage || []}
-        onChange={(v) => toggleArrayFilter("storage", v)}
-      />
+      {showStorageRam && (
+        <>
+          <CheckboxGroup
+            label="Storage (GB)"
+            options={STORAGE_OPTIONS}
+            selected={filters.storage || []}
+            onChange={(v) => toggleArrayFilter("storage", v)}
+          />
 
-      <CheckboxGroup
-        label="RAM (GB)"
-        options={RAM_OPTIONS}
-        selected={filters.ram || []}
-        onChange={(v) => toggleArrayFilter("ram", v)}
-      />
+          <CheckboxGroup
+            label="RAM (GB)"
+            options={RAM_OPTIONS}
+            selected={filters.ram || []}
+            onChange={(v) => toggleArrayFilter("ram", v)}
+          />
+        </>
+      )}
 
-      <div>
-        <p className={classes.fieldLabel}>Min. battery health</p>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          step="5"
-          value={filters.minBatteryHealth || 0}
-          onChange={(e) => set({ minBatteryHealth: e.target.value })}
-          className={classes.batteryRange}
-        />
-        <p className={classes.batteryValue}>
-          {filters.minBatteryHealth || 0}%+
-        </p>
-      </div>
+      {showBatteryHealth && (
+        <div>
+          <p className={classes.fieldLabel}>Min. battery health</p>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            value={filters.minBatteryHealth || 0}
+            onChange={(e) => set({ minBatteryHealth: e.target.value })}
+            className={classes.batteryRange}
+          />
+          <p className={classes.batteryValue}>
+            {filters.minBatteryHealth || 0}%+
+          </p>
+        </div>
+      )}
 
       <Select
         label="Condition"
@@ -286,16 +329,18 @@ const FilterSidebar = ({ filters, onChange, onClear }: FilterSidebarProps) => {
           />
           Verified seller only
         </label>
-        <label className={classes.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={!!filters.verifiedImei}
-            onChange={(e) =>
-              set({ verifiedImei: e.target.checked || undefined })
-            }
-          />
-          IMEI verified only
-        </label>
+        {showImeiFilter && (
+          <label className={classes.checkboxLabel}>
+            <input
+              type="checkbox"
+              checked={!!filters.verifiedImei}
+              onChange={(e) =>
+                set({ verifiedImei: e.target.checked || undefined })
+              }
+            />
+            IMEI verified only
+          </label>
+        )}
       </div>
     </aside>
   );

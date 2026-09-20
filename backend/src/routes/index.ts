@@ -13,6 +13,7 @@ import notificationRoutes from './notification.routes';
 import dashboardRoutes from './dashboard.routes';
 import adminRoutes from './admin.routes';
 import uploadRoutes from './upload.routes';
+import settingsRoutes from './settings.routes';
 
 const router = Router();
 
@@ -30,6 +31,7 @@ router.use('/notifications', notificationRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/admin', adminRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/settings', settingsRoutes);
 
 router.get('/health', (_req, res) => res.json({ flag: 'success', message: 'API is healthy', timestamp: new Date().toISOString() }));
 

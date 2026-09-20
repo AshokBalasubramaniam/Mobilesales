@@ -1,8 +1,9 @@
-import type { MobileCondition, MobileLocation } from "./models";
+import type { DeviceCategory, MobileCondition, MobileLocation } from "./models";
 import type { PaginationParams } from "./api";
 
 export interface MobileListParams extends PaginationParams {
   q?: string;
+  category?: DeviceCategory;
   brand?: string;
   model?: string;
   minPrice?: number;
@@ -21,13 +22,15 @@ export interface MobileListParams extends PaginationParams {
 }
 
 export interface CreateMobilePayload {
+  category: DeviceCategory;
+  attributes?: Record<string, string>;
   brand: string;
   model: string;
   color?: string;
-  storage: number;
-  ram: number;
+  storage?: number;
+  ram?: number;
   condition: MobileCondition;
-  batteryHealth: number;
+  batteryHealth?: number;
   price: number;
   mrp?: number;
   negotiable?: boolean;
@@ -42,12 +45,13 @@ export interface CreateMobilePayload {
 }
 
 export interface PriceSuggestionPayload {
+  category: DeviceCategory;
   brand: string;
   model: string;
-  storage: number;
-  ram: number;
+  storage?: number;
+  ram?: number;
   condition: MobileCondition;
-  batteryHealth: number;
+  batteryHealth?: number;
   mrp?: number;
 }
 

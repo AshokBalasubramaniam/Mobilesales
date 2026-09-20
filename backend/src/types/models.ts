@@ -5,6 +5,7 @@ import type {
   VerificationStatus,
   MobileCondition,
   MobileStatus,
+  DeviceCategory,
   DeliveryType,
   DeliveryStatus,
   OrderStatus,
@@ -152,13 +153,15 @@ export interface IMobileWarranty {
 export interface IMobile extends Omit<Document, 'model'> {
   _id: Types.ObjectId;
   seller: Types.ObjectId;
+  category: DeviceCategory;
+  attributes?: Map<string, string>;
   brand: string;
   model: string;
   color?: string;
-  storage: number;
-  ram: number;
+  storage?: number;
+  ram?: number;
   condition: MobileCondition;
-  batteryHealth: number;
+  batteryHealth?: number;
   price: number;
   mrp?: number;
   negotiable: boolean;
@@ -451,7 +454,9 @@ export interface IReport extends Document {
 
 export interface ISettings extends Document {
   _id: Types.ObjectId;
-  emailFrom: string;
+  emailFrom?: string;
+  heroBannerUrl?: string;
+  heroBannerSize?: number;
   createdAt: Date;
   updatedAt: Date;
 }

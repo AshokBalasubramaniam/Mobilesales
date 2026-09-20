@@ -189,7 +189,7 @@ const ChatWindow = () => {
               isOwn={isOwn}
               senderLabel={
                 isThirdParty
-                  ? `${sender?.name || "Support"}${sender?.role === "admin" ? " (Mobile Sales Support)" : ""}`
+                  ? `${sender?.name || "Support"}${sender?.role === "admin" ? " (MAPZHA Support)" : ""}`
                   : undefined
               }
               onRespondOffer={handleRespondOffer}

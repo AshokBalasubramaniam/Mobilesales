@@ -3,7 +3,7 @@ import StaticPage from "./StaticPage";
 const Terms = () => (
   <StaticPage title="Terms of Service">
     <p>
-      By using Mobile Sales, you agree to list and describe devices accurately,
+      By using MAPZHA, you agree to list and describe devices accurately,
       including condition, battery health, and any repair history.
     </p>
     <p>

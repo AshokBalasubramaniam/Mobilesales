@@ -23,6 +23,36 @@ export const MOBILE_CONDITION = Object.freeze({
 } as const);
 export type MobileCondition = (typeof MOBILE_CONDITION)[keyof typeof MOBILE_CONDITION];
 
+export const DEVICE_CATEGORY = Object.freeze({
+  PHONE: 'phone',
+  LAPTOP: 'laptop',
+  TABLET: 'tablet',
+  SMARTWATCH: 'smartwatch',
+  ACCESSORY: 'accessory',
+  GAMING: 'gaming',
+  AUDIO: 'audio',
+  CAMERA: 'camera',
+} as const);
+export type DeviceCategory = (typeof DEVICE_CATEGORY)[keyof typeof DEVICE_CATEGORY];
+
+// Categories where storage/ram are meaningful specs
+export const STORAGE_RAM_CATEGORIES: DeviceCategory[] = [
+  DEVICE_CATEGORY.PHONE,
+  DEVICE_CATEGORY.LAPTOP,
+  DEVICE_CATEGORY.TABLET,
+];
+
+// Categories where battery health is a meaningful spec
+export const BATTERY_HEALTH_CATEGORIES: DeviceCategory[] = [
+  DEVICE_CATEGORY.PHONE,
+  DEVICE_CATEGORY.LAPTOP,
+  DEVICE_CATEGORY.TABLET,
+  DEVICE_CATEGORY.SMARTWATCH,
+];
+
+// IMEI only applies to phones
+export const IMEI_CATEGORIES: DeviceCategory[] = [DEVICE_CATEGORY.PHONE];
+
 export const DELIVERY_TYPE = Object.freeze({
   HOME_DELIVERY: 'home_delivery',
   LOCAL_DELIVERY: 'local_delivery',

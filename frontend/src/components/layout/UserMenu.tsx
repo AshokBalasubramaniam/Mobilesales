@@ -13,10 +13,10 @@ const classes = {
   panel:
     "absolute right-0 z-40 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg",
   header: "border-b border-gray-100 p-2.5",
-  name: "truncate text-sm font-semibold",
+  name: "truncate text-sm font-semibold text-gray-900",
   email: "truncate text-xs text-gray-500",
   menuItem:
-    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100",
+    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100",
   menuItemIcon: "size-4",
   logoutButton:
     "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50",
@@ -64,20 +64,24 @@ const UserMenu = () => {
           >
             <LayoutDashboard className={classes.menuItemIcon} /> Dashboard
           </Link>
-          <Link
-            to={PATHS.buyer.orders}
-            onClick={() => setOpen(false)}
-            className={classes.menuItem}
-          >
-            <ShoppingBag className={classes.menuItemIcon} /> My Orders
-          </Link>
-          <Link
-            to={PATHS.buyer.profile}
-            onClick={() => setOpen(false)}
-            className={classes.menuItem}
-          >
-            <Settings className={classes.menuItemIcon} /> Profile Settings
-          </Link>
+          {user.role === "buyer" && (
+            <>
+              <Link
+                to={PATHS.buyer.orders}
+                onClick={() => setOpen(false)}
+                className={classes.menuItem}
+              >
+                <ShoppingBag className={classes.menuItemIcon} /> My Orders
+              </Link>
+              <Link
+                to={PATHS.buyer.profile}
+                onClick={() => setOpen(false)}
+                className={classes.menuItem}
+              >
+                <Settings className={classes.menuItemIcon} /> Profile Settings
+              </Link>
+            </>
+          )}
           <button onClick={handleLogout} className={classes.logoutButton}>
             <LogOut className={classes.menuItemIcon} /> Logout
           </button>

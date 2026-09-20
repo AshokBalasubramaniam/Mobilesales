@@ -21,5 +21,35 @@ export const setEmailFromAddress = async (emailFrom: string): Promise<string> =>
     { emailFrom },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
-  return settings.emailFrom;
+  return settings.emailFrom || emailFrom;
+};
+
+export const getHeroBannerUrl = async (): Promise<string | null> => {
+  const settings = await Settings.findOne().lean();
+  return settings?.heroBannerUrl || null;
+};
+
+export const setHeroBannerUrl = async (heroBannerUrl: string): Promise<string | null> => {
+  const settings = await Settings.findOneAndUpdate(
+    {},
+    { heroBannerUrl },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
+  return settings.heroBannerUrl || null;
+};
+
+const DEFAULT_HERO_BANNER_SIZE = 100;
+
+export const getHeroBannerSize = async (): Promise<number> => {
+  const settings = await Settings.findOne().lean();
+  return settings?.heroBannerSize || DEFAULT_HERO_BANNER_SIZE;
+};
+
+export const setHeroBannerSize = async (heroBannerSize: number): Promise<number> => {
+  const settings = await Settings.findOneAndUpdate(
+    {},
+    { heroBannerSize },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
+  return settings.heroBannerSize || DEFAULT_HERO_BANNER_SIZE;
 };

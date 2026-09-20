@@ -7,6 +7,10 @@ import { PAYMENT_STATUS } from "../config/constants";
 import {
   getEmailFromAddress,
   setEmailFromAddress,
+  getHeroBannerUrl,
+  setHeroBannerUrl,
+  getHeroBannerSize,
+  setHeroBannerSize,
 } from "../services/settings.service";
 
 interface SumAggResult {
@@ -110,25 +114,59 @@ export const salesAnalytics = async (_req: Request, res: Response) => {
 
 export const getSettings = async (_req: Request, res: Response) => {
   try {
-    const emailFrom = await getEmailFromAddress();
-    res.status(200).json({ flag: "success", data: { emailFrom } });
+    const [emailFrom, heroBannerUrl, heroBannerSize] = await Promise.all([
+      getEmailFromAddress(),
+      getHeroBannerUrl(),
+      getHeroBannerSize(),
+    ]);
+    res
+      .status(200)
+      .json({ flag: "success", data: { emailFrom, heroBannerUrl, heroBannerSize } });
   } catch (error) {
     sendError(res, "load settings", error);
   }
 };
 
+interface UpdateSettingsBody {
+  emailFrom?: string;
+  heroBannerUrl?: string;
+  heroBannerSize?: number;
+}
+
 export const updateSettings = async (
-  req: Request<Record<string, never>, unknown, { emailFrom: string }>,
+  req: Request<Record<string, never>, unknown, UpdateSettingsBody>,
   res: Response,
 ) => {
   try {
-    const emailFrom = await setEmailFromAddress(req.body.emailFrom);
+    const [emailFrom, heroBannerUrl, heroBannerSize] = await Promise.all([
+      req.body.emailFrom !== undefined
+        ? setEmailFromAddress(req.body.emailFrom)
+        : getEmailFromAddress(),
+      req.body.heroBannerUrl !== undefined
+        ? setHeroBannerUrl(req.body.heroBannerUrl)
+        : getHeroBannerUrl(),
+      req.body.heroBannerSize !== undefined
+        ? setHeroBannerSize(req.body.heroBannerSize)
+        : getHeroBannerSize(),
+    ]);
     res.status(200).json({
       flag: "success",
-      data: { emailFrom },
+      data: { emailFrom, heroBannerUrl, heroBannerSize },
       message: "Settings updated",
     });
   } catch (error) {
     sendError(res, "update settings", error);
+  }
+};
+
+export const getPublicSettings = async (_req: Request, res: Response) => {
+  try {
+    const [heroBannerUrl, heroBannerSize] = await Promise.all([
+      getHeroBannerUrl(),
+      getHeroBannerSize(),
+    ]);
+    res.status(200).json({ flag: "success", data: { heroBannerUrl, heroBannerSize } });
+  } catch (error) {
+    sendError(res, "load public settings", error);
   }
 };

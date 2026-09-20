@@ -24,10 +24,16 @@ import type { ApiResponse } from "../../types/api";
 import type { CreateMobilePayload } from "../../types/mobile";
 import { PATHS } from "../../routes/paths";
 import type { Mobile, MobileCondition } from "../../types/models";
+import {
+  STORAGE_RAM_CATEGORIES,
+  BATTERY_HEALTH_CATEGORIES,
+  IMEI_CATEGORIES,
+} from "../../utils/constants";
 
-const STEPS = ["Phone", "Condition", "Location", "Photos", "Price"];
+const STEPS = ["Device", "Condition", "Location", "Photos", "Price"];
 
 const INITIAL_FORM: SellPhoneForm = {
+  category: "",
   brand: "",
   model: "",
   storage: "",
@@ -59,10 +65,16 @@ const INITIAL_FORM: SellPhoneForm = {
 
 const validateStep = (step: number, form: SellPhoneForm): string | null => {
   switch (step) {
-    case 0:
-      return form.brand && form.model && form.storage && form.ram
-        ? null
-        : "Please fill in brand, model, storage and RAM";
+    case 0: {
+      if (!form.category) return "Please select a category";
+      if (!form.brand || !form.model) return "Please fill in brand and model";
+      if (
+        STORAGE_RAM_CATEGORIES.includes(form.category) &&
+        (!form.storage || !form.ram)
+      )
+        return "Please fill in storage and RAM";
+      return null;
+    }
     case 1:
       return form.condition ? null : "Please select the overall condition";
     case 2:
@@ -128,18 +140,26 @@ const SellPhone = () => {
 
     setSubmitting(true);
     try {
+      const category = form.category as CreateMobilePayload["category"];
+      const usesStorageRam = STORAGE_RAM_CATEGORIES.includes(category);
+      const usesBatteryHealth = BATTERY_HEALTH_CATEGORIES.includes(category);
+      const usesImei = IMEI_CATEGORIES.includes(category);
+
       const payload: CreateMobilePayload = {
+        category,
         brand: form.brand,
         model: form.model,
         color: form.color || undefined,
-        storage: Number(form.storage),
-        ram: Number(form.ram),
+        storage: usesStorageRam ? Number(form.storage) : undefined,
+        ram: usesStorageRam ? Number(form.ram) : undefined,
         condition: form.condition as MobileCondition,
-        batteryHealth: Number(form.batteryHealth),
+        batteryHealth: usesBatteryHealth
+          ? Number(form.batteryHealth)
+          : undefined,
         price: Number(form.price),
         mrp: form.mrp ? Number(form.mrp) : undefined,
         negotiable: form.negotiable,
-        imei: form.imei || undefined,
+        imei: usesImei ? form.imei || undefined : undefined,
         warranty: {
           hasWarranty: form.warranty.hasWarranty,
           expiryDate:
@@ -205,7 +225,7 @@ const SellPhone = () => {
 
   return (
     <div className={classes.container}>
-      <h1 className={classes.title}>Sell Your Phone</h1>
+      <h1 className={classes.title}>Sell Your Device</h1>
       {!user.isEmailVerified && <EmailVerificationNotice />}
       <WizardProgress steps={STEPS} currentStep={step} />
 

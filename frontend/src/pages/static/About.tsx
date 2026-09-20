@@ -1,9 +1,9 @@
 import StaticPage from "./StaticPage";
 
 const About = () => (
-  <StaticPage title="About Mobile Sales">
+  <StaticPage title="About MAPZHA">
     <p>
-      Mobile Sales is a marketplace focused exclusively on second-hand mobile
+      MAPZHA is a marketplace focused exclusively on second-hand mobile
       phones. We connect buyers looking for great deals with sellers who want a
       safe, fast way to sell their used devices.
     </p>

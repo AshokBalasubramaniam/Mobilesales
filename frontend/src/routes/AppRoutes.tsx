@@ -121,23 +121,26 @@ const AppRoutes = () => (
           ))}
         </Route>
 
-        <Route path="admin" element={<AdminLayout />}>
-          {generateAdminRoutes().map((route) => (
-            <Route
-              key={route.path ?? "index"}
-              index={route.index}
-              path={route.path}
-              element={
-                <RoleBasedRoute requiredRoles={route.requiredRoles}>
-                  {route.element}
-                </RoleBasedRoute>
-              }
-            />
-          ))}
-        </Route>
       </Route>
 
       <Route path="*" element={<NotFound />} />
+    </Route>
+
+    <Route element={<ProtectedRoute />}>
+      <Route path="admin" element={<AdminLayout />}>
+        {generateAdminRoutes().map((route) => (
+          <Route
+            key={route.path ?? "index"}
+            index={route.index}
+            path={route.path}
+            element={
+              <RoleBasedRoute requiredRoles={route.requiredRoles}>
+                {route.element}
+              </RoleBasedRoute>
+            }
+          />
+        ))}
+      </Route>
     </Route>
   </Routes>
 );

@@ -3,7 +3,9 @@ import type { ISettings } from '../types/models';
 
 const settingsSchema = new Schema<ISettings>(
   {
-    emailFrom: { type: String, required: true },
+    emailFrom: { type: String },
+    heroBannerUrl: { type: String },
+    heroBannerSize: { type: Number },
   },
   { timestamps: true },
 );

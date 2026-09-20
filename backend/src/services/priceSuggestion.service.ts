@@ -6,7 +6,7 @@
  */
 import Mobile from '../models/Mobile';
 import { MOBILE_STATUS, MOBILE_CONDITION } from '../config/constants';
-import type { MobileCondition } from '../types/constants';
+import type { MobileCondition, DeviceCategory } from '../types/constants';
 
 const CONDITION_MULTIPLIER: Record<MobileCondition, number> = {
   [MOBILE_CONDITION.EXCELLENT]: 1.0,
@@ -23,12 +23,13 @@ const median = (numbers: number[]): number | null => {
 };
 
 export interface SuggestPriceArgs {
+  category: DeviceCategory;
   brand: string;
   model: string;
-  storage: number;
-  ram: number;
+  storage?: number;
+  ram?: number;
   condition: MobileCondition;
-  batteryHealth: number;
+  batteryHealth?: number;
   mrp?: number;
 }
 
@@ -38,8 +39,11 @@ export interface SuggestPriceResult {
   basedOnComparables: number;
 }
 
-export const suggestPrice = async ({ brand, model, storage, ram, condition, batteryHealth, mrp }: SuggestPriceArgs): Promise<SuggestPriceResult> => {
+export const suggestPrice = async ({ category, brand, model, storage, ram, condition, batteryHealth, mrp }: SuggestPriceArgs): Promise<SuggestPriceResult> => {
+  const hasSpecs = storage !== undefined && ram !== undefined;
+
   const comparable = await Mobile.find({
+    category,
     brand,
     model,
     status: MOBILE_STATUS.ACTIVE,
@@ -48,12 +52,13 @@ export const suggestPrice = async ({ brand, model, storage, ram, condition, batt
     .limit(50)
     .lean();
 
-  const comparablePrices = comparable
-    .filter((m) => m.storage === storage && m.ram === ram)
-    .map((m) => m.price);
+  const comparablePrices = (
+    hasSpecs ? comparable.filter((m) => m.storage === storage && m.ram === ram) : comparable
+  ).map((m) => m.price);
 
   const conditionFactor = CONDITION_MULTIPLIER[condition] ?? 0.8;
-  const batteryFactor = 0.7 + (Math.min(Math.max(batteryHealth, 0), 100) / 100) * 0.3;
+  const batteryFactor =
+    batteryHealth === undefined ? 1 : 0.7 + (Math.min(Math.max(batteryHealth, 0), 100) / 100) * 0.3;
 
   let basePrice: number;
   const marketMedian = median(comparablePrices);
@@ -61,8 +66,10 @@ export const suggestPrice = async ({ brand, model, storage, ram, condition, batt
     basePrice = marketMedian;
   } else if (mrp) {
     basePrice = mrp * 0.55;
+  } else if (hasSpecs) {
+    basePrice = 8000 + (storage as number) * 40 + (ram as number) * 300;
   } else {
-    basePrice = 8000 + storage * 40 + ram * 300;
+    basePrice = 5000;
   }
 
   const suggested = Math.round((basePrice * conditionFactor * batteryFactor) / 50) * 50;

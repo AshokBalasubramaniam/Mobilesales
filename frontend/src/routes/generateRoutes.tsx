@@ -24,9 +24,9 @@ import SellerChats from "../pages/seller/Chats";
 
 import AdminOverview from "../pages/admin/Overview";
 import AdminUsers from "../pages/admin/Users";
+import AdminProducts from "../pages/admin/Products";
 import AdminListingApprovals from "../pages/admin/ListingApprovals";
 import AdminChats from "../pages/admin/Chats";
-import AdminChatViewer from "../pages/admin/ChatViewer";
 import AdminReports from "../pages/admin/Reports";
 import AdminDisputes from "../pages/admin/Disputes";
 import AdminOrders from "../pages/admin/Orders";
@@ -98,6 +98,11 @@ export const generateAdminRoutes = (): RouteConfig[] => [
   { index: true, element: <AdminOverview />, requiredRoles: [ROLES.ADMIN] },
   { path: "users", element: <AdminUsers />, requiredRoles: [ROLES.ADMIN] },
   {
+    path: "products",
+    element: <AdminProducts />,
+    requiredRoles: [ROLES.ADMIN],
+  },
+  {
     path: "listings",
     element: <AdminListingApprovals />,
     requiredRoles: [ROLES.ADMIN],
@@ -105,7 +110,7 @@ export const generateAdminRoutes = (): RouteConfig[] => [
   { path: "chats", element: <AdminChats />, requiredRoles: [ROLES.ADMIN] },
   {
     path: "chats/:conversationId",
-    element: <AdminChatViewer />,
+    element: <AdminChats />,
     requiredRoles: [ROLES.ADMIN],
   },
   { path: "reports", element: <AdminReports />, requiredRoles: [ROLES.ADMIN] },

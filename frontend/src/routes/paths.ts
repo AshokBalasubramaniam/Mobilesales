@@ -46,6 +46,7 @@ export const PATHS = {
     root: "/admin",
     overview: "/admin",
     users: "/admin/users",
+    products: "/admin/products",
     listings: "/admin/listings",
     chats: "/admin/chats",
     chatConversation: (id = ":conversationId") => `/admin/chats/${id}`,

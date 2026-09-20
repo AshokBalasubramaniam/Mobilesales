@@ -1,7 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
 import Input from "../common/Input";
 import Select from "../common/Select";
-import { MOBILE_CONDITIONS } from "../../utils/constants";
+import {
+  MOBILE_CONDITIONS,
+  BATTERY_HEALTH_CATEGORIES,
+  IMEI_CATEGORIES,
+} from "../../utils/constants";
 import type { MobileCondition } from "../../types/models";
 import type { SellPhoneForm } from "./StepIdentity";
 
@@ -62,32 +66,36 @@ const StepCondition = ({ form, setForm }: StepConditionProps) => {
         ))}
       </Select>
 
-      <div>
-        <p className={classes.fieldLabel}>
-          Battery health: {form.batteryHealth}%
-        </p>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={form.batteryHealth}
-          onChange={(e) =>
-            setForm({ ...form, batteryHealth: Number(e.target.value) })
-          }
-          className={classes.rangeInput}
-        />
-      </div>
+      {form.category && BATTERY_HEALTH_CATEGORIES.includes(form.category) && (
+        <div>
+          <p className={classes.fieldLabel}>
+            Battery health: {form.batteryHealth}%
+          </p>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={form.batteryHealth}
+            onChange={(e) =>
+              setForm({ ...form, batteryHealth: Number(e.target.value) })
+            }
+            className={classes.rangeInput}
+          />
+        </div>
+      )}
 
-      <Input
-        label="IMEI number (optional)"
-        placeholder="15-digit IMEI"
-        maxLength={15}
-        value={form.imei}
-        onChange={(e) =>
-          setForm({ ...form, imei: e.target.value.replace(/\D/g, "") })
-        }
-        hint="Dial *#06# on the phone to find its IMEI"
-      />
+      {form.category && IMEI_CATEGORIES.includes(form.category) && (
+        <Input
+          label="IMEI number (optional)"
+          placeholder="15-digit IMEI"
+          maxLength={15}
+          value={form.imei}
+          onChange={(e) =>
+            setForm({ ...form, imei: e.target.value.replace(/\D/g, "") })
+          }
+          hint="Dial *#06# on the phone to find its IMEI"
+        />
+      )}
 
       <label className={classes.checkboxLabel}>
         <input

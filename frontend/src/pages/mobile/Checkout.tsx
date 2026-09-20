@@ -228,7 +228,7 @@ const Checkout = () => {
         amount,
         currency,
         order_id: razorpayOrderId,
-        name: "Mobile Sales",
+        name: "MAPZHA",
         description: `${mobile.brand} ${mobile.model}`,
         prefill: { name: user.name, email: user.email, contact: user.phone },
         handler: async (response) => {

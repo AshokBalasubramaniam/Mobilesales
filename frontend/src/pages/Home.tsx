@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchHomeSections } from "../features/mobiles/thunks";
 import { fetchHomeReviews } from "../features/reviews/thunks";
@@ -8,13 +8,41 @@ import {
 } from "../features/mobiles/selectors";
 import { selectHomeReviews } from "../features/reviews/selectors";
 import HeroBanner from "../components/home/HeroBanner";
-import QuickFilters from "../components/home/QuickFilters";
-import HomeSection from "../components/home/HomeSection";
-import PopularBrands from "../components/home/PopularBrands";
-import FeaturedSellers from "../components/home/FeaturedSellers";
-import CustomerReviews from "../components/home/CustomerReviews";
-import FAQSection from "../components/home/FAQSection";
-import { PATHS } from "../routes/paths";
+import CategoriesNav from "../components/home/CategoriesNav";
+import type { DeviceCategory } from "../types/models";
+import TrendingSection from "../components/home/TrendingSection";
+import RecentlyAddedSection from "../components/home/RecentlyAddedSection";
+import TopSellingSection from "../components/home/TopSellingSection";
+import RecommendedSection from "../components/home/RecommendedSection";
+import OfferBanners from "../components/home/OfferBanners";
+import StatsCard from "../components/home/StatsCard";
+import SellStepsCard from "../components/home/SellStepsCard";
+import WhyChooseMapzha from "../components/home/WhyChooseMapzha";
+import HappyCustomersCard from "../components/home/HappyCustomersCard";
+import BenefitsBar from "../components/home/BenefitsBar";
+
+const classes = {
+  layout: "mx-auto flex w-full max-w-screen-2xl items-start gap-4 px-4 pb-4",
+  main: "flex min-w-0 flex-1 flex-col gap-4",
+  sidebar: "sticky top-4 hidden w-[280px] shrink-0 flex-col gap-4 lg:flex",
+  mobileSidebar: "flex flex-col gap-4 px-4 pb-4 lg:hidden",
+  fullWidth: "mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-4 pb-4",
+};
+
+const Sidebar = ({
+  loading,
+  reviews,
+}: {
+  loading: boolean;
+  reviews: ReturnType<typeof selectHomeReviews>;
+}) => (
+  <>
+    <StatsCard />
+    <SellStepsCard />
+    <WhyChooseMapzha />
+    {!loading && <HappyCustomersCard reviews={reviews} />}
+  </>
+);
 
 const Home = () => {
   const dispatch = useAppDispatch();
@@ -22,10 +50,12 @@ const Home = () => {
   const sectionsStatus = useAppSelector(selectHomeSectionsStatus);
   const reviews = useAppSelector(selectHomeReviews);
   const loading = sectionsStatus === "idle" || sectionsStatus === "loading";
+  const [selectedCategory, setSelectedCategory] =
+    useState<DeviceCategory | null>(null);
 
   useEffect(() => {
-    dispatch(fetchHomeSections());
-  }, [dispatch]);
+    dispatch(fetchHomeSections(selectedCategory ?? undefined));
+  }, [selectedCategory, dispatch]);
 
   useEffect(() => {
     if (!sections) return;
@@ -41,41 +71,46 @@ const Home = () => {
   return (
     <div>
       <HeroBanner />
-      <QuickFilters />
-      <HomeSection
-        title="Verified Phones"
-        subtitle="IMEI-checked and seller-verified"
-        viewAllHref={`${PATHS.search}?verifiedImei=true`}
-        listings={sections?.verified}
-        loading={loading}
-      />
-      <HomeSection
-        title="Premium Listings"
-        subtitle="Top-tier condition, hand-picked"
-        viewAllHref={`${PATHS.search}?sort=price_desc`}
-        listings={sections?.premium}
-        loading={loading}
-      />
-      <HomeSection
-        title="Best Deals"
-        subtitle="Biggest discounts vs. original price"
-        viewAllHref={PATHS.search}
-        listings={sections?.bestDeals}
-        loading={loading}
-      />
-      <PopularBrands brands={sections?.popularBrands} />
-      <HomeSection
-        title="Recently Added"
-        subtitle="Freshly listed phones"
-        viewAllHref={`${PATHS.search}?sort=newest`}
-        listings={sections?.recentlyAdded}
-        loading={loading}
-      />
-      <FeaturedSellers
-        mobiles={[...(sections?.verified || []), ...(sections?.premium || [])]}
-      />
-      <CustomerReviews reviews={reviews} />
-      <FAQSection />
+
+      <div className={classes.layout}>
+        <div className={classes.main}>
+          <CategoriesNav
+            selected={selectedCategory}
+            onSelect={setSelectedCategory}
+          />
+          <TrendingSection
+            verified={sections?.verified}
+            bestDeals={sections?.bestDeals}
+            recentlyAdded={sections?.recentlyAdded}
+            loading={loading}
+          />
+          <RecentlyAddedSection
+            listings={sections?.recentlyAdded}
+            loading={loading}
+          />
+          <TopSellingSection
+            listings={
+              sections?.premium?.length ? sections.premium : sections?.verified
+            }
+            loading={loading}
+          />
+          <RecommendedSection listings={sections?.bestDeals} loading={loading} />
+        </div>
+
+        <div className={classes.sidebar}>
+          <Sidebar loading={loading} reviews={reviews} />
+        </div>
+      </div>
+
+      <div className={classes.mobileSidebar}>
+        <Sidebar loading={loading} reviews={reviews} />
+      </div>
+
+      <div className={classes.fullWidth}>
+        <OfferBanners />
+      </div>
+
+      <BenefitsBar />
     </div>
   );
 };
