@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
@@ -31,12 +31,17 @@ const classes = {
 };
 
 const Register = () => {
+  const location = useLocation();
+  const fromPath = (location.state as { from?: { pathname?: string } } | null)
+    ?.from?.pathname;
+  const isSellerSignup = fromPath === PATHS.sell;
+
   const [form, setForm] = useState<RegisterForm>({
     name: "",
     email: "",
     phone: "",
     password: "",
-    role: "buyer",
+    role: isSellerSignup ? "seller" : "buyer",
   });
   const [loading, setLoading] = useState(false);
   const dispatch = useAppDispatch();
@@ -50,7 +55,7 @@ const Register = () => {
       toast.success(
         "Account created! Please check your email to verify your address.",
       );
-      navigate(getDashboardPath(user.role));
+      navigate(fromPath || getDashboardPath(user.role));
     } else {
       toast.error(store.getState().auth.error || "Registration failed");
     }
@@ -61,7 +66,9 @@ const Register = () => {
     <div>
       <h1 className={classes.title}>Create your account</h1>
       <p className={classes.subtitle}>
-        Join thousands buying and selling phones safely.
+        {isSellerSignup
+          ? "Create a seller account to start listing your device."
+          : "Join thousands buying and selling devices safely."}
       </p>
 
       <form onSubmit={handleSubmit} className={classes.form}>
@@ -94,16 +101,21 @@ const Register = () => {
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
-        <Select
-          label="I want to"
-          value={form.role}
-          onChange={(e) =>
-            setForm({ ...form, role: e.target.value as RegisterForm["role"] })
-          }
-        >
-          <option value="buyer">Buy phones</option>
-          <option value="seller">Sell phones</option>
-        </Select>
+        {!isSellerSignup && (
+          <Select
+            label="I want to"
+            value={form.role}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                role: e.target.value as RegisterForm["role"],
+              })
+            }
+          >
+            <option value="buyer">Buy phones</option>
+            <option value="seller">Sell phones</option>
+          </Select>
+        )}
         <Button
           type="submit"
           className={classes.submitButton}
@@ -119,12 +131,16 @@ const Register = () => {
       </div>
 
       <GoogleLoginButton
-        onSuccess={(user) => navigate(getDashboardPath(user.role))}
+        onSuccess={(user) => navigate(fromPath || getDashboardPath(user.role))}
       />
 
       <p className={classes.loginPrompt}>
         Already have an account?{" "}
-        <Link to={PATHS.login} className={classes.loginLink}>
+        <Link
+          to={PATHS.login}
+          state={location.state}
+          className={classes.loginLink}
+        >
           Login
         </Link>
       </p>

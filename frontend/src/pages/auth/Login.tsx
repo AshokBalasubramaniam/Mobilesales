@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Mail, Lock, Smartphone } from "lucide-react";
+import { ArrowRight, Mail, Lock, Smartphone } from "lucide-react";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import GoogleLoginButton from "../../components/auth/GoogleLoginButton";
@@ -17,13 +17,7 @@ interface LoginForm {
 }
 
 const classes = {
-  iconWrapper:
-    "relative mx-auto mb-5 flex size-16 items-center justify-center rounded-full bg-brand-50",
-  dotAccent: "absolute -top-1 -left-5 size-2 rounded-full bg-accent-500",
-  dotBlue: "absolute top-1 -right-6 size-1.5 rounded-full bg-blue-400",
-  dotFuchsia: "absolute -bottom-1 -left-6 size-1.5 rounded-full bg-fuchsia-400",
-  icon: "size-7 text-brand-600",
-  title: "mb-1 text-center text-xl font-bold",
+  title: "mb-1 text-center text-2xl font-bold text-brand-900",
   subtitle: "mb-6 text-center text-sm text-gray-500",
   form: "space-y-4",
   forgotRow: "flex justify-end",
@@ -62,15 +56,9 @@ const Login = () => {
 
   return (
     <div>
-      <div className={classes.iconWrapper}>
-        <span className={classes.dotAccent} />
-        <span className={classes.dotBlue} />
-        <span className={classes.dotFuchsia} />
-        <Smartphone className={classes.icon} />
-      </div>
       <h1 className={classes.title}>Welcome back!</h1>
       <p className={classes.subtitle}>
-        Login to continue buying and selling phones.
+        Login to continue buying and selling devices.
       </p>
 
       <form onSubmit={handleSubmit} className={classes.form}>
@@ -100,6 +88,7 @@ const Login = () => {
         <Button
           type="submit"
           className={classes.submitButton}
+          icon={ArrowRight}
           loading={loading}
         >
           Login
@@ -126,7 +115,11 @@ const Login = () => {
 
       <p className={classes.footer}>
         New here?{" "}
-        <Link to={PATHS.register} className={classes.registerLink}>
+        <Link
+          to={PATHS.register}
+          state={location.state}
+          className={classes.registerLink}
+        >
           Create an account
         </Link>
       </p>
