@@ -13,7 +13,7 @@ export const PATHS = {
 
   login: "/login",
   register: "/register",
-  otpLogin: "/login/otp",
+  passwordLogin: "/login/password",
   verifyEmail: "/verify-email",
   forgotPassword: "/forgot-password",
 

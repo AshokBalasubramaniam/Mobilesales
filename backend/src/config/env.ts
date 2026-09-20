@@ -50,6 +50,16 @@ const env: Env = {
     return Boolean(this.google.clientId);
   },
 
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
+    // .env stores the PEM's newlines escaped as literal "\n" sequences.
+    privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  },
+  get isFirebaseConfigured() {
+    return Boolean(this.firebase.projectId && this.firebase.clientEmail && this.firebase.privateKey);
+  },
+
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
     apiKey: process.env.CLOUDINARY_API_KEY || '',
@@ -65,14 +75,6 @@ const env: Env = {
   },
   get isEmailConfigured() {
     return Boolean(this.resend.apiKey);
-  },
-
-  sms: {
-    apiKey: process.env.SMS_API_KEY || '',
-    senderId: process.env.SMS_SENDER_ID || '',
-  },
-  get isSmsConfigured() {
-    return Boolean(this.sms.apiKey);
   },
 
   admin: {

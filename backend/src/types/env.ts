@@ -37,6 +37,13 @@ export interface Env {
   };
   readonly isGoogleConfigured: boolean;
 
+  firebase: {
+    projectId: string;
+    clientEmail: string;
+    privateKey: string;
+  };
+  readonly isFirebaseConfigured: boolean;
+
   cloudinary: {
     cloudName: string;
     apiKey: string;
@@ -49,12 +56,6 @@ export interface Env {
     from: string;
   };
   readonly isEmailConfigured: boolean;
-
-  sms: {
-    apiKey: string;
-    senderId: string;
-  };
-  readonly isSmsConfigured: boolean;
 
   admin: {
     email: string;

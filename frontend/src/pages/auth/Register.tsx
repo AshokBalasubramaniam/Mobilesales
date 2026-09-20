@@ -97,7 +97,7 @@ const Register = () => {
           type="password"
           required
           minLength={8}
-          hint="At least 8 characters"
+          hint="At least 8 characters, with uppercase, lowercase, a number & a symbol"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />

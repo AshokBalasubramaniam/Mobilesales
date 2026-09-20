@@ -2,6 +2,11 @@ import type { Dispatch } from "@reduxjs/toolkit";
 import { isAxiosError } from "axios";
 import api, { refreshAccessToken } from "../../api/api";
 import { setAccessToken, clearAccessToken } from "../../api/tokenManager";
+import {
+  sendFirebasePhoneOtp,
+  confirmFirebasePhoneOtp,
+  describeFirebaseAuthError,
+} from "../../lib/firebasePhoneAuth";
 import type { ApiResponse } from "../../types/api";
 import type { Role, User } from "../../types/models";
 import {
@@ -54,15 +59,32 @@ export interface VerifyOtpPayload {
   code: string;
 }
 
+export type OtpLoginResult =
+  | { status: "logged_in"; user: User }
+  | { status: "needs_registration"; idToken: string; phone: string };
+
+export interface CompleteOtpRegistrationPayload {
+  idToken: string;
+  name: string;
+  password: string;
+  role?: Extract<Role, "buyer" | "seller">;
+}
+
 export interface UpdateProfilePayload {
   name?: string;
   phone?: string;
 }
 
-const extractError = (err: unknown): string =>
-  isAxiosError<{ message?: string }>(err)
-    ? (err.response?.data?.message ?? "Something went wrong")
-    : "Something went wrong";
+const extractError = (err: unknown): string => {
+  if (!isAxiosError<{ message?: string; errors?: string[] }>(err)) {
+    return "Something went wrong";
+  }
+  const data = err.response?.data;
+  return data?.errors?.length ? data.errors.join(" ") : (data?.message ?? "Something went wrong");
+};
+
+const extractOtpError = (err: unknown): string =>
+  isAxiosError(err) ? extractError(err) : describeFirebaseAuthError(err);
 
 const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -125,26 +147,62 @@ export const googleLogin =
     }
   };
 
+// Sends the OTP via Firebase Phone Auth (client-side reCAPTCHA + SMS) rather
+// than a custom/mock backend OTP — also covers resend, since calling this
+// again for the same number just requests a fresh code.
 export const requestOtp = (phone: string) => async (dispatch: Dispatch) => {
   try {
-    const response = await api.post<ApiResponse<null>>("/auth/otp/request", {
-      phone,
-    });
-    if (response.status === 200) {
-      dispatch(otpRequestSuccess(phone));
-      return phone;
-    }
+    await sendFirebasePhoneOtp(phone);
+    dispatch(otpRequestSuccess(phone));
+    return phone;
   } catch (error) {
-    dispatch(otpRequestFail(extractError(error)));
+    dispatch(otpRequestFail(extractOtpError(error)));
   }
 };
 
+interface FirebaseLoginResponse {
+  requiresRegistration?: boolean;
+  phone?: string;
+  user?: User;
+  accessToken?: string;
+}
+
+// Firebase verifies the code and hands back an ID token proving phone
+// ownership; the backend trusts that token to create/log in the user, or —
+// for a number with no account yet — reports back that registration
+// (name + password) is needed before it will create one.
 export const verifyOtp =
-  (payload: VerifyOtpPayload) => async (dispatch: Dispatch) => {
+  (payload: VerifyOtpPayload) =>
+  async (dispatch: Dispatch): Promise<OtpLoginResult | undefined> => {
+    try {
+      dispatch(verifyOtpStart());
+      const idToken = await confirmFirebasePhoneOtp(payload.code);
+      const response = await api.post<ApiResponse<FirebaseLoginResponse>>(
+        "/auth/firebase-login",
+        { idToken },
+      );
+      if (response.status === 200) {
+        const { data } = response.data;
+        if (data.requiresRegistration) {
+          return { status: "needs_registration", idToken, phone: data.phone! };
+        }
+        const user = applySession(data as AuthSession);
+        dispatch(verifyOtpSuccess(user));
+        return { status: "logged_in", user };
+      }
+    } catch (error) {
+      dispatch(verifyOtpFail(extractOtpError(error)));
+    }
+  };
+
+// Completes signup for a number verifyOtp reported as unregistered, reusing
+// the same (still-valid) Firebase ID token rather than requiring a fresh OTP.
+export const completeOtpRegistration =
+  (payload: CompleteOtpRegistrationPayload) => async (dispatch: Dispatch) => {
     try {
       dispatch(verifyOtpStart());
       const response = await api.post<ApiResponse<AuthSession>>(
-        "/auth/otp/verify",
+        "/auth/firebase-login",
         payload,
       );
       if (response.status === 200) {

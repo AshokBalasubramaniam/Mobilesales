@@ -3,8 +3,7 @@ import {
   register,
   login,
   googleLogin,
-  requestOtp,
-  verifyOtp,
+  firebaseLogin,
   refreshTokenHandler,
   logout,
   getMe,
@@ -27,8 +26,7 @@ const router = Router();
 router.post('/register', authLimiter, validate(authValidation.register), register);
 router.post('/login', authLimiter, validate(authValidation.login), login);
 router.post('/google', authLimiter, validate(authValidation.googleLogin), googleLogin);
-router.post('/otp/request', otpLimiter, validate(authValidation.otpRequest), requestOtp);
-router.post('/otp/verify', authLimiter, validate(authValidation.otpVerify), verifyOtp);
+router.post('/firebase-login', otpLimiter, validate(authValidation.firebaseLogin), firebaseLogin);
 router.post('/refresh-token', validate(authValidation.refreshToken), refreshTokenHandler);
 router.post('/logout', authenticateToken, logout);
 router.get('/sessions', authenticateToken, listSessions);

@@ -6,8 +6,8 @@ import env from "../config/env";
 import logger from "../utils/logger";
 import * as tokenService from "../services/token.service";
 import * as emailService from "../services/email.service";
-import * as smsService from "../services/sms.service";
 import * as googleAuthService from "../services/googleAuth.service";
+import * as firebaseAuthService from "../services/firebaseAuth.service";
 import * as bruteForce from "../services/bruteForce.service";
 import { logAuthEvent } from "../services/authAudit.service";
 import { generateNumericOTP, hashToken } from "../utils/otp";
@@ -78,9 +78,11 @@ const issueSession = async (
 const sendError = (res: Response, action: string, error: unknown): void => {
   logger.error(`Failed to ${action}`, error);
   const apiError = convertToApiError(error as Error);
-  res
-    .status(apiError.statusCode)
-    .json({ flag: "error", message: apiError.message });
+  res.status(apiError.statusCode).json({
+    flag: "error",
+    message: apiError.message,
+    ...(apiError.errors.length > 0 && { errors: apiError.errors }),
+  });
 };
 
 const sendEmailVerificationOtp = async (user: AuthenticatedUser): Promise<void> => {
@@ -288,25 +290,53 @@ export const googleLogin = async (
   }
 };
 
-interface OtpRequestBody {
-  phone: string;
+interface FirebaseLoginBody {
+  idToken: string;
+  name?: string;
+  password?: string;
+  role?: Role;
 }
 
-export const requestOtp = async (
-  req: Request<Record<string, never>, unknown, OtpRequestBody>,
+/**
+ * Completes login/signup for a phone number Firebase's client SDK has
+ * already verified via signInWithPhoneNumber() + OTP — this endpoint only
+ * verifies Firebase's ID token and issues our own session, it does not
+ * generate or check an OTP itself.
+ *
+ * A known number logs straight in on the verified token alone. An unknown
+ * number is not silently auto-registered: without name+password this
+ * responds with requiresRegistration so the client can collect them first,
+ * then resubmit the same idToken (still valid) along with those fields.
+ */
+export const firebaseLogin = async (
+  req: Request<Record<string, never>, unknown, FirebaseLoginBody>,
   res: Response,
 ) => {
   try {
-    const { phone } = req.body;
+    const { idToken, name, password, role } = req.body;
+    const profile = await firebaseAuthService.verifyFirebaseToken(idToken);
 
-    let user = await User.findOne({ phone });
+    let user = await User.findOne({ phone: profile.phone });
     if (!user) {
+      if (!name || !password) {
+        return res.status(200).json({
+          flag: "success",
+          data: { requiresRegistration: true, phone: profile.phone },
+          message: "No account found for this number",
+        });
+      }
       user = await User.create({
-        name: `User ${phone.slice(-4)}`,
-        email: `${phone}@otp.mobilesales.local`,
-        phone,
-        role: "buyer",
+        name,
+        email: `${profile.phone}@mobilesales.local`,
+        phone: profile.phone,
+        password,
+        authProvider: AUTH_PROVIDER.FIREBASE,
+        isPhoneVerified: true,
+        role: role || "buyer",
       });
+    } else if (!user.isPhoneVerified) {
+      user.isPhoneVerified = true;
+      await user.save();
     }
     if (user.isBlocked) {
       return res
@@ -314,80 +344,16 @@ export const requestOtp = async (
         .json({ flag: "error", message: "Your account has been blocked" });
     }
 
-    const code = generateNumericOTP(6);
-    user.otp = {
-      codeHash: hashToken(code),
-      purpose: "login",
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-      attempts: 0,
-    };
-    await user.save();
-
-    await smsService.sendOtp(phone, code);
-
-    res
-      .status(200)
-      .json({ flag: "success", data: null, message: "OTP sent successfully" });
-  } catch (error) {
-    sendError(res, "send OTP", error);
-  }
-};
-
-interface OtpVerifyBody {
-  phone: string;
-  code: string;
-}
-
-export const verifyOtp = async (
-  req: Request<Record<string, never>, unknown, OtpVerifyBody>,
-  res: Response,
-) => {
-  try {
-    const { phone, code } = req.body;
-
-    const user = await User.findOne({ phone }).select(
-      "+otp.codeHash +otp.purpose +otp.expiresAt +otp.attempts",
-    );
-    if (!user || !user.otp?.codeHash) {
-      return res
-        .status(400)
-        .json({
-          flag: "error",
-          message: "No OTP was requested for this number",
-        });
-    }
-    if (user.otp.expiresAt! < new Date()) {
-      return res
-        .status(400)
-        .json({ flag: "error", message: "OTP has expired" });
-    }
-    if (user.otp.attempts >= 5) {
-      return res.status(400).json({
-        flag: "error",
-        message: "Too many incorrect attempts, request a new OTP",
-      });
-    }
-
-    if (user.otp.codeHash !== hashToken(code)) {
-      user.otp.attempts += 1;
-      await user.save();
-      return res.status(400).json({ flag: "error", message: "Incorrect OTP" });
-    }
-
-    user.otp = undefined;
-    user.isPhoneVerified = true;
-    await user.save();
-
     const { accessToken } = await issueSession(res, user, req);
-    await logAuthEvent({ type: "login_success", userId: user._id.toString(), email: user.email, ip: req.ip, userAgent: req.headers["user-agent"], meta: { provider: "otp" } });
+    await logAuthEvent({ type: "login_success", userId: user._id.toString(), email: user.email, ip: req.ip, userAgent: req.headers["user-agent"], meta: { provider: "firebase" } });
 
     res.status(200).json({
       flag: "success",
       data: { user: user.toSafeJSON(), accessToken },
-      message: "OTP verified successfully",
+      message: "Phone login successful",
     });
   } catch (error) {
-    sendError(res, "verify OTP", error);
+    sendError(res, "log in with phone", error);
   }
 };
 

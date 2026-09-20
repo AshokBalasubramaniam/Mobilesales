@@ -38,7 +38,10 @@ export const authLimiter = rateLimit({
 
 export const otpLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 5,
+  // Also guards /auth/firebase-login, which a single signup calls twice
+  // (once to check the number, once to complete registration) — 5 was too
+  // tight for that plus a couple of retries.
+  max: 15,
   standardHeaders: true,
   legacyHeaders: false,
   store: redisStore('rl:otp:'),

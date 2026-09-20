@@ -2,11 +2,14 @@ import { useState, type FormEvent } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, Search, Menu, X } from "lucide-react";
 import clsx from "clsx";
-import { useAppSelector } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { useAuth } from "../../hooks/useAuth";
 import { selectChatUnreadTotal } from "../../features/chat/selectors";
+import { selectLoginModalIntent } from "../../features/ui/selectors";
+import { openLoginModal, closeLoginModal, type LoginModalIntent } from "../../features/ui/slice";
 import { PATHS } from "../../routes/paths";
 import Button from "../common/Button";
+import LoginModal from "../auth/LoginModal";
 import NotificationsMenu from "./NotificationsMenu";
 import UserMenu from "./UserMenu";
 
@@ -17,6 +20,13 @@ const NAV_LINKS = [
   { label: "Track Order", to: PATHS.buyer.orders },
   { label: "Support", to: "/contact" },
 ];
+
+// Buy/Sell require login first when logged out — everything else (browsing
+// Exchange, Track Order, Support) stays open.
+const NAV_LOGIN_INTENTS: Record<string, LoginModalIntent> = {
+  Buy: { targetPath: PATHS.search, role: "buyer" },
+  Sell: { targetPath: PATHS.sell, role: "seller" },
+};
 
 const classes = {
   header: "sticky top-0 z-30 bg-brand-900 text-white",
@@ -53,7 +63,8 @@ const classes = {
   mobileNavLink:
     "rounded-lg px-3 py-2 text-sm font-semibold text-white hover:bg-white/10",
   mobileSellButton: "mt-3 w-full",
-  loginButton: "!text-white hover:!bg-white/10",
+  loginButton:
+    "!text-white rounded-full border border-white/30 hover:!bg-white/10 hover:border-white/60",
 };
 
 const Navbar = () => {
@@ -61,6 +72,8 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isAuthenticated, isSeller } = useAuth();
   const chatUnread = useAppSelector(selectChatUnreadTotal);
+  const loginModalIntent = useAppSelector(selectLoginModalIntent);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const handleSearch = (e: FormEvent) => {
@@ -100,17 +113,31 @@ const Navbar = () => {
         </form>
 
         <nav className={classes.navLinks}>
-          {NAV_LINKS.map((link) => (
-            <NavLink
-              key={link.label}
-              to={link.to}
-              className={({ isActive }) =>
-                clsx(isActive && classes.navLinkActive)
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const intent = NAV_LOGIN_INTENTS[link.label];
+            if (intent && !isAuthenticated) {
+              return (
+                <button
+                  key={link.label}
+                  type="button"
+                  onClick={() => dispatch(openLoginModal(intent))}
+                >
+                  {link.label}
+                </button>
+              );
+            }
+            return (
+              <NavLink
+                key={link.label}
+                to={link.to}
+                className={({ isActive }) =>
+                  clsx(isActive && classes.navLinkActive)
+                }
+              >
+                {link.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className={classes.actions}>
@@ -148,23 +175,14 @@ const Navbar = () => {
               <UserMenu />
             </>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={classes.loginButton}
-                onClick={() => navigate(PATHS.login)}
-              >
-                Login
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => navigate(PATHS.register)}
-                className={classes.sellButton}
-              >
-                Sign Up
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={classes.loginButton}
+              onClick={() => dispatch(openLoginModal())}
+            >
+              Login
+            </Button>
           )}
 
           <button
@@ -192,16 +210,34 @@ const Navbar = () => {
             />
           </form>
           <div className={classes.mobileNavLinks}>
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.label}
-                to={link.to}
-                onClick={() => setMobileOpen(false)}
-                className={classes.mobileNavLink}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const intent = NAV_LOGIN_INTENTS[link.label];
+              if (intent && !isAuthenticated) {
+                return (
+                  <button
+                    key={link.label}
+                    type="button"
+                    onClick={() => {
+                      dispatch(openLoginModal(intent));
+                      setMobileOpen(false);
+                    }}
+                    className={clsx(classes.mobileNavLink, "text-left")}
+                  >
+                    {link.label}
+                  </button>
+                );
+              }
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  onClick={() => setMobileOpen(false)}
+                  className={classes.mobileNavLink}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
           {isSeller && (
             <Button
@@ -216,6 +252,11 @@ const Navbar = () => {
           )}
         </div>
       )}
+
+      <LoginModal
+        intent={loginModalIntent}
+        onClose={() => dispatch(closeLoginModal())}
+      />
     </header>
   );
 };

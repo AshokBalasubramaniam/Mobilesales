@@ -20,7 +20,7 @@ import NotFound from "../pages/NotFound";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
-import OtpLogin from "../pages/auth/OtpLogin";
+import PasswordLogin from "../pages/auth/PasswordLogin";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import VerifyEmail from "../pages/auth/VerifyEmail";
 
@@ -43,7 +43,7 @@ const AppRoutes = () => (
   <Routes>
     <Route element={<AuthLayout />}>
       <Route path="login" element={<Login />} />
-      <Route path="login/otp" element={<OtpLogin />} />
+      <Route path="login/password" element={<PasswordLogin />} />
       <Route path="register" element={<Register />} />
       <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="verify-email" element={<VerifyEmail />} />

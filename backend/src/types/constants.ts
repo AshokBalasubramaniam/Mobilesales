@@ -168,5 +168,6 @@ export type CouponDiscountType = (typeof COUPON_DISCOUNT_TYPE)[keyof typeof COUP
 export const AUTH_PROVIDER = Object.freeze({
   LOCAL: 'local',
   GOOGLE: 'google',
+  FIREBASE: 'firebase',
 } as const);
 export type AuthProvider = (typeof AUTH_PROVIDER)[keyof typeof AUTH_PROVIDER];

@@ -59,16 +59,14 @@ export const googleLogin: ValidationSchema = {
   }),
 };
 
-export const otpRequest: ValidationSchema = {
+export const firebaseLogin: ValidationSchema = {
   body: Joi.object({
-    phone: phone.required(),
-  }),
-};
-
-export const otpVerify: ValidationSchema = {
-  body: Joi.object({
-    phone: phone.required(),
-    code: Joi.string().length(6).required(),
+    idToken: Joi.string().required(),
+    // Only required when the number has no account yet — the controller
+    // decides that after verifying the token, so both stay optional here.
+    name: Joi.string().min(2).max(100).optional(),
+    password: password.optional(),
+    role: Joi.string().valid('buyer', 'seller').default('buyer'),
   }),
 };
 
