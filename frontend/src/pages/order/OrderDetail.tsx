@@ -75,7 +75,11 @@ const OrderDetail = () => {
     if (!id) return Promise.resolve();
     return api
       .get<ApiResponse<Order>>(`/orders/${id}`)
-      .then(({ data }) => setOrder(data.data));
+      .then(({ data }) => setOrder(data.data))
+      .catch((err) => {
+        toast.error(extractError(err, "Order not found"));
+        navigate(PATHS.home, { replace: true });
+      });
   };
 
   useEffect(() => {

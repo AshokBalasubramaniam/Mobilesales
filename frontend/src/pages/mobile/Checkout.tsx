@@ -1,8 +1,9 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { isAxiosError } from "axios";
-import { Tag } from "lucide-react";
+import clsx from "clsx";
+import { CheckCircle2, MapPin, Plus, Tag } from "lucide-react";
 import api from "../../api/api";
 import Input from "../../components/common/Input";
 import Select from "../../components/common/Select";
@@ -14,7 +15,13 @@ import { formatCurrency } from "../../utils/format";
 import { DELIVERY_TYPES } from "../../utils/constants";
 import { PATHS } from "../../routes/paths";
 import type { ApiResponse } from "../../types/api";
-import type { DeliveryType, Mobile, Order } from "../../types/models";
+import type {
+  Address,
+  DeliveryType,
+  Mobile,
+  Order,
+  User,
+} from "../../types/models";
 
 interface AppliedCoupon {
   code: string;
@@ -90,6 +97,22 @@ const classes = {
   itemPrice: "ml-auto font-bold",
   formCard: "space-y-4 rounded-xl border border-gray-200 p-6",
   addressGroup: "space-y-3",
+  addressHeader: "flex items-center justify-between",
+  addressHeading: "text-sm font-medium text-gray-700",
+  manageLink: "text-xs font-medium text-brand-600 hover:underline",
+  savedList: "grid grid-cols-1 gap-2 sm:grid-cols-2",
+  savedCardBase:
+    "flex w-full items-start gap-2.5 rounded-lg border p-3 text-left text-sm transition-colors",
+  savedCardActive: "border-brand-500 bg-brand-50 ring-1 ring-brand-500",
+  savedCardInactive: "border-gray-200 hover:border-gray-300",
+  savedIconActive: "mt-0.5 size-4 shrink-0 text-brand-600",
+  savedIconInactive: "mt-0.5 size-4 shrink-0 text-gray-400",
+  savedLabelRow: "flex items-center gap-1.5",
+  savedLabel: "font-semibold text-gray-900",
+  defaultBadge:
+    "rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700",
+  savedDetail: "text-gray-500",
+  newAddressCard: "items-center font-medium text-gray-700",
   addressGrid: "grid grid-cols-3 gap-3",
   couponRow: "flex gap-2",
   totalsBlock: "space-y-1 border-t border-gray-100 pt-4 text-sm",
@@ -120,6 +143,15 @@ const Checkout = () => {
   const [deliveryType, setDeliveryType] =
     useState<DeliveryType>("home_delivery");
   const [address, setAddress] = useState<AddressForm>(EMPTY_ADDRESS);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>(
+    user?.addresses ?? [],
+  );
+  // A saved address _id, or "new" to type one in. Empty until chosen.
+  const [selectedAddressId, setSelectedAddressId] = useState<string>(() => {
+    const list = user?.addresses ?? [];
+    const def = list.find((a) => a.isDefault) || list[0];
+    return def?._id ?? "new";
+  });
   const [couponCode, setCouponCode] = useState("");
   const [couponResult, setCouponResult] = useState<AppliedCoupon | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
@@ -129,21 +161,46 @@ const Checkout = () => {
     if (!mobileId) return;
     api
       .get<ApiResponse<Mobile>>(`/mobiles/${mobileId}`)
-      .then(({ data }) => setMobile(data.data));
-    if (user?.addresses?.length) {
-      const def = user.addresses.find((a) => a.isDefault) || user.addresses[0];
-      setAddress({
-        line1: def.line1,
-        line2: def.line2 || "",
-        city: def.city,
-        state: def.state,
-        pincode: def.pincode,
+      .then(({ data }) => setMobile(data.data))
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Listing not found");
+        navigate(PATHS.home, { replace: true });
       });
-    }
-  }, [mobileId, user]);
+  }, [mobileId, navigate]);
+
+  // The stored session user can lag behind addresses added on the Profile
+  // page — fetch the latest list so every saved address is selectable.
+  useEffect(() => {
+    api
+      .get<ApiResponse<User>>("/auth/me")
+      .then(({ data }) => {
+        const list = data.data.addresses ?? [];
+        setSavedAddresses(list);
+        setSelectedAddressId((current) => {
+          if (current !== "new" && list.some((a) => a._id === current))
+            return current;
+          const def = list.find((a) => a.isDefault) || list[0];
+          return def?._id ?? "new";
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   if (!mobile) return <Spinner full />;
   if (!user) return null;
+
+  const selectedSaved = savedAddresses.find((a) => a._id === selectedAddressId);
+  const deliveryAddress: AddressForm = selectedSaved
+    ? {
+      line1: selectedSaved.line1,
+      line2: selectedSaved.line2 || "",
+      city: selectedSaved.city,
+      state: selectedSaved.state,
+      pincode: selectedSaved.pincode,
+    }
+    : address;
 
   const deliveryCharge = DELIVERY_CHARGES[deliveryType];
   const subtotal = mobile.price + deliveryCharge;
@@ -181,10 +238,10 @@ const Checkout = () => {
 
     if (
       deliveryType !== "store_pickup" &&
-      (!address.line1 ||
-        !address.city ||
-        !address.state ||
-        address.pincode.length !== 6)
+      (!deliveryAddress.line1 ||
+        !deliveryAddress.city ||
+        !deliveryAddress.state ||
+        deliveryAddress.pincode.length !== 6)
     ) {
       return toast.error("Please fill in a complete delivery address");
     }
@@ -194,7 +251,8 @@ const Checkout = () => {
       const { data: orderRes } = await api.post<ApiResponse<Order>>("/orders", {
         mobileId,
         deliveryType,
-        deliveryAddress: deliveryType !== "store_pickup" ? address : undefined,
+        deliveryAddress:
+          deliveryType !== "store_pickup" ? deliveryAddress : undefined,
         couponCode: couponResult ? couponCode : undefined,
       });
       const order = orderRes.data;
@@ -293,6 +351,77 @@ const Checkout = () => {
         </Select>
 
         {deliveryType !== "store_pickup" && (
+          <div className={classes.addressGroup}>
+            <div className={classes.addressHeader}>
+              <p className={classes.addressHeading}>Delivery address</p>
+              <Link to={PATHS.buyer.profile} className={classes.manageLink}>
+                Manage addresses
+              </Link>
+            </div>
+            <div className={classes.savedList}>
+              {savedAddresses.map((addr) => {
+                const active = selectedAddressId === addr._id;
+                return (
+                  <button
+                    key={addr._id}
+                    type="button"
+                    onClick={() => setSelectedAddressId(addr._id)}
+                    className={clsx(
+                      classes.savedCardBase,
+                      active
+                        ? classes.savedCardActive
+                        : classes.savedCardInactive,
+                    )}
+                  >
+                    {active ? (
+                      <CheckCircle2 className={classes.savedIconActive} />
+                    ) : (
+                      <MapPin className={classes.savedIconInactive} />
+                    )}
+                    <span>
+                      <span className={classes.savedLabelRow}>
+                        <span className={classes.savedLabel}>{addr.label}</span>
+                        {addr.isDefault && (
+                          <span className={classes.defaultBadge}>Default</span>
+                        )}
+                      </span>
+                      <span className={classes.savedDetail}>
+                        {[addr.line1, addr.line2, addr.city, addr.state]
+                          .filter(Boolean)
+                          .join(", ")}{" "}
+                        - {addr.pincode}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setSelectedAddressId("new")}
+                className={clsx(
+                  classes.savedCardBase,
+                  classes.newAddressCard,
+                  selectedAddressId === "new"
+                    ? classes.savedCardActive
+                    : classes.savedCardInactive,
+                )}
+              >
+                <Plus
+                  className={
+                    selectedAddressId === "new"
+                      ? classes.savedIconActive
+                      : classes.savedIconInactive
+                  }
+                />
+                {savedAddresses.length
+                  ? "Deliver to a different address"
+                  : "Enter delivery address"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {deliveryType !== "store_pickup" && !selectedSaved && (
           <div className={classes.addressGroup}>
             <Input
               label="Address line 1"

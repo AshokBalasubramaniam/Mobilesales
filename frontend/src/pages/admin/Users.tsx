@@ -25,7 +25,12 @@ import Spinner from "../../components/common/Spinner";
 import EmptyState from "../../components/common/EmptyState";
 import { useDebounce } from "../../hooks/useDebounce";
 import { formatDate } from "../../utils/format";
-import type { Role, User, VerificationStatus } from "../../types/models";
+import type {
+  Role,
+  SellerProfile,
+  User,
+  VerificationStatus,
+} from "../../types/models";
 import type { ApiResponse, PaginationMeta } from "../../types/api";
 
 const extractError = (err: unknown): string =>
@@ -77,6 +82,9 @@ const classes = {
   userName: "text-sm font-medium",
   userEmail: "text-xs text-gray-400",
   verificationWrap: "flex items-center gap-2",
+  verificationCell: "space-y-1",
+  docLinks: "flex flex-wrap gap-x-2 gap-y-0.5",
+  docLink: "text-[11px] font-medium text-brand-700 underline hover:text-brand-800",
   verificationActions: "flex gap-1",
   approveLink: "text-xs text-green-600 hover:underline",
   rejectLink: "text-xs text-red-600 hover:underline",
@@ -136,6 +144,11 @@ const Users = () => {
         setUsers(data.data);
         setMeta(data.meta);
       })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Failed to load users");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -156,15 +169,17 @@ const Users = () => {
       api.get<ApiResponse<User[]>>("/users", {
         params: { limit: 1, isBlocked: true },
       }),
-    ]).then(([all, buyers, sellers, active, suspended]) => {
-      setCounts({
-        all: all.data.meta?.total || 0,
-        buyer: buyers.data.meta?.total || 0,
-        seller: sellers.data.meta?.total || 0,
-        active: active.data.meta?.total || 0,
-        suspended: suspended.data.meta?.total || 0,
-      });
-    });
+    ])
+      .then(([all, buyers, sellers, active, suspended]) => {
+        setCounts({
+          all: all.data.meta?.total || 0,
+          buyer: buyers.data.meta?.total || 0,
+          seller: sellers.data.meta?.total || 0,
+          active: active.data.meta?.total || 0,
+          suspended: suspended.data.meta?.total || 0,
+        });
+      })
+      .catch(() => {});
   }, [tab, filters.role, filters.isBlocked, debouncedQ]);
 
   const resetFilters = () => {
@@ -212,6 +227,16 @@ const Users = () => {
       toast.error(extractError(err));
     }
   };
+
+  // Uploaded seller verification photos, so the admin can check them before
+  // approving.
+  const verificationDocs = (docs: SellerProfile["documents"]) =>
+    [
+      { label: "Aadhaar", url: docs?.aadhaarUrl },
+      { label: "PAN", url: docs?.panUrl },
+      { label: "Selfie", url: docs?.selfieUrl },
+      { label: "Bill", url: docs?.purchaseBillUrl },
+    ].filter((d): d is { label: string; url: string } => Boolean(d.url));
 
   const pct = (n: number) =>
     counts.all > 0 ? `${Math.round((n / counts.all) * 100)}% of total` : "—";
@@ -350,37 +375,57 @@ const Users = () => {
                     </td>
                     <td className={classes.td}>
                       {u.role === "seller" && (
-                        <div className={classes.verificationWrap}>
-                          <Badge
-                            variant={
-                              u.sellerProfile?.verificationStatus === "approved"
-                                ? "green"
-                                : u.sellerProfile?.verificationStatus ===
-                                    "pending"
-                                  ? "amber"
-                                  : "gray"
-                            }
-                          >
-                            {u.sellerProfile?.verificationStatus}
-                          </Badge>
-                          {u.sellerProfile?.verificationStatus === "pending" && (
-                            <div className={classes.verificationActions}>
-                              <button
-                                onClick={() =>
-                                  handleVerification(u._id, "approved")
-                                }
-                                className={classes.approveLink}
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleVerification(u._id, "rejected")
-                                }
-                                className={classes.rejectLink}
-                              >
-                                Reject
-                              </button>
+                        <div className={classes.verificationCell}>
+                          <div className={classes.verificationWrap}>
+                            <Badge
+                              variant={
+                                u.sellerProfile?.verificationStatus === "approved"
+                                  ? "green"
+                                  : u.sellerProfile?.verificationStatus ===
+                                      "pending"
+                                    ? "amber"
+                                    : "gray"
+                              }
+                            >
+                              {u.sellerProfile?.verificationStatus}
+                            </Badge>
+                            {u.sellerProfile?.verificationStatus === "pending" && (
+                              <div className={classes.verificationActions}>
+                                <button
+                                  onClick={() =>
+                                    handleVerification(u._id, "approved")
+                                  }
+                                  className={classes.approveLink}
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleVerification(u._id, "rejected")
+                                  }
+                                  className={classes.rejectLink}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          {verificationDocs(u.sellerProfile?.documents).length >
+                            0 && (
+                            <div className={classes.docLinks}>
+                              {verificationDocs(u.sellerProfile?.documents).map(
+                                (doc) => (
+                                  <a
+                                    key={doc.label}
+                                    href={doc.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={classes.docLink}
+                                  >
+                                    {doc.label}
+                                  </a>
+                                ),
+                              )}
                             </div>
                           )}
                         </div>

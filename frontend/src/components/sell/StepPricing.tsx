@@ -17,7 +17,6 @@ export interface StepPricingProps {
 
 const classes = {
   container: 'space-y-4',
-  heading: 'text-lg font-bold',
   suggestButton: 'mt-2',
   suggestionBox: 'mt-2 rounded-lg bg-brand-50 p-3 text-sm',
   useSuggestionButton: 'ml-2 font-medium text-brand-700 hover:underline',
@@ -65,8 +64,6 @@ const StepPricing = ({ form, setForm }: StepPricingProps) => {
 
   return (
     <div className={classes.container}>
-      <h2 className={classes.heading}>Set your price</h2>
-
       <Input label="Original price / MRP (optional)" type="number" value={form.mrp} onChange={(e) => setForm({ ...form, mrp: e.target.value })} />
 
       <div>

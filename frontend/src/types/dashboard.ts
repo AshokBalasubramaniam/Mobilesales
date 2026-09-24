@@ -1,16 +1,3 @@
-import type { OrderStatus } from "./models";
-
-export interface SellerDashboardStats {
-  views: number;
-  likes: number;
-  activeListings: number;
-  pendingListings: number;
-  earnings: number;
-  sales: number;
-  chatRequests: number;
-  ordersByStatus: Partial<Record<OrderStatus, number>>;
-}
-
 export interface AdminDashboardStats {
   totalUsers: number;
   totalSellers: number;

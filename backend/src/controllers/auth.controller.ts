@@ -12,10 +12,9 @@ import * as bruteForce from "../services/bruteForce.service";
 import { logAuthEvent } from "../services/authAudit.service";
 import { generateNumericOTP, hashToken } from "../utils/otp";
 import { parseUserAgent } from "../utils/parseUserAgent";
-import { AUTH_PROVIDER } from "../config/constants";
+import { AUTH_PROVIDER, ROLES } from "../config/constants";
 import type { AuthenticatedUser } from "../types/express";
 import type { IRefreshToken } from "../types/models";
-import type { Role } from "../types/constants";
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -109,7 +108,6 @@ interface RegisterBody {
   email: string;
   phone?: string;
   password: string;
-  role?: Role;
 }
 
 export const register = async (
@@ -117,7 +115,7 @@ export const register = async (
   res: Response,
 ) => {
   try {
-    const { name, email, phone, password, role } = req.body;
+    const { name, email, phone, password } = req.body;
 
     const existing = await User.findOne({
       $or: [{ email }, ...(phone ? [{ phone }] : [])],
@@ -129,7 +127,7 @@ export const register = async (
       });
     }
 
-    const user = new User({ name, email, phone, password, role });
+    const user = new User({ name, email, phone, password, role: ROLES.BUYER });
     await sendEmailVerificationOtp(user);
 
     const { accessToken } = await issueSession(res, user, req);
@@ -243,7 +241,6 @@ export const login = async (
 
 interface GoogleLoginBody {
   idToken: string;
-  role?: Role;
 }
 
 export const googleLogin = async (
@@ -251,7 +248,7 @@ export const googleLogin = async (
   res: Response,
 ) => {
   try {
-    const { idToken, role } = req.body;
+    const { idToken } = req.body;
     const profile = await googleAuthService.verifyGoogleToken(idToken);
 
     let user = await User.findOne({ email: profile.email }).select("+googleId");
@@ -263,7 +260,7 @@ export const googleLogin = async (
         googleId: profile.googleId,
         authProvider: AUTH_PROVIDER.GOOGLE,
         isEmailVerified: profile.emailVerified,
-        role: role || "buyer",
+        role: ROLES.BUYER,
       });
     } else if (!user.googleId) {
       user.googleId = profile.googleId;
@@ -293,8 +290,8 @@ export const googleLogin = async (
 interface FirebaseLoginBody {
   idToken: string;
   name?: string;
+  email?: string;
   password?: string;
-  role?: Role;
 }
 
 /**
@@ -313,26 +310,35 @@ export const firebaseLogin = async (
   res: Response,
 ) => {
   try {
-    const { idToken, name, password, role } = req.body;
+    const { idToken, name, email, password } = req.body;
     const profile = await firebaseAuthService.verifyFirebaseToken(idToken);
 
     let user = await User.findOne({ phone: profile.phone });
     if (!user) {
-      if (!name || !password) {
+      if (!name || !email || !password) {
         return res.status(200).json({
           flag: "success",
           data: { requiresRegistration: true, phone: profile.phone },
           message: "No account found for this number",
         });
       }
+
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(409).json({
+          flag: "error",
+          message: "An account with this email already exists",
+        });
+      }
+
       user = await User.create({
         name,
-        email: `${profile.phone}@mobilesales.local`,
+        email,
         phone: profile.phone,
         password,
         authProvider: AUTH_PROVIDER.FIREBASE,
         isPhoneVerified: true,
-        role: role || "buyer",
+        role: ROLES.BUYER,
       });
     } else if (!user.isPhoneVerified) {
       user.isPhoneVerified = true;

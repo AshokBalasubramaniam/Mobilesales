@@ -66,6 +66,7 @@ export type OtpLoginResult =
 export interface CompleteOtpRegistrationPayload {
   idToken: string;
   name: string;
+  email: string;
   password: string;
   role?: Extract<Role, "buyer" | "seller">;
 }

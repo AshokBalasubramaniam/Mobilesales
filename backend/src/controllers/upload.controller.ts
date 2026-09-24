@@ -29,6 +29,7 @@ export const uploadImage = async (req: Request, res: Response) => {
     const result = await uploadBufferToCloudinary(req.file.buffer, {
       folder: "mobilesales/uploads",
       publicIdPrefix: req.user!._id.toString(),
+      mimetype: req.file.mimetype,
     });
 
     res.status(201).json({

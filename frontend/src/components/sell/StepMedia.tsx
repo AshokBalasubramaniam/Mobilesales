@@ -61,7 +61,6 @@ const StepMedia = ({ form, setForm }: StepMediaProps) => {
   return (
     <div className={classes.container}>
       <div>
-        <h2 className={classes.heading}>Add photos</h2>
         <p className={classes.description}>
           Upload at least 3 clear photos (up to 15). More angles help it sell
           faster.

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, Heart, ListChecks, Pencil, Plus } from "lucide-react";
+import toast from "react-hot-toast";
+import { isAxiosError } from "axios";
 import api from "../../api/api";
 import Badge from "../../components/common/Badge";
 import type { BadgeProps } from "../../components/common/Badge";
@@ -11,6 +13,7 @@ import Pagination from "../../components/common/Pagination";
 import { formatCurrency } from "../../utils/format";
 import { PATHS } from "../../routes/paths";
 import type { ApiResponse, PaginationMeta } from "../../types/api";
+import { SELLER_EDITABLE_STATUSES } from "../../utils/constants";
 import type { Mobile, MobileStatus } from "../../types/models";
 
 const STATUS_VARIANT: Record<
@@ -43,7 +46,7 @@ const classes = {
   tabButtonBase: "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium",
   tabButtonActive: "bg-brand-600 text-white",
   tabButtonInactive: "bg-gray-100 text-gray-600",
-  listingsList: "space-y-3",
+  listingsList: "stagger space-y-3",
   listingCard: "flex items-center gap-4 rounded-xl border border-gray-200 p-4",
   listingImage: "size-16 rounded-lg bg-gray-100 object-cover",
   listingInfo: "min-w-0 flex-1",
@@ -71,6 +74,11 @@ const MyListings = () => {
       .then(({ data }) => {
         setListings(data.data);
         setMeta(data.meta);
+      })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Failed to load your listings");
       })
       .finally(() => setLoading(false));
   }, [page, tab]);
@@ -145,7 +153,7 @@ const MyListings = () => {
               <Badge variant={STATUS_VARIANT[mobile.status]}>
                 {STATUS_LABEL[mobile.status]}
               </Badge>
-              {mobile.status !== "sold" && (
+              {SELLER_EDITABLE_STATUSES.includes(mobile.status) && (
                 <Link to={PATHS.editListing(mobile._id)}>
                   <Button size="sm" variant="secondary" icon={Pencil}>
                     Edit

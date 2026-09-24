@@ -4,6 +4,7 @@ import {
   getAccessToken,
   setAccessToken,
   clearAccessToken,
+  isAccessTokenExpiringSoon,
   notifyUnauthorized,
 } from "./tokenManager";
 
@@ -16,12 +17,6 @@ declare module "axios" {
 const api = axios.create({
   baseURL: env.apiUrl,
   withCredentials: true,
-});
-
-api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = getAccessToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
 });
 
 let refreshPromise: Promise<string> | null = null;
@@ -45,6 +40,26 @@ export const refreshAccessToken = (): Promise<string> => {
   }
   return refreshPromise;
 };
+
+// Routes that only optionally use auth (e.g. viewing a listing) never come
+// back 401 for an expired token — they silently treat the request as
+// anonymous instead — so the response interceptor's reactive refresh below
+// never gets a chance to fire for them. Refreshing proactively here, before
+// the token actually expires, covers those routes too.
+api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  if (isAccessTokenExpiringSoon()) {
+    try {
+      await refreshAccessToken();
+    } catch {
+      // Let the request go out as-is; anything that truly requires auth
+      // will 401 and hit the reactive refresh/logout path below.
+    }
+  }
+
+  const token = getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 // Response interceptor
 api.interceptors.response.use(

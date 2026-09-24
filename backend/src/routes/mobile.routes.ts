@@ -27,13 +27,16 @@ import { ROLES } from '../config/constants';
 
 const router = Router();
 
-router.get('/home-sections', validate(mobileValidation.homeSectionsQuery), getHomeSections);
-router.post('/price-suggestion', authenticateToken, authorize(ROLES.SELLER), validate(mobileValidation.aiPriceSuggestion), suggestPrice);
+router.get('/home-sections', optionalAuth, validate(mobileValidation.homeSectionsQuery), getHomeSections);
+// Any signed-in user can list/manage devices — no separate seller role
+// required. Ownership (seller: req.user._id) is still enforced inside each
+// handler, so this only ever grants access to your own listings.
+router.post('/price-suggestion', authenticateToken, validate(mobileValidation.aiPriceSuggestion), suggestPrice);
 
-router.get('/mine', authenticateToken, authorize(ROLES.SELLER), getMyListings);
+router.get('/mine', authenticateToken, getMyListings);
 
-router.get('/', validate(mobileValidation.listQuery), listListings);
-router.post('/', authenticateToken, authorize(ROLES.SELLER), validate(mobileValidation.createListing), createListing);
+router.get('/', optionalAuth, validate(mobileValidation.listQuery), listListings);
+router.post('/', authenticateToken, validate(mobileValidation.createListing), createListing);
 
 // --- Admin moderation (declared before /:id to avoid param collision) ---
 router.get('/admin', authenticateToken, authorize(ROLES.ADMIN), validate(mobileValidation.adminListQuery), listAllListingsAdmin);
@@ -43,12 +46,12 @@ router.patch('/admin/:id/reject', authenticateToken, authorize(ROLES.ADMIN), val
 router.patch('/admin/:id/verify-imei', authenticateToken, authorize(ROLES.ADMIN), validate(mobileValidation.verifyImei), verifyImei);
 
 router.get('/:id', optionalAuth, validate(mobileValidation.idParam), getListing);
-router.get('/:id/price-history', validate(mobileValidation.idParam), getPriceHistory);
-router.patch('/:id', authenticateToken, authorize(ROLES.SELLER, ROLES.ADMIN), validate(mobileValidation.updateListing), updateListing);
-router.delete('/:id', authenticateToken, authorize(ROLES.SELLER, ROLES.ADMIN), validate(mobileValidation.idParam), deleteListing);
+router.get('/:id/price-history', optionalAuth, validate(mobileValidation.idParam), getPriceHistory);
+router.patch('/:id', authenticateToken, validate(mobileValidation.updateListing), updateListing);
+router.delete('/:id', authenticateToken, validate(mobileValidation.idParam), deleteListing);
 
-router.post('/:id/images', authenticateToken, authorize(ROLES.SELLER), images.array('images', 15), uploadImages);
-router.post('/:id/video', authenticateToken, authorize(ROLES.SELLER), videos.single('video'), uploadVideo);
-router.post('/:id/purchase-bill', authenticateToken, authorize(ROLES.SELLER), documents.single('bill'), validate(mobileValidation.idParam), uploadPurchaseBill);
+router.post('/:id/images', authenticateToken, images.array('images', 15), uploadImages);
+router.post('/:id/video', authenticateToken, videos.single('video'), uploadVideo);
+router.post('/:id/purchase-bill', authenticateToken, documents.single('bill'), validate(mobileValidation.idParam), uploadPurchaseBill);
 
 export default router;

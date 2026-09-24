@@ -10,8 +10,8 @@ React 19 + Vite + TypeScript, Redux Toolkit (thunks, not RTK Query), react-route
 - `app/` — Redux store + typed hooks
 - `features/<domain>/` — one Redux slice per domain (`auth`, `chat`, `mobiles`, `notifications`, `reviews`, `ui`, `userGroup`, `wishlist`), each with `slice.ts` + `selectors.ts` (+ `thunks.ts` for async logic)
 - `components/<domain>/` — presentational components grouped by domain (auth, chat, common, dashboard, home, layout, mobile, order, sell)
-- `layouts/` — route-level layouts per role/section: Admin, Auth, Buyer, Dashboard, Main, Seller
-- `pages/<role>/` — route pages grouped by role (admin, buyer, seller) or domain (auth, chat, mobile, order, static)
+- `layouts/` — route-level layouts per role/section: Admin, Buyer (My Account — buyers and sellers), Dashboard (shared sidebar shell), Main
+- `pages/<role>/` — route pages grouped by role (admin, buyer, seller) or domain (chat, mobile, order, static); login/signup/forgot-password live in `components/auth/LoginModal.tsx`
 - `routes/` — `AppRoutes.tsx`, `generateRoutes.tsx`, `paths.ts`, `ProtectedRoute.tsx` (auth+bootstrapped gate), `RoleBasedRoute.tsx` (role gate)
 - `hooks/` — `useAuth`, `useDebounce`, `useVideoCall`
 - `lib/socket.ts` — socket.io client singleton

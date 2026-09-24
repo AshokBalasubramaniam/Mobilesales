@@ -12,8 +12,8 @@ export interface ModalProps {
 
 const classes = {
   overlay:
-    "fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4",
-  panel: "w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl",
+    "fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]",
+  panel: "w-full max-w-lg animate-scale-in rounded-2xl bg-white p-6 shadow-xl",
   header: "mb-4 flex items-center justify-between",
   title: "text-lg font-semibold",
   closeButton: "rounded-full p-1 hover:bg-gray-100",

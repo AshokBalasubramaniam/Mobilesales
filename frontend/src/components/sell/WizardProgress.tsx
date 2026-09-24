@@ -7,27 +7,32 @@ export interface WizardProgressProps {
 }
 
 const classes = {
-  container: "mb-8 flex items-center",
-  step: "flex flex-1 items-center last:flex-none",
-  stepInner: "flex flex-col items-center gap-1",
+  container: "mx-auto flex max-w-3xl items-start",
+  stepInner: "flex w-16 shrink-0 flex-col items-center gap-1.5 text-xs",
+  labelActive: "font-semibold text-brand-600",
+  labelUpcoming: "text-gray-500",
   circleBase:
-    "flex size-8 items-center justify-center rounded-full text-xs font-semibold",
-  circleDone: "bg-brand-600 text-white",
-  circleCurrent: "border-2 border-brand-600 text-brand-600",
-  circleUpcoming: "border-2 border-gray-200 text-gray-400",
+    "flex size-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors",
+  circleDone: "border-brand-500 bg-brand-500 text-white",
+  circleCurrent: "border-brand-500 bg-white text-brand-600 shadow-[0_0_0_4px] shadow-brand-100",
+  circleUpcoming: "border-gray-300 bg-white text-gray-400",
   checkIcon: "size-4",
-  label: "hidden text-[11px] text-gray-500 sm:block",
-  connectorBase: "mx-1 h-0.5 flex-1",
-  connectorDone: "bg-brand-600",
+  connectorBase: "mt-5 h-0.5 flex-1 rounded-full transition-colors",
+  connectorDone: "bg-brand-500",
   connectorUpcoming: "bg-gray-200",
 };
 
 const WizardProgress = ({ steps, currentStep }: WizardProgressProps) => (
   <div className={classes.container}>
     {steps.map((step, idx) => (
-      <div key={step} className={classes.step}>
-        <div className={classes.stepInner}>
-          <div
+      <div key={step} className="contents">
+        <div
+          className={clsx(
+            classes.stepInner,
+            idx <= currentStep ? classes.labelActive : classes.labelUpcoming,
+          )}
+        >
+          <span
             className={clsx(
               classes.circleBase,
               idx < currentStep
@@ -42,11 +47,11 @@ const WizardProgress = ({ steps, currentStep }: WizardProgressProps) => (
             ) : (
               idx + 1
             )}
-          </div>
-          <span className={classes.label}>{step}</span>
+          </span>
+          {step}
         </div>
         {idx < steps.length - 1 && (
-          <div
+          <span
             className={clsx(
               classes.connectorBase,
               idx < currentStep

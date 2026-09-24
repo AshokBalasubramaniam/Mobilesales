@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { isAxiosError } from 'axios';
 import api from '../../api/api';
 import OrderListItem from '../../components/order/OrderListItem';
 import Pagination from '../../components/common/Pagination';
@@ -14,7 +16,7 @@ const classes = {
   headerRow: 'mb-4 flex items-center justify-between',
   title: 'text-lg font-semibold',
   statusSelect: 'w-40',
-  ordersList: 'space-y-3',
+  ordersList: 'stagger space-y-3',
 };
 
 const Orders = () => {
@@ -31,6 +33,11 @@ const Orders = () => {
       .then(({ data }) => {
         setOrders(data.data);
         setMeta(data.meta);
+      })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || 'Failed to load orders');
       })
       .finally(() => setLoading(false));
   }, [page, status]);

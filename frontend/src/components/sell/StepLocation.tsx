@@ -14,7 +14,6 @@ export interface StepLocationProps {
 
 const classes = {
   container: "space-y-4",
-  heading: "text-lg font-bold",
   description: "text-sm text-gray-500",
 };
 
@@ -47,7 +46,6 @@ const StepLocation = ({ form, setForm }: StepLocationProps) => {
 
   return (
     <div className={classes.container}>
-      <h2 className={classes.heading}>Where is this phone located?</h2>
       <p className={classes.description}>
         This helps buyers nearby find your listing faster.
       </p>

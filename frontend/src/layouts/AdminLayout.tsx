@@ -27,8 +27,8 @@ import { useAppDispatch } from "../app/hooks";
 import { useAuth } from "../hooks/useAuth";
 import { logout } from "../features/auth/thunks";
 import Avatar from "../components/common/Avatar";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import NotificationsMenu from "../components/layout/NotificationsMenu";
-import UserMenu from "../components/layout/UserMenu";
 import { PATHS } from "../routes/paths";
 import type { ApiResponse } from "../types/api";
 
@@ -142,8 +142,14 @@ const AdminLayout = () => {
     );
   };
 
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
   const handleLogout = async () => {
+    setLoggingOut(true);
     await dispatch(logout());
+    setLoggingOut(false);
+    setLogoutConfirmOpen(false);
     navigate(PATHS.home);
   };
 
@@ -229,7 +235,7 @@ const AdminLayout = () => {
             <p className={classes.sidebarUserRole}>{user?.role}</p>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={() => setLogoutConfirmOpen(true)}
             className={classes.logoutButton}
             aria-label="Logout"
           >
@@ -274,15 +280,29 @@ const AdminLayout = () => {
                   {user?.role}
                 </span>
               </span>
-              <UserMenu />
+              {/* Static avatar — logout lives in the sidebar, no dropdown here */}
+              <Avatar src={user?.avatar} name={user?.name} size="sm" />
             </div>
           </div>
         </header>
 
         <main className={isChats ? classes.contentFullBleed : classes.content}>
-          <Outlet />
+          {/* Keyed by path so each admin page fades in; the sidebar stays */}
+          <div key={location.pathname} className="h-full animate-fade-up">
+            <Outlet />
+          </div>
         </main>
       </div>
+      <ConfirmDialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+        loading={loggingOut}
+        title="Log out?"
+        description="Are you sure you want to log out of your account?"
+        confirmLabel="Yes, log out"
+        cancelLabel="No"
+      />
     </div>
   );
 };

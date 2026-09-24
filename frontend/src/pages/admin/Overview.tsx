@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { isAxiosError } from "axios";
 import {
   AreaChart,
   Area,
@@ -129,13 +131,19 @@ const Overview = () => {
         params: { sort: "popular", limit: 5 },
       }),
       api.get<ApiResponse<User[]>>("/users", { params: { limit: 5 } }),
-    ]).then(([statsRes, salesRes, ordersRes, productsRes, usersRes]) => {
-      setStats(statsRes.data.data);
-      setDailySales(salesRes.data.data.dailySales.slice(-7));
-      setRecentOrders(ordersRes.data.data);
-      setTopProducts(productsRes.data.data);
-      setRecentUsers(usersRes.data.data);
-    });
+    ])
+      .then(([statsRes, salesRes, ordersRes, productsRes, usersRes]) => {
+        setStats(statsRes.data.data);
+        setDailySales(salesRes.data.data.dailySales.slice(-7));
+        setRecentOrders(ordersRes.data.data);
+        setTopProducts(productsRes.data.data);
+        setRecentUsers(usersRes.data.data);
+      })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Failed to load dashboard data");
+      });
   }, []);
 
   if (!stats) return <Spinner full />;
