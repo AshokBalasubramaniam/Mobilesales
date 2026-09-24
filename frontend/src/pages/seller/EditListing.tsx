@@ -11,11 +11,14 @@ import ConfirmDialog from "../../components/common/ConfirmDialog";
 import Spinner from "../../components/common/Spinner";
 import api from "../../api/api";
 import type { ApiResponse } from "../../types/api";
-import { MOBILE_CONDITIONS } from "../../utils/constants";
+import {
+  MOBILE_CONDITIONS,
+  SELLER_EDITABLE_STATUSES,
+} from "../../utils/constants";
+import { useAuth } from "../../hooks/useAuth";
 import { PATHS } from "../../routes/paths";
 import type { Mobile } from "../../types/models";
 import type { SellPhoneForm } from "../../components/sell/StepIdentity";
-
 
 type EditListingForm = Pick<
   SellPhoneForm,
@@ -52,6 +55,7 @@ const classes = {
 const EditListing = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [mobile, setMobile] = useState<Mobile | null>(null);
   const [form, setForm] = useState<EditListingForm | null>(null);
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
@@ -63,6 +67,14 @@ const EditListing = () => {
     if (!id) return;
     api.get<ApiResponse<Mobile>>(`/mobiles/${id}`).then(({ data }) => {
       const m = data.data;
+      // Approved/sold listings are locked for sellers (the backend rejects
+      // the PATCH too) — bounce back to the listing instead of showing a
+      // form that can't be saved.
+      if (!isAdmin && !SELLER_EDITABLE_STATUSES.includes(m.status)) {
+        toast.error("Approved listings can no longer be edited");
+        navigate(PATHS.mobileDetail(m._id), { replace: true });
+        return;
+      }
       setMobile(m);
       setForm({
         price: String(m.price),
@@ -73,7 +85,7 @@ const EditListing = () => {
         description: m.description || "",
       });
     });
-  }, [id]);
+  }, [id, isAdmin, navigate]);
 
   const handleSave = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,7 +108,7 @@ const EditListing = () => {
         });
       }
       toast.success("Listing updated — resubmitted for approval");
-      navigate(PATHS.seller.listings);
+      navigate(PATHS.buyer.listings);
     } catch (err) {
       toast.error(extractError(err));
     } finally {
@@ -110,7 +122,7 @@ const EditListing = () => {
     try {
       await api.delete(`/mobiles/${id}`);
       toast.success("Listing removed");
-      navigate(PATHS.seller.listings);
+      navigate(PATHS.buyer.listings);
     } catch (err) {
       toast.error(extractError(err));
     } finally {

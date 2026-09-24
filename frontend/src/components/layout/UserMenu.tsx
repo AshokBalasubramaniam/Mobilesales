@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut, Settings, ShoppingBag } from "lucide-react";
 import Avatar from "../common/Avatar";
+import ConfirmDialog from "../common/ConfirmDialog";
 import { useAppDispatch } from "../../app/hooks";
 import { useAuth } from "../../hooks/useAuth";
 import { logout } from "../../features/auth/thunks";
@@ -11,7 +12,7 @@ const classes = {
   container: "relative",
   trigger: "flex items-center gap-2 rounded-full",
   panel:
-    "absolute right-0 z-40 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg",
+    "absolute right-0 z-40 mt-2 w-56 origin-top-right animate-slide-down rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg",
   header: "border-b border-gray-100 p-2.5",
   name: "truncate text-sm font-semibold text-gray-900",
   email: "truncate text-xs text-gray-500",
@@ -36,8 +37,14 @@ const UserMenu = () => {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
   const handleLogout = async () => {
+    setLoggingOut(true);
     await dispatch(logout());
+    setLoggingOut(false);
+    setLogoutConfirmOpen(false);
     navigate(PATHS.home);
   };
 
@@ -57,36 +64,54 @@ const UserMenu = () => {
             <p className={classes.name}>{user.name}</p>
             <p className={classes.email}>{user.email}</p>
           </div>
+          {user.role === "admin" && (
+            <Link
+              to={dashboardPath}
+              onClick={() => setOpen(false)}
+              className={classes.menuItem}
+            >
+              <LayoutDashboard className={classes.menuItemIcon} /> Dashboard
+            </Link>
+          )}
+          {/* Sellers buy too, so orders + profile aren't buyer-only */}
+          {user.role !== "admin" && (
+            <Link
+              to={PATHS.buyer.orders}
+              onClick={() => setOpen(false)}
+              className={classes.menuItem}
+            >
+              <ShoppingBag className={classes.menuItemIcon} /> My Orders
+            </Link>
+          )}
           <Link
-            to={dashboardPath}
+            to={PATHS.buyer.profile}
             onClick={() => setOpen(false)}
             className={classes.menuItem}
           >
-            <LayoutDashboard className={classes.menuItemIcon} /> Dashboard
+            <Settings className={classes.menuItemIcon} /> Profile Settings
           </Link>
-          {user.role === "buyer" && (
-            <>
-              <Link
-                to={PATHS.buyer.orders}
-                onClick={() => setOpen(false)}
-                className={classes.menuItem}
-              >
-                <ShoppingBag className={classes.menuItemIcon} /> My Orders
-              </Link>
-              <Link
-                to={PATHS.buyer.profile}
-                onClick={() => setOpen(false)}
-                className={classes.menuItem}
-              >
-                <Settings className={classes.menuItemIcon} /> Profile Settings
-              </Link>
-            </>
-          )}
-          <button onClick={handleLogout} className={classes.logoutButton}>
+          <button
+            onClick={() => {
+              setOpen(false);
+              setLogoutConfirmOpen(true);
+            }}
+            className={classes.logoutButton}
+          >
             <LogOut className={classes.menuItemIcon} /> Logout
           </button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+        loading={loggingOut}
+        title="Log out?"
+        description="Are you sure you want to log out of your account?"
+        confirmLabel="Yes, log out"
+        cancelLabel="No"
+      />
     </div>
   );
 };

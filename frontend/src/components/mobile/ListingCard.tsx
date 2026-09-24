@@ -21,7 +21,7 @@ export interface ListingCardProps {
 }
 
 const classes = {
-  card: "group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-shadow hover:shadow-lg",
+  card: "hover-lift group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white",
   imageWrapper:
     "relative aspect-square overflow-hidden bg-gradient-to-br from-brand-50 to-gray-100",
   image:
@@ -67,7 +67,7 @@ const ListingCard = ({
 }: ListingCardProps) => {
   const compareChecked = compareIds?.includes(mobile._id) ?? false;
   const dispatch = useAppDispatch();
-  const { isAuthenticated, isBuyer } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const isWishlisted = useAppSelector(selectIsWishlisted(mobile._id));
   const seller = typeof mobile.seller === "string" ? undefined : mobile.seller;
 
@@ -124,7 +124,7 @@ const ListingCard = ({
           </Badge>
         )}
 
-        {isBuyer && onCompareToggle && (
+        {isAuthenticated && !isAdmin && onCompareToggle && (
           <label className={classes.compareLabel}>
             <input
               type="checkbox"

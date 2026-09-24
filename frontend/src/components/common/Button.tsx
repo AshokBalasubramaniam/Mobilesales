@@ -18,7 +18,7 @@ const SIZES = {
 } as const;
 
 const classes = {
-  base: "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-70",
+  base: "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70 disabled:active:scale-100",
   icon: "size-4 animate-spin",
   actionIcon: "size-4",
 };

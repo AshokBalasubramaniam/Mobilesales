@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X } from "lucide-react";
+import toast from "react-hot-toast";
+import { isAxiosError } from "axios";
 import api from "../../api/api";
 import FilterSidebar, {
   type MobileFilters,
@@ -11,6 +13,7 @@ import Select from "../../components/common/Select";
 import Button from "../../components/common/Button";
 import { useDebounce } from "../../hooks/useDebounce";
 import { DEVICE_CATEGORIES } from "../../utils/constants";
+import { useAuth } from "../../hooks/useAuth";
 import { PATHS } from "../../routes/paths";
 import type { ApiResponse, PaginationMeta } from "../../types/api";
 import type { MobileListParams } from "../../types/mobile";
@@ -58,6 +61,8 @@ const Search = () => {
   const navigate = useNavigate();
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
   const debouncedFilters = useDebounce(filters, 350);
+  const { user } = useAuth();
+  const userId = user?._id;
 
   const [listings, setListings] = useState<Mobile[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
@@ -78,8 +83,15 @@ const Search = () => {
         setListings(data.data);
         setMeta(data.meta ?? null);
       })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Failed to load listings");
+      })
       .finally(() => setLoading(false));
-  }, [debouncedFilters]);
+    // userId: refetch once the session is restored so the backend can leave
+    // out the signed-in user's own listings.
+  }, [debouncedFilters, userId]);
 
   const updateFilters = (next: MobileFilters) => {
     const params = new URLSearchParams();
@@ -116,9 +128,9 @@ const Search = () => {
           {filters.q
             ? `Results for "${filters.q}"`
             : `Browse ${
-                DEVICE_CATEGORIES.find((c) => c.value === filters.category)
-                  ?.label ?? "Devices"
-              }`}
+              DEVICE_CATEGORIES.find((c) => c.value === filters.category)
+                ?.label ?? "Devices"
+            }`}
           {meta && (
             <span className={classes.resultCount}>({meta.total} found)</span>
           )}

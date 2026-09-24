@@ -16,8 +16,10 @@ import { ROLES } from '../config/constants';
 
 const router = Router();
 
-router.post('/', authenticateToken, authorize(ROLES.BUYER), validate(orderValidation.createOrder), createOrder);
-router.get('/my', authenticateToken, authorize(ROLES.BUYER), listMyOrdersAsBuyer);
+// Sellers can buy from other sellers too (createOrder blocks buying your own
+// listing), so buyer-side order routes allow both roles.
+router.post('/', authenticateToken, authorize(ROLES.BUYER, ROLES.SELLER), validate(orderValidation.createOrder), createOrder);
+router.get('/my', authenticateToken, authorize(ROLES.BUYER, ROLES.SELLER), listMyOrdersAsBuyer);
 router.get('/selling', authenticateToken, authorize(ROLES.SELLER), listMyOrdersAsSeller);
 router.get('/admin/all', authenticateToken, authorize(ROLES.ADMIN), listAllOrders);
 

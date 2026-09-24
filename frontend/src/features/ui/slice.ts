@@ -6,6 +6,9 @@ export interface LoginModalIntent {
   targetPath?: string;
   /** Role to register as when the number has no account yet. */
   role?: Extract<Role, "buyer" | "seller">;
+  /** Which form to open on: mobile OTP (default), email login, signup, or
+   * forgot password. */
+  mode?: "phone" | "email" | "signup" | "forgot";
 }
 
 type UiState = {

@@ -12,7 +12,7 @@ export interface ListingGridProps extends Omit<ListingCardProps, "mobile"> {
 }
 
 const classes = {
-  gridBase: "grid",
+  gridBase: "stagger grid",
   gridGap: "gap-4",
 };
 

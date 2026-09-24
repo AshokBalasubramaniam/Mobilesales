@@ -5,6 +5,7 @@ import type { UploadApiResponse } from 'cloudinary';
 import env from '../config/env';
 import logger from '../utils/logger';
 import cloudinary from '../config/cloudinary';
+import { convertToWebp } from './image.service';
 
 const UPLOAD_ROOT = path.join(__dirname, '..', '..', 'uploads');
 
@@ -63,7 +64,11 @@ export interface UploadFileResult {
  * backend/uploads so the app still runs without any cloud credentials (note:
  * local disk is ephemeral on most hosts and not recommended for production).
  */
-export const uploadFile = async (buffer: Buffer, { folder, originalName, mimetype }: UploadFileArgs): Promise<UploadFileResult> => {
+export const uploadFile = async (rawBuffer: Buffer, args: UploadFileArgs): Promise<UploadFileResult> => {
+  const { folder } = args;
+  // Every image is stored as WebP, whichever provider it goes to
+  const { buffer, originalName, mimetype } = await convertToWebp(rawBuffer, args.mimetype, args.originalName);
+
   if (env.isCloudinaryConfigured) {
     const result = await uploadToCloudinary(buffer, folder);
     return { url: result.secure_url, key: result.public_id, provider: 'cloudinary' };

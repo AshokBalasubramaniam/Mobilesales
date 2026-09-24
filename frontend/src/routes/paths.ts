@@ -11,7 +11,8 @@ export const PATHS = {
   checkout: (mobileId = ":mobileId") => `/checkout/${mobileId}`,
   orderDetail: (id = ":id") => `/orders/${id}`,
 
-  login: "/login",
+  // Old auth page URLs — these open the login popup on the matching form
+  // (LoginModalRedirect); verifyEmail redirects to Profile.
   register: "/register",
   passwordLogin: "/login/password",
   verifyEmail: "/verify-email",
@@ -25,21 +26,13 @@ export const PATHS = {
     root: "/account",
     profile: "/account/profile",
     orders: "/account/orders",
+    listings: "/account/listings",
+    sales: "/account/sales",
     wishlist: "/account/wishlist",
     coupons: "/account/coupons",
     notifications: "/account/notifications",
     reviews: "/account/reviews",
     chats: "/account/chats",
-  },
-
-  seller: {
-    root: "/seller",
-    overview: "/seller",
-    listings: "/seller/listings",
-    orders: "/seller/orders",
-    earnings: "/seller/earnings",
-    verification: "/seller/verification",
-    chats: "/seller/chats",
   },
 
   admin: {
@@ -61,7 +54,7 @@ export const PATHS = {
 };
 
 export const getDashboardPath = (role: Role): string => {
+  // Buyers and sellers share My Account (there's no separate seller dashboard)
   if (role === "admin") return PATHS.admin.root;
-  if (role === "seller") return PATHS.seller.root;
-  return PATHS.buyer.root;
+  return PATHS.buyer.profile;
 };

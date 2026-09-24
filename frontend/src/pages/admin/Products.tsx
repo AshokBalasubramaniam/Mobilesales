@@ -178,6 +178,11 @@ const Products = () => {
         setListings(data.data);
         setMeta(data.meta);
       })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Failed to load listings");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -186,7 +191,8 @@ const Products = () => {
   useEffect(() => {
     api
       .get<ApiResponse<User[]>>("/users", { params: { role: "seller", limit: 100 } })
-      .then(({ data }) => setSellers(data.data));
+      .then(({ data }) => setSellers(data.data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -197,16 +203,18 @@ const Products = () => {
             params: { limit: 1, status: s === "all" ? undefined : s },
           }),
       ),
-    ).then(([all, active, pending, rejected, removed]) => {
-      setCounts((prev) => ({
-        ...prev,
-        all: all.data.meta?.total || 0,
-        active: active.data.meta?.total || 0,
-        pending_approval: pending.data.meta?.total || 0,
-        rejected: rejected.data.meta?.total || 0,
-        removed: removed.data.meta?.total || 0,
-      }));
-    });
+    )
+      .then(([all, active, pending, rejected, removed]) => {
+        setCounts((prev) => ({
+          ...prev,
+          all: all.data.meta?.total || 0,
+          active: active.data.meta?.total || 0,
+          pending_approval: pending.data.meta?.total || 0,
+          rejected: rejected.data.meta?.total || 0,
+          removed: removed.data.meta?.total || 0,
+        }));
+      })
+      .catch(() => {});
   }, [tab, filters.category, filters.seller, debouncedQ]);
 
   const resetFilters = () => {

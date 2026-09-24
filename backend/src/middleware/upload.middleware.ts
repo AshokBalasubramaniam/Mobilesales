@@ -36,6 +36,14 @@ export const documents = multer({
   fileFilter: fileFilterFor(['image/', 'application/pdf']),
 });
 
+// Seller verification uploads Aadhaar + PAN + selfie + optional purchase
+// bill in one request, so it needs a higher file count than `documents`.
+export const verificationDocuments = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024, files: 4 },
+  fileFilter: fileFilterFor(['image/', 'application/pdf']),
+});
+
 export const chatMedia = multer({
   storage,
   limits: { fileSize: 15 * 1024 * 1024, files: 1 },

@@ -25,7 +25,6 @@ export interface StepConditionProps {
 
 const classes = {
   container: "space-y-4",
-  heading: "text-lg font-bold",
   fieldLabel: "mb-1.5 text-sm font-medium text-gray-700",
   rangeInput: "w-full accent-brand-600",
   checkboxLabel: "flex items-center gap-2 text-sm",
@@ -45,8 +44,6 @@ const StepCondition = ({ form, setForm }: StepConditionProps) => {
 
   return (
     <div className={classes.container}>
-      <h2 className={classes.heading}>Condition & history</h2>
-
       <Select
         label="Overall condition"
         required

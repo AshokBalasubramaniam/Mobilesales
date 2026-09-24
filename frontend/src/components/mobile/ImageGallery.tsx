@@ -1,4 +1,10 @@
-import { useRef, useState, type MouseEvent, type TouchEvent } from "react";
+import {
+  useRef,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+  type TouchEvent,
+} from "react";
 import { ChevronLeft, ChevronRight, RotateCw, X, ZoomIn } from "lucide-react";
 import clsx from "clsx";
 import type { MobileImage, MobileVideo } from "../../types/models";
@@ -6,24 +12,34 @@ import type { MobileImage, MobileVideo } from "../../types/models";
 export interface ImageGalleryProps {
   images?: MobileImage[];
   videos?: MobileVideo[];
+  // Rendered over the main image's top-right corner (e.g. a wishlist button)
+  overlay?: ReactNode;
 }
 
 const classes = {
   emptyState:
-    "flex aspect-square items-center justify-center rounded-xl bg-gray-100 text-gray-400",
+    "relative flex aspect-square items-center justify-center rounded-2xl bg-brand-50 text-gray-400",
+  overlay: "absolute top-4 right-4 z-20",
+  layout: "flex flex-col-reverse gap-3 sm:flex-row",
+  mainColumn: "min-w-0 flex-1",
   mainImageWrapper:
-    "relative aspect-square cursor-zoom-in overflow-hidden rounded-xl bg-gray-100",
-  mainImage: "size-full object-cover select-none",
+    "relative flex aspect-square cursor-zoom-in items-center justify-center overflow-hidden rounded-2xl bg-brand-50",
+  mainImageGlow:
+    "pointer-events-none absolute size-2/3 rounded-full bg-brand-100 opacity-60",
+  mainImage:
+    "relative z-10 size-full object-contain p-6 drop-shadow-xl select-none",
   zoomBadge:
-    "absolute right-2 bottom-2 rounded-full bg-black/50 p-1.5 text-white",
+    "absolute right-4 bottom-4 z-20 flex size-8 items-center justify-center rounded-lg bg-white text-gray-700 shadow",
   zoomIcon: "size-4",
   spinBadge:
-    "absolute inset-x-0 bottom-2 mx-auto w-fit rounded-full bg-black/50 px-3 py-1 text-xs text-white",
-  thumbnailStrip: "mt-3 flex items-center gap-2",
-  thumbnailScroll: "flex flex-1 gap-2 overflow-x-auto",
-  thumbnailButtonBase: "size-14 shrink-0 overflow-hidden rounded-lg border-2",
-  thumbnailButtonActive: "border-brand-600",
-  thumbnailButtonInactive: "border-transparent",
+    "absolute inset-x-0 bottom-3 z-20 mx-auto w-fit rounded-full bg-black/50 px-3 py-1 text-xs text-white",
+  thumbnailStrip: "flex items-center gap-2 sm:flex-col",
+  thumbnailScroll:
+    "flex gap-2 overflow-x-auto sm:max-h-[28rem] sm:flex-col sm:overflow-x-visible sm:overflow-y-auto",
+  thumbnailButtonBase:
+    "size-16 shrink-0 overflow-hidden rounded-xl border-2 bg-gray-50 transition-all",
+  thumbnailButtonActive: "border-brand-500",
+  thumbnailButtonInactive: "border-gray-200 hover:border-gray-300",
   thumbnailImage: "size-full object-cover",
   spinToggleBase:
     "flex shrink-0 items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium",
@@ -43,7 +59,11 @@ const classes = {
   lightboxNextButton: "absolute right-4 text-white",
 };
 
-const ImageGallery = ({ images = [], videos = [] }: ImageGalleryProps) => {
+const ImageGallery = ({
+  images = [],
+  videos = [],
+  overlay,
+}: ImageGalleryProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
   const [spinMode, setSpinMode] = useState(false);
@@ -67,74 +87,95 @@ const ImageGallery = ({ images = [], videos = [] }: ImageGalleryProps) => {
   };
 
   if (!sorted.length) {
-    return <div className={classes.emptyState}>No images available</div>;
+    return (
+      <div className={classes.emptyState}>
+        No images available
+        {overlay && <div className={classes.overlay}>{overlay}</div>}
+      </div>
+    );
   }
+
+  const thumbnails = (
+    <div className={classes.thumbnailStrip}>
+      <div className={classes.thumbnailScroll}>
+        {sorted.map((img, idx) => (
+          <button
+            key={img.url}
+            onClick={() => setActiveIndex(idx)}
+            className={clsx(
+              classes.thumbnailButtonBase,
+              idx === activeIndex
+                ? classes.thumbnailButtonActive
+                : classes.thumbnailButtonInactive,
+            )}
+          >
+            <img src={img.url} alt="" className={classes.thumbnailImage} />
+          </button>
+        ))}
+      </div>
+      {canSpin && (
+        <button
+          onClick={() => setSpinMode((s) => !s)}
+          className={clsx(
+            classes.spinToggleBase,
+            spinMode ? classes.spinToggleActive : classes.spinToggleInactive,
+          )}
+        >
+          <RotateCw className={classes.spinToggleIcon} /> 360°
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <div>
-      <div
-        className={classes.mainImageWrapper}
-        onMouseDown={(e: MouseEvent<HTMLDivElement>) =>
-          spinMode && (dragStartX.current = e.clientX)
-        }
-        onMouseMove={(e: MouseEvent<HTMLDivElement>) =>
-          spinMode && handleDrag(e.clientX)
-        }
-        onMouseUp={() => (dragStartX.current = null)}
-        onTouchStart={(e: TouchEvent<HTMLDivElement>) =>
-          spinMode && (dragStartX.current = e.touches[0].clientX)
-        }
-        onTouchMove={(e: TouchEvent<HTMLDivElement>) =>
-          spinMode && handleDrag(e.touches[0].clientX)
-        }
-        onClick={() => !spinMode && setZoomOpen(true)}
-      >
-        <img
-          src={active?.url}
-          alt="Listing"
-          className={classes.mainImage}
-          draggable={false}
-        />
-        {!spinMode && (
-          <span className={classes.zoomBadge}>
-            <ZoomIn className={classes.zoomIcon} />
-          </span>
-        )}
-        {spinMode && (
-          <span className={classes.spinBadge}>
-            Drag to rotate · {activeIndex + 1}/{sorted.length}
-          </span>
-        )}
-      </div>
-
-      <div className={classes.thumbnailStrip}>
-        <div className={classes.thumbnailScroll}>
-          {sorted.map((img, idx) => (
-            <button
-              key={img.url}
-              onClick={() => setActiveIndex(idx)}
-              className={clsx(
-                classes.thumbnailButtonBase,
-                idx === activeIndex
-                  ? classes.thumbnailButtonActive
-                  : classes.thumbnailButtonInactive,
-              )}
-            >
-              <img src={img.url} alt="" className={classes.thumbnailImage} />
-            </button>
-          ))}
-        </div>
-        {canSpin && (
-          <button
-            onClick={() => setSpinMode((s) => !s)}
-            className={clsx(
-              classes.spinToggleBase,
-              spinMode ? classes.spinToggleActive : classes.spinToggleInactive,
-            )}
+      <div className={classes.layout}>
+        {thumbnails}
+        <div className={classes.mainColumn}>
+          <div
+            className={classes.mainImageWrapper}
+            onMouseDown={(e: MouseEvent<HTMLDivElement>) =>
+              spinMode && (dragStartX.current = e.clientX)
+            }
+            onMouseMove={(e: MouseEvent<HTMLDivElement>) =>
+              spinMode && handleDrag(e.clientX)
+            }
+            onMouseUp={() => (dragStartX.current = null)}
+            onTouchStart={(e: TouchEvent<HTMLDivElement>) =>
+              spinMode && (dragStartX.current = e.touches[0].clientX)
+            }
+            onTouchMove={(e: TouchEvent<HTMLDivElement>) =>
+              spinMode && handleDrag(e.touches[0].clientX)
+            }
+            onClick={() => !spinMode && setZoomOpen(true)}
           >
-            <RotateCw className={classes.spinToggleIcon} /> 360°
-          </button>
-        )}
+            <span className={classes.mainImageGlow} />
+            <img
+              src={active?.url}
+              alt="Listing"
+              className={classes.mainImage}
+              draggable={false}
+            />
+            {!spinMode && (
+              <span className={classes.zoomBadge}>
+                <ZoomIn className={classes.zoomIcon} />
+              </span>
+            )}
+            {spinMode && (
+              <span className={classes.spinBadge}>
+                Drag to rotate · {activeIndex + 1}/{sorted.length}
+              </span>
+            )}
+            {overlay && (
+              <div
+                className={classes.overlay}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {overlay}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {videos.length > 0 && (

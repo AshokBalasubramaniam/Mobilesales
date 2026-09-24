@@ -9,6 +9,7 @@ import {
 import { selectHomeReviews } from "../features/reviews/selectors";
 import HeroBanner from "../components/home/HeroBanner";
 import CategoriesNav from "../components/home/CategoriesNav";
+import { useAuth } from "../hooks/useAuth";
 import type { DeviceCategory } from "../types/models";
 import TrendingSection from "../components/home/TrendingSection";
 import RecentlyAddedSection from "../components/home/RecentlyAddedSection";
@@ -52,10 +53,14 @@ const Home = () => {
   const loading = sectionsStatus === "idle" || sectionsStatus === "loading";
   const [selectedCategory, setSelectedCategory] =
     useState<DeviceCategory | null>(null);
+  const { user } = useAuth();
+  const userId = user?._id;
 
+  // Refetch when the signed-in user changes (session restore finishes after
+  // the first render) so the backend can leave out the user's own listings.
   useEffect(() => {
     dispatch(fetchHomeSections(selectedCategory ?? undefined));
-  }, [selectedCategory, dispatch]);
+  }, [selectedCategory, userId, dispatch]);
 
   useEffect(() => {
     if (!sections) return;

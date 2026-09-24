@@ -19,7 +19,7 @@ export interface ProductCardProps {
 }
 
 const classes = {
-  card: "flex shrink-0 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
+  card: "hover-lift flex shrink-0 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm",
   imageWrap:
     "relative bg-gradient-to-br from-brand-50 to-gray-50 p-2",
   image: "size-full object-contain",

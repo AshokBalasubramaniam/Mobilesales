@@ -21,7 +21,7 @@ const classes = {
   badge:
     "absolute -top-0.5 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white",
   panel:
-    "absolute right-0 z-40 mt-2 w-80 rounded-xl border border-gray-200 bg-white shadow-lg",
+    "absolute right-0 z-40 mt-2 w-80 origin-top-right animate-slide-down rounded-xl border border-gray-200 bg-white shadow-lg",
   panelHeader: "flex items-center justify-between border-b border-gray-100 p-3",
   panelTitle: "text-sm font-semibold text-gray-900",
   markAllButton:

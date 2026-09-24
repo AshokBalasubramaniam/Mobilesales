@@ -51,7 +51,7 @@ const classes = {
   section:
     "relative w-full overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#0a1a0b_0%,#0d2110_40%,#0f2a14_70%,#0a1a0b_100%)]",
   bannerImage:
-    "absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 object-contain",
+    "absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 animate-float object-contain",
   glow:
     "pointer-events-none absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_60%_50%,#16a34a_0%,transparent_60%),radial-gradient(ellipse_at_20%_80%,#065f46_0%,transparent_50%)]",
   layout: "relative flex flex-col items-stretch xl:flex-row",

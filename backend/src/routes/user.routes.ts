@@ -14,9 +14,9 @@ import {
   reviewSellerVerification,
 } from '../controllers/user.controller';
 import validate from '../middleware/validate.middleware';
-import { authenticateToken } from '../middleware/auth.middleware';
+import { authenticateToken, optionalAuth } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/role.middleware';
-import { images, documents } from '../middleware/upload.middleware';
+import { images, verificationDocuments } from '../middleware/upload.middleware';
 import * as userValidation from '../validations/user.validation';
 import { ROLES } from '../config/constants';
 
@@ -31,7 +31,7 @@ router.patch('/me/addresses/:addressId/default', authenticateToken, validate(use
 router.post(
   '/seller/verification',
   authenticateToken,
-  documents.fields([
+  verificationDocuments.fields([
     { name: 'aadhaar', maxCount: 1 },
     { name: 'pan', maxCount: 1 },
     { name: 'selfie', maxCount: 1 },
@@ -40,7 +40,7 @@ router.post(
   submitSellerVerification
 );
 
-router.get('/:id/public', validate(userValidation.idParam), getPublicProfile);
+router.get('/:id/public', optionalAuth, validate(userValidation.idParam), getPublicProfile);
 
 // --- Admin ---
 router.get('/', authenticateToken, authorize(ROLES.ADMIN), listUsers);

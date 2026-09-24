@@ -46,15 +46,25 @@ const SellerProfile = () => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([
-      api.get<ApiResponse<User>>(`/users/${id}/public`),
-      api.get<ApiResponse<Mobile[]>>("/mobiles", { params: { seller: id } }),
-      api.get<ApiResponse<Review[]>>(`/reviews/seller/${id}`),
-    ])
-      .then(([sellerRes, listingsRes, reviewsRes]) => {
-        setSeller(sellerRes.data.data);
-        setListings(listingsRes.data.data);
-        setReviews(reviewsRes.data.data);
+
+    // Listings and reviews are secondary — a failure there shouldn't block
+    // viewing the seller's profile itself.
+    api
+      .get<ApiResponse<Mobile[]>>("/mobiles", { params: { seller: id } })
+      .then(({ data }) => setListings(data.data))
+      .catch(() => {});
+    api
+      .get<ApiResponse<Review[]>>(`/reviews/seller/${id}`)
+      .then(({ data }) => setReviews(data.data))
+      .catch(() => {});
+
+    api
+      .get<ApiResponse<User>>(`/users/${id}/public`)
+      .then(({ data }) => setSeller(data.data))
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Seller not found");
       })
       .finally(() => setLoading(false));
   }, [id]);

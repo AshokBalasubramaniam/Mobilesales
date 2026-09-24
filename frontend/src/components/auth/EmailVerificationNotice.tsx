@@ -1,11 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-import { isAxiosError } from "axios";
 import { MailWarning } from "lucide-react";
-import api from "../../api/api";
-import Button from "../common/Button";
-import { PATHS } from "../../routes/paths";
+import EmailCodeVerifier from "./EmailCodeVerifier";
 
 export interface EmailVerificationNoticeProps {
   fullPage?: boolean;
@@ -23,26 +17,6 @@ const classes = {
 const EmailVerificationNotice = ({
   fullPage = false,
 }: EmailVerificationNoticeProps) => {
-  const [sending, setSending] = useState(false);
-  const navigate = useNavigate();
-
-  const handleResend = async () => {
-    setSending(true);
-    try {
-      await api.post("/auth/resend-verification");
-      toast.success("Verification code sent — check your inbox.");
-      navigate(PATHS.verifyEmail);
-    } catch (err) {
-      toast.error(
-        (isAxiosError<{ message?: string }>(err) &&
-          err.response?.data?.message) ||
-          "Could not send verification email",
-      );
-    } finally {
-      setSending(false);
-    }
-  };
-
   const content = (
     <div className={classes.content}>
       <MailWarning className={classes.icon} />
@@ -51,9 +25,7 @@ const EmailVerificationNotice = ({
         Please verify your email address with a one-time code to unlock this
         feature.
       </p>
-      <Button size="sm" onClick={handleResend} loading={sending}>
-        Send verification code
-      </Button>
+      <EmailCodeVerifier />
     </div>
   );
 

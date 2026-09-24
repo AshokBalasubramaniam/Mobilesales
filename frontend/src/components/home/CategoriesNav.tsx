@@ -32,7 +32,7 @@ const CATEGORY_ICON: Record<DeviceCategory, string> = {
 };
 
 const classes = {
-  card: "flex items-center justify-between gap-3 overflow-x-auto rounded-xl border border-gray-100 bg-white p-4 shadow-sm",
+  card: "stagger flex items-center justify-between gap-3 overflow-x-auto rounded-xl border border-gray-100 bg-white p-4 shadow-sm",
   item: "flex shrink-0 flex-col items-center gap-2.5 rounded-xl border border-gray-100 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md",
   itemActive: "border-brand-300 bg-brand-50 shadow-md",
   itemViewAll:

@@ -35,7 +35,10 @@ export const register: ValidationSchema = {
     email: email().required(),
     phone: phone.optional(),
     password,
-    role: Joi.string().valid('buyer', 'seller').default('buyer'),
+    // Every signup starts as a buyer — the seller role is only granted by
+    // submitting seller verification. Older clients may still send `role`,
+    // so accept and drop it rather than rejecting the request.
+    role: Joi.string().valid('buyer', 'seller').strip(),
   }),
 };
 
@@ -55,7 +58,10 @@ export const refreshToken: ValidationSchema = {
 export const googleLogin: ValidationSchema = {
   body: Joi.object({
     idToken: Joi.string().required(),
-    role: Joi.string().valid('buyer', 'seller').default('buyer'),
+    // Every signup starts as a buyer — the seller role is only granted by
+    // submitting seller verification. Older clients may still send `role`,
+    // so accept and drop it rather than rejecting the request.
+    role: Joi.string().valid('buyer', 'seller').strip(),
   }),
 };
 
@@ -63,10 +69,14 @@ export const firebaseLogin: ValidationSchema = {
   body: Joi.object({
     idToken: Joi.string().required(),
     // Only required when the number has no account yet — the controller
-    // decides that after verifying the token, so both stay optional here.
+    // decides that after verifying the token, so all three stay optional here.
     name: Joi.string().min(2).max(100).optional(),
+    email: email().optional(),
     password: password.optional(),
-    role: Joi.string().valid('buyer', 'seller').default('buyer'),
+    // Every signup starts as a buyer — the seller role is only granted by
+    // submitting seller verification. Older clients may still send `role`,
+    // so accept and drop it rather than rejecting the request.
+    role: Joi.string().valid('buyer', 'seller').strip(),
   }),
 };
 

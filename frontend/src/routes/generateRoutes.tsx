@@ -16,11 +16,8 @@ import BuyerChats from "../pages/buyer/Chats";
 
 import SellPhone from "../pages/mobile/SellPhone";
 import EditListing from "../pages/seller/EditListing";
-import SellerOverview from "../pages/seller/Overview";
 import SellerMyListings from "../pages/seller/MyListings";
 import SellerOrders from "../pages/seller/Orders";
-import SellerEarnings from "../pages/seller/Earnings";
-import SellerChats from "../pages/seller/Chats";
 
 import AdminOverview from "../pages/admin/Overview";
 import AdminUsers from "../pages/admin/Users";
@@ -54,6 +51,8 @@ export const generateProtectedRoutes = (): RouteConfig[] => [
 export const generateAccountRoutes = (): RouteConfig[] => [
   { path: "profile", element: <BuyerProfile />, requiredRoles: [] },
   { path: "orders", element: <BuyerOrders />, requiredRoles: [] },
+  { path: "listings", element: <SellerMyListings />, requiredRoles: [] },
+  { path: "sales", element: <SellerOrders />, requiredRoles: [] },
   { path: "wishlist", element: <BuyerWishlist />, requiredRoles: [] },
   { path: "coupons", element: <BuyerCoupons />, requiredRoles: [] },
   { path: "notifications", element: <BuyerNotifications />, requiredRoles: [] },
@@ -61,36 +60,16 @@ export const generateAccountRoutes = (): RouteConfig[] => [
   { path: "chats", element: <BuyerChats />, requiredRoles: [] },
 ];
 
-// Flat, seller-gated leaves that sit alongside the /seller dashboard (not inside SellerLayout).
+// Flat leaves that sit alongside the /seller dashboard (not inside
+// the account area) — any signed-in user can list a device, no separate seller
+// role/signup required.
 export const generateSellerRoutes = (): RouteConfig[] => [
-  { path: "sell", element: <SellPhone />, requiredRoles: [ROLES.SELLER] },
+  { path: "sell", element: <SellPhone />, requiredRoles: [] },
   {
     path: "sell/:id/edit",
     element: <EditListing />,
-    requiredRoles: [ROLES.SELLER],
+    requiredRoles: [],
   },
-];
-
-// Rendered under /seller (SellerLayout) — seller role required.
-export const generateSellerDashboardRoutes = (): RouteConfig[] => [
-  { index: true, element: <SellerOverview />, requiredRoles: [ROLES.SELLER] },
-  {
-    path: "listings",
-    element: <SellerMyListings />,
-    requiredRoles: [ROLES.SELLER],
-  },
-  { path: "orders", element: <SellerOrders />, requiredRoles: [ROLES.SELLER] },
-  {
-    path: "earnings",
-    element: <SellerEarnings />,
-    requiredRoles: [ROLES.SELLER],
-  },
-  {
-    path: "verification",
-    element: <SellerVerification />,
-    requiredRoles: [ROLES.SELLER],
-  },
-  { path: "chats", element: <SellerChats />, requiredRoles: [ROLES.SELLER] },
 ];
 
 // Rendered under /admin (AdminLayout) — admin role required.

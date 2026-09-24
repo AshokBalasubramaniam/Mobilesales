@@ -70,6 +70,17 @@ export const createListing = async (
   res: Response,
 ) => {
   try {
+    // Only sellers whose ID documents an admin has approved may list devices.
+    if (
+      req.user!.role !== ROLES.ADMIN &&
+      !req.user!.sellerProfile?.isVerified
+    )
+      return res.status(403).json({
+        flag: "error",
+        message:
+          "Only verified sellers can list devices. Submit your documents from your profile and wait for admin approval.",
+      });
+
     const payload: MobileCreatePayload = {
       ...req.body,
       seller: req.user!._id,
@@ -233,6 +244,14 @@ export const uploadPurchaseBill = async (
 
 type UpdateListingBody = Partial<CreateListingBody>;
 
+// Sellers can only edit a listing before it goes live — once an admin has
+// approved it (or it's sold/removed) only admins may change it.
+const SELLER_EDITABLE_STATUSES: MobileStatus[] = [
+  MOBILE_STATUS.DRAFT,
+  MOBILE_STATUS.PENDING_APPROVAL,
+  MOBILE_STATUS.REJECTED,
+];
+
 export const updateListing = async (
   req: Request<{ id: string }, unknown, UpdateListingBody>,
   res: Response,
@@ -248,10 +267,14 @@ export const updateListing = async (
       return res
         .status(404)
         .json({ flag: "error", message: "Listing not found" });
-    if (!isAdmin && mobile.status === MOBILE_STATUS.SOLD)
-      return res
-        .status(400)
-        .json({ flag: "error", message: "Cannot edit a sold listing" });
+    if (!isAdmin && !SELLER_EDITABLE_STATUSES.includes(mobile.status))
+      return res.status(400).json({
+        flag: "error",
+        message:
+          mobile.status === MOBILE_STATUS.SOLD
+            ? "Cannot edit a sold listing"
+            : "Approved listings can no longer be edited",
+      });
 
     Object.assign(mobile, req.body);
     if (req.body.location) {
@@ -487,6 +510,19 @@ const buildSearchFilter = (query: MobileListQuery): FilterQuery<IMobile> => {
   return filter;
 };
 
+// Buyers browsing the marketplace shouldn't see their own listings — those
+// live on their profile / My Listings instead. Skipped for guests and admins.
+const excludeOwnListings = (
+  filter: FilterQuery<IMobile>,
+  user: Request["user"],
+) => {
+  if (!user || user.role === ROLES.ADMIN) return;
+  filter.seller =
+    filter.seller && typeof filter.seller === "object"
+      ? { ...filter.seller, $ne: user._id }
+      : { $ne: user._id };
+};
+
 const SORT_MAP: Record<
   "newest" | "price_asc" | "price_desc" | "popular",
   Record<string, 1 | -1>
@@ -514,8 +550,12 @@ export const listListings = async (
       }).distinct("_id");
       filter.seller = { $in: sellerIds };
     }
+    // An explicit seller filter (a seller's profile page) shows all of that
+    // seller's listings, including to the seller themselves.
     if (req.query.seller) {
       filter.seller = req.query.seller;
+    } else {
+      excludeOwnListings(filter, req.user);
     }
 
     let query;
@@ -639,6 +679,7 @@ export const getHomeSections = async (
   try {
     const baseFilter: FilterQuery<IMobile> = { status: MOBILE_STATUS.ACTIVE };
     if (req.query.category) baseFilter.category = req.query.category;
+    excludeOwnListings(baseFilter, req.user);
 
     const sellerFields =
       "name avatar ratingAvg ratingCount sellerProfile.isVerified";

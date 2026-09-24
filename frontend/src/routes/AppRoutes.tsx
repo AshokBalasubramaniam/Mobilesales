@@ -1,28 +1,21 @@
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
-import AuthLayout from "../layouts/AuthLayout";
 import BuyerLayout from "../layouts/BuyerLayout";
-import SellerLayout from "../layouts/SellerLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import RoleBasedRoute from "./RoleBasedRoute";
+import LoginModalRedirect from "./LoginModalRedirect";
+import { PATHS } from "./paths";
 import {
   generateProtectedRoutes,
   generateAccountRoutes,
   generateSellerRoutes,
-  generateSellerDashboardRoutes,
   generateAdminRoutes,
 } from "./generateRoutes";
 
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
-
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import PasswordLogin from "../pages/auth/PasswordLogin";
-import ForgotPassword from "../pages/auth/ForgotPassword";
-import VerifyEmail from "../pages/auth/VerifyEmail";
 
 import Search from "../pages/mobile/Search";
 import MobileDetail from "../pages/mobile/MobileDetail";
@@ -41,13 +34,20 @@ import Terms from "../pages/static/Terms";
 
 const AppRoutes = () => (
   <Routes>
-    <Route element={<AuthLayout />}>
-      <Route path="login" element={<Login />} />
-      <Route path="login/password" element={<PasswordLogin />} />
-      <Route path="register" element={<Register />} />
-      <Route path="forgot-password" element={<ForgotPassword />} />
-      <Route path="verify-email" element={<VerifyEmail />} />
-    </Route>
+    {/* Email login and signup are part of the login popup — these URLs
+        just open it on the right form */}
+    <Route path="login/password" element={<LoginModalRedirect mode="email" />} />
+    <Route path="register" element={<LoginModalRedirect mode="signup" />} />
+    <Route
+      path="forgot-password"
+      element={<LoginModalRedirect mode="forgot" />}
+    />
+    {/* Email verification happens inline (EmailCodeVerifier) — send old
+        links to Profile, where the "Verify email" action lives */}
+    <Route
+      path="verify-email"
+      element={<Navigate to={PATHS.buyer.profile} replace />}
+    />
 
     <Route element={<MainLayout />}>
       <Route index element={<Home />} />
@@ -106,20 +106,12 @@ const AppRoutes = () => (
           />
         ))}
 
-        <Route path="seller" element={<SellerLayout />}>
-          {generateSellerDashboardRoutes().map((route) => (
-            <Route
-              key={route.path ?? "index"}
-              index={route.index}
-              path={route.path}
-              element={
-                <RoleBasedRoute requiredRoles={route.requiredRoles}>
-                  {route.element}
-                </RoleBasedRoute>
-              }
-            />
-          ))}
-        </Route>
+        {/* The old seller dashboard is gone — listings and sales live in
+            My Account now */}
+        <Route
+          path="seller/*"
+          element={<Navigate to={PATHS.buyer.listings} replace />}
+        />
 
       </Route>
 

@@ -1,4 +1,10 @@
-import type { DeliveryType, DeviceCategory, OrderStatus, Role } from "../types/models";
+import type {
+  DeliveryType,
+  DeviceCategory,
+  MobileStatus,
+  OrderStatus,
+  Role,
+} from "../types/models";
 
 export const ROLES: Record<"BUYER" | "SELLER" | "ADMIN", Role> = {
   BUYER: "buyer",
@@ -14,6 +20,14 @@ export const MOBILE_STATUS = {
   REJECTED: "rejected",
   REMOVED: "removed",
 } as const;
+
+// Sellers can only edit a listing before an admin approves it (mirrors the
+// backend check in mobile.controller.ts#updateListing).
+export const SELLER_EDITABLE_STATUSES: MobileStatus[] = [
+  "draft",
+  "pending_approval",
+  "rejected",
+];
 
 export const MOBILE_CONDITIONS = ["excellent", "good", "fair", "poor"] as const;
 

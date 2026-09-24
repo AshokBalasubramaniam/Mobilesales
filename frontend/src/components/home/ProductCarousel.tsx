@@ -26,7 +26,7 @@ const classes = {
   arrowButton:
     "flex size-6 items-center justify-center rounded-full border border-gray-300 text-gray-500 transition-colors hover:border-brand-600 hover:text-brand-700",
   arrowIcon: "size-3.5",
-  scrollRow: "flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]",
+  scrollRow: "stagger flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]",
   skeletonCard: "shrink-0 overflow-hidden rounded-xl border border-gray-100",
   skeletonImage: "skeleton",
   skeletonBody: "space-y-2 p-3",
@@ -89,18 +89,18 @@ const ProductCarousel = ({
       <div ref={ref} className={classes.scrollRow}>
         {loading
           ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className={classes.skeletonCard} style={{ width: 170 }}>
-                <div className={classes.skeletonImage} style={{ height: 130 }} />
-                <div className={classes.skeletonBody}>
-                  <div className="skeleton h-3 w-4/5" />
-                  <div className="skeleton h-3 w-3/5" />
-                  <div className="skeleton h-4 w-2/5" />
-                </div>
+            <div key={i} className={classes.skeletonCard} style={{ width: 170 }}>
+              <div className={classes.skeletonImage} style={{ height: 130 }} />
+              <div className={classes.skeletonBody}>
+                <div className="skeleton h-3 w-4/5" />
+                <div className="skeleton h-3 w-3/5" />
+                <div className="skeleton h-4 w-2/5" />
               </div>
-            ))
+            </div>
+          ))
           : listings?.map((mobile) => (
-              <ProductCard key={mobile._id} mobile={mobile} isNew={isNew} />
-            ))}
+            <ProductCard key={mobile._id} mobile={mobile} isNew={isNew} />
+          ))}
       </div>
     </div>
   );

@@ -114,6 +114,11 @@ const Chats = () => {
         setConversations(data.data);
         setMeta(data.meta);
       })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Failed to load conversations");
+      })
       .finally(() => setListLoading(false));
   }, [page]);
 
@@ -136,6 +141,11 @@ const Chats = () => {
       .then(([convRes, msgRes]) => {
         setConversation(convRes.data.data);
         setMessages(msgRes.data.data);
+      })
+      .catch((err) => {
+        const message =
+          isAxiosError<{ message?: string }>(err) && err.response?.data?.message;
+        toast.error(message || "Failed to load conversation");
       })
       .finally(() => setDetailLoading(false));
   }, [conversationId]);
