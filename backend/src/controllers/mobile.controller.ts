@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import type { FilterQuery, Types } from "mongoose";
 import Mobile from "../models/Mobile";
 import User from "../models/User";
+import Order from "../models/Order";
+import Wishlist from "../models/Wishlist";
 import { convertToApiError } from "../middleware/error.middleware";
 import logger from "../utils/logger";
 import { getPagination, buildMeta } from "../utils/pagination";
@@ -327,12 +329,32 @@ export const deleteListing = async (
         .status(404)
         .json({ flag: "error", message: "Listing not found" });
 
-    mobile.status = MOBILE_STATUS.REMOVED;
-    await mobile.save();
+    // A listing that was ordered is referenced by orders/reviews — keep it
+    // (hidden as "removed") and its photos so order history stays intact.
+    const hasOrders = await Order.exists({ mobile: mobile._id });
+    if (hasOrders) {
+      mobile.status = MOBILE_STATUS.REMOVED;
+      await mobile.save();
+      return res.status(200).json({
+        flag: "success",
+        data: null,
+        message:
+          "Listing removed from the marketplace (kept for its order history)",
+      });
+    }
+
+    // Otherwise delete it for good, including every stored file
+    await Promise.all([
+      ...mobile.images.map((img) => storageService.deleteFile(img.key)),
+      ...mobile.videos.map((vid) => storageService.deleteFile(vid.key, "video")),
+      storageService.deleteFileByUrl(mobile.purchaseBillUrl),
+    ]);
+    await Wishlist.deleteMany({ mobile: mobile._id });
+    await mobile.deleteOne();
 
     res
       .status(200)
-      .json({ flag: "success", data: null, message: "Listing removed" });
+      .json({ flag: "success", data: null, message: "Listing deleted" });
   } catch (error) {
     sendError(res, "delete listing", error);
   }

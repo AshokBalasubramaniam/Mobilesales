@@ -99,11 +99,18 @@ export const uploadFile = async (rawBuffer: Buffer, args: UploadFileArgs): Promi
   return { url: `${env.apiUrl}/uploads/${folder}/${path.basename(key)}`, key, provider: 'local' };
 };
 
-export const deleteFile = async (key?: string): Promise<void> => {
+export type StoredResourceType = 'image' | 'video' | 'raw';
+
+// Cloudinary only deletes an asset when told its resource type, so videos
+// must be destroyed with resourceType 'video'.
+export const deleteFile = async (key?: string, resourceType: StoredResourceType = 'image'): Promise<void> => {
   if (!key) return;
 
   if (env.isCloudinaryConfigured) {
-    await cloudinary.uploader.destroy(key).catch((err: Error) => logger.warn(`Cloudinary delete failed for ${key}: ${err.message}`));
+    await cloudinary.uploader
+      .destroy(key, { resource_type: resourceType, invalidate: true })
+      .then((result: { result?: string }) => logger.info(`[storage] Cloudinary delete ${resourceType} ${key}: ${result?.result}`))
+      .catch((err: Error) => logger.warn(`Cloudinary delete failed for ${key}: ${err.message}`));
     return;
   }
 
@@ -115,4 +122,32 @@ export const deleteFile = async (key?: string): Promise<void> => {
   }
   const localPath = path.join(UPLOAD_ROOT, key);
   fs.promises.unlink(localPath).catch(() => {});
+};
+
+/**
+ * Deletes a stored file when only its URL was saved (e.g. a listing's
+ * purchase bill). Works out the provider key from the URL.
+ */
+export const deleteFileByUrl = async (url?: string): Promise<void> => {
+  if (!url) return;
+
+  // https://res.cloudinary.com/<cloud>/<image|video|raw>/upload/v123/<public_id>.<ext>
+  const cloudinaryMatch = url.match(/\/(image|video|raw)\/upload\/(?:v\d+\/)?(.+?)(?:\.[a-z0-9]+)?$/i);
+  if (env.isCloudinaryConfigured && cloudinaryMatch) {
+    await deleteFile(cloudinaryMatch[2], cloudinaryMatch[1] as StoredResourceType);
+    return;
+  }
+
+  const localPrefix = `${env.apiUrl}/uploads/`;
+  if (url.startsWith(localPrefix)) {
+    await deleteFile(url.slice(localPrefix.length));
+    return;
+  }
+
+  // S3 / CloudFront: the key is the URL path
+  try {
+    await deleteFile(new URL(url).pathname.replace(/^\//, ''));
+  } catch {
+    logger.warn(`[storage] Could not work out a storage key from ${url}`);
+  }
 };
